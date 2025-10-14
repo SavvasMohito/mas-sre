@@ -1,0 +1,32 @@
+map_security_controls:
+  description: >
+    Based on the requirements analysis:
+    
+    {analyzed_requirements}
+    
+    Use the security standards database to find and recommend relevant controls:
+    
+    For each security concern and feature identified:
+    1. Query the security standards database for relevant controls
+    2. Identify applicable OWASP, NIST, and ISO 27001 controls
+    3. Explain how each control addresses the specific risk
+    4. Prioritize controls based on risk severity
+    5. Recommend implementation approaches
+    
+    Consider controls for:
+    - Authentication and access control
+    - Data protection (at rest and in transit)
+    - Input validation and output encoding
+    - Session management
+    - Cryptography
+    - Error handling and logging
+    - API security
+    - Configuration management
+  expected_output: >
+    A comprehensive security controls mapping document in JSON format containing:
+    - mapped_controls: List of applicable controls with justifications
+    - control_priorities: Priority levels for each control
+    - implementation_notes: Specific implementation guidance
+    - coverage_analysis: Which security concerns are addressed by which controls
+  agent: domain_security_expert
+

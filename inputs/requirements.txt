@@ -1,0 +1,41 @@
+Task Management Application Requirements
+
+We need to build a collaborative task management application for small to medium-sized teams.
+
+Key Features:
+
+1. User Management
+   - Team member registration and login
+   - User profiles with role assignments (Admin, Manager, Member)
+   - Team workspace creation and management
+
+2. Task Management
+   - Create, edit, and delete tasks
+   - Assign tasks to team members
+   - Set priorities, due dates, and tags
+   - Add comments and attachments to tasks
+   - Track task status (To Do, In Progress, Done)
+
+3. Collaboration
+   - Real-time updates when tasks change
+   - Comment threads on tasks
+   - @mention notifications for team members
+   - Activity feed showing team actions
+
+4. File Management
+   - Upload and attach files to tasks
+   - Support for various file types (documents, images, PDFs)
+   - File preview functionality
+
+5. Notifications
+   - Email notifications for task assignments
+   - In-app notifications for mentions and updates
+   - Daily digest emails of team activity
+
+6. Reporting
+   - Dashboard with task statistics
+   - Team productivity metrics
+   - Export task lists and reports
+
+The application should be accessible via web browser and will store user data, task information, file attachments, and activity logs. We expect integration with third-party services like Slack and email providers.
+

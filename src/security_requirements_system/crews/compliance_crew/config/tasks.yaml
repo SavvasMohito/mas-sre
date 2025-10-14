@@ -1,0 +1,38 @@
+assess_compliance_requirements:
+  description: >
+    Review the requirements and identify regulatory compliance needs:
+    
+    Original Requirements:
+    {requirements_text}
+    
+    Requirements Analysis:
+    {analyzed_requirements}
+    
+    Identify compliance triggers:
+    1. Personal data handling → GDPR, CCPA
+    2. Health information → HIPAA, HITECH
+    3. Payment card data → PCI-DSS
+    4. Financial data → SOX, GLBA
+    5. Children's data → COPPA
+    6. Geographic restrictions → Data residency laws
+    7. Industry-specific regulations
+    
+    For each applicable regulation:
+    - Identify specific compliance requirements
+    - Map to necessary security controls
+    - Identify data subject rights that must be supported
+    - Specify retention and deletion requirements
+    - Define consent and privacy notice needs
+    - Identify breach notification requirements
+    - Specify audit and logging needs
+  expected_output: >
+    A comprehensive compliance requirements document in JSON format containing:
+    - applicable_regulations: List of regulations and why they apply
+    - compliance_controls: Specific controls required for compliance
+    - data_subject_rights: Rights that must be implemented (access, deletion, portability)
+    - privacy_requirements: Consent, notices, privacy by design
+    - audit_requirements: Logging, monitoring, and reporting needs
+    - data_handling_rules: Retention, encryption, geographic restrictions
+    - risk_assessment: Compliance risks if requirements not met
+  agent: compliance_expert
+

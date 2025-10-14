@@ -1,0 +1,27 @@
+analyze_requirements:
+  description: >
+    Analyze the following product manager requirements:
+    
+    {requirements_text}
+    
+    Extract and identify:
+    1. Core business functionality and features
+    2. Data that will be collected, processed, or stored
+    3. User roles and access patterns
+    4. System integrations and external dependencies
+    5. Authentication and authorization needs
+    6. Potential security-sensitive operations
+    7. Compliance or regulatory hints (e.g., mentions of personal data, health data, financial data)
+    
+    For each identified aspect, explain why it has security implications.
+  expected_output: >
+    A structured analysis report in JSON format containing:
+    - business_features: List of main features with security implications
+    - data_elements: Types of data involved and their sensitivity levels
+    - user_roles: Identified user types and their access needs
+    - integrations: External systems or APIs mentioned
+    - auth_requirements: Authentication and authorization needs
+    - security_concerns: Specific security concerns identified
+    - compliance_hints: Any regulatory or compliance indicators
+  agent: requirements_analyst
+

@@ -1,0 +1,52 @@
+Telemedicine Platform Requirements
+
+We want to develop a telemedicine platform connecting patients with healthcare providers for virtual consultations.
+
+Core Requirements:
+
+1. Patient Portal
+   - Patient registration with personal and medical information
+   - Secure login and multi-factor authentication
+   - View and update medical history
+   - Book appointments with doctors
+   - Access prescription history
+   - Upload medical documents and lab results
+
+2. Provider Portal
+   - Provider registration and credential verification
+   - Manage availability and appointments
+   - Access patient medical records
+   - Prescribe medications electronically
+   - Document consultation notes
+   - Billing and insurance claims
+
+3. Video Consultation
+   - Real-time video calls between patient and provider
+   - Screen sharing for reviewing documents
+   - Chat functionality during calls
+   - Recording consultations (with consent)
+
+4. Prescription Management
+   - Electronic prescription generation
+   - Integration with pharmacy systems
+   - Prescription refill requests
+
+5. Payment & Billing
+   - Accept payments via credit card and insurance
+   - Generate invoices
+   - Insurance claim submission
+
+6. AI-Powered Features
+   - Symptom checker chatbot
+   - Automated appointment scheduling assistant
+   - Medical record summarization using LLM
+   - Drug interaction checker
+
+7. Data Requirements
+   - Store patient health records (diagnoses, treatments, medications)
+   - Store consultation recordings and transcripts
+   - Maintain audit logs of all data access
+   - Support data export for patients (right to data portability)
+
+The platform will operate in the United States and must handle sensitive health information. We expect integration with multiple Electronic Health Record (EHR) systems.
+
