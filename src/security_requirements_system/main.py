@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
+import yaml
 from crewai.flow.flow import Flow, listen, start
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -22,6 +23,29 @@ from security_requirements_system.crews.requirements_analysis_crew import Requir
 from security_requirements_system.crews.validation_crew import ValidationCrew
 
 load_dotenv()
+
+
+def load_config():
+    """Load configuration from config.yaml."""
+    config_path = Path("config.yaml")
+    if config_path.exists():
+        with open(config_path, "r") as f:
+            return yaml.safe_load(f)
+    return {}
+
+
+# Load global configuration
+CONFIG = load_config()
+
+# Set LLM configuration from config.yaml (if not already set via environment)
+if CONFIG and "llm" in CONFIG:
+    llm_config = CONFIG["llm"]
+    # Set OPENAI_MODEL_NAME if not already set
+    if "model" in llm_config and not os.getenv("OPENAI_MODEL_NAME"):
+        os.environ["OPENAI_MODEL_NAME"] = llm_config["model"]
+    # Set temperature if available
+    if "temperature" in llm_config and not os.getenv("OPENAI_TEMPERATURE"):
+        os.environ["OPENAI_TEMPERATURE"] = str(llm_config["temperature"])
 
 
 class SecurityRequirementsState(BaseModel):
@@ -43,6 +67,9 @@ class SecurityRequirementsState(BaseModel):
     validation_score: float = 0.0
     iteration_count: int = 0
 
+    # Flow control
+    should_generate_output: bool = False
+
     # Final output
     final_requirements: str = ""
 
@@ -60,8 +87,9 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
     6. If validation fails → loop back with feedback (max 3 iterations)
     """
 
-    MAX_ITERATIONS = 3
-    VALIDATION_THRESHOLD = 0.8
+    # Load from config.yaml or use defaults
+    MAX_ITERATIONS = CONFIG.get("flow", {}).get("max_iterations", 3)
+    VALIDATION_THRESHOLD = CONFIG.get("flow", {}).get("validation_threshold", 0.8)
 
     @start()
     def load_requirements(self):
@@ -221,21 +249,27 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
         if self.state.validation_passed:
             print(f"\n✓ VALIDATION PASSED (Score: {self.state.validation_score:.2f})")
             print("  Proceeding to generate final security requirements...")
-            self.generate_final_output()
+            self.state.should_generate_output = True
         elif self.state.iteration_count < self.MAX_ITERATIONS:
             print(f"\n✗ VALIDATION FAILED (Score: {self.state.validation_score:.2f})")
             print(f"  Iteration {self.state.iteration_count}/{self.MAX_ITERATIONS}")
             print("  Re-running analysis with validation feedback...")
+            self.state.should_generate_output = False
             # Loop back to analyze_requirements
             self.analyze_requirements()
         else:
             print(f"\n⚠ MAX ITERATIONS REACHED ({self.MAX_ITERATIONS})")
             print(f"  Final Score: {self.state.validation_score:.2f}")
             print("  Generating output with current requirements (may need manual review)...")
-            self.generate_final_output()
+            self.state.should_generate_output = True
 
+    @listen(evaluate_and_decide)
     def generate_final_output(self):
         """Generate final security requirements document."""
+        # Only generate output if validation passed or max iterations reached
+        if not self.state.should_generate_output:
+            return  # Skip output generation when retrying
+
         print("\n" + "=" * 80)
         print("STEP 8: Generating Final Security Requirements Document")
         print("=" * 80)
@@ -334,6 +368,7 @@ def kickoff():
     print("SECURITY REQUIREMENTS GENERATION SYSTEM")
     print("=" * 80)
     print(f"Input: {input_file}")
+    print(f"LLM Model: {os.getenv('OPENAI_MODEL_NAME', 'default')}")
     print(f"Max Iterations: {SecurityRequirementsFlow.MAX_ITERATIONS}")
     print(f"Validation Threshold: {SecurityRequirementsFlow.VALIDATION_THRESHOLD}")
     print("=" * 80 + "\n")
