@@ -23,7 +23,6 @@ create_implementation_roadmap:
        - Technical complexity and dependencies
        - Resource availability
        - Business impact
-       - Cost-benefit analysis
     
     2. Create implementation phases (typically 4-5 phases):
        a) IMMEDIATE (0-1 months): Critical, high-risk items that must be addressed now
@@ -65,7 +64,7 @@ create_implementation_roadmap:
     4. Include resource_requirements:
        - Required skills (security engineers, architects, developers, etc.)
        - Recommended tools and technologies
-       - Estimated effort and budget considerations
+       - Estimated time effort considerations
     
     5. Consider technical dependencies (e.g., must implement authentication before authorization)
     
