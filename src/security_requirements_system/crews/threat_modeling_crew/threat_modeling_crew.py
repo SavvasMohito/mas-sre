@@ -4,8 +4,6 @@ from crewai import Agent, Crew, Process, Task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from crewai.project import CrewBase, agent, crew, task
 
-from security_requirements_system.data_models import ThreatModelingOutput
-
 
 @CrewBase
 class ThreatModelingCrew:
@@ -29,7 +27,6 @@ class ThreatModelingCrew:
         return Task(
             name="perform_threat_modeling",
             config=self.tasks_config["perform_threat_modeling"],
-            output_pydantic=ThreatModelingOutput,
         )
 
     @crew

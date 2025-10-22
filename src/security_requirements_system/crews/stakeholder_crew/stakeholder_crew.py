@@ -4,8 +4,6 @@ from crewai import Agent, Crew, Process, Task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from crewai.project import CrewBase, agent, crew, task
 
-from security_requirements_system.data_models import StakeholderAnalysisOutput
-
 
 @CrewBase
 class StakeholderCrew:
@@ -29,7 +27,6 @@ class StakeholderCrew:
         return Task(
             name="analyze_stakeholders",
             config=self.tasks_config["analyze_stakeholders"],
-            output_pydantic=StakeholderAnalysisOutput,
         )
 
     @crew

@@ -28,6 +28,8 @@ assess_compliance_requirements:
   expected_output: >
     A comprehensive compliance requirements document in MARKDOWN format with the following structure:
     
+    IMPORTANT: Output the markdown content directly. DO NOT wrap your output in ```markdown code blocks.
+    
     ### 8.1. Applicable Regulations
     Introduction sentence followed by a markdown table with columns: Regulation | Applicability Reason
     

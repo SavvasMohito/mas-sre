@@ -45,9 +45,42 @@ perform_threat_modeling:
     
     5. Think from an attacker's perspective and consider realistic attack scenarios
     
-    6. Ensure the output is a valid JSON object matching the ThreatModelingOutput schema.
+    6. Output as clean, well-formatted MARKDOWN matching the structure below.
   expected_output: >
-    A comprehensive JSON object matching the ThreatModelingOutput schema with identified threats
-    categorized by STRIDE, assessed for risk, and mapped to mitigation strategies.
+    A comprehensive threat modeling analysis in MARKDOWN format with the following structure:
+    
+    IMPORTANT: Output the markdown content directly. DO NOT wrap your output in ```markdown code blocks.
+    
+    ### 5.1. Methodology
+    
+    State the methodology used (e.g., "STRIDE")
+    
+    ### 5.2. Identified Threats
+    
+    A markdown table with columns: Threat ID | Component | Category | Risk Level | Description
+    
+    IMPORTANT: Truncate descriptions to ~50 characters in the table. List up to 20 most critical threats.
+    
+    Example:
+    | Threat ID | Component | Category | Risk Level | Description |
+    |-----------|-----------|----------|------------|-------------|
+    | THR-001 | User Authentication | Spoofing | Critical | An attacker could create fake login credentials to... |
+    | THR-002 | Backend API | Tampering | High | API requests could be intercepted and modified to... |
+    | THR-003 | Database | Information Disclosure | Critical | SQL injection vulnerabilities could expose sensitiv... |
+    | THR-004 | Payment Gateway | Spoofing | High | Weak certificate validation could allow man-in-the... |
+    | THR-005 | Admin Dashboard | Elevation of Privilege | High | Inadequate access controls could allow regular use... |
+    
+    If more than 20 threats exist, add: "*Showing 20 of X total threats. See appendix for complete list.*"
+    
+    ### 5.3. Risk Summary
+    
+    A comprehensive paragraph highlighting:
+    - The most critical threats requiring immediate attention
+    - Overall risk posture
+    - Key attack vectors and entry points
+    - Prioritized areas for security controls
+    
+    Example:
+    "The most critical threats requiring immediate attention are related to SQL injection in the database and authentication spoofing on the frontend. Overall, the risk posture indicates a high likelihood of information disclosure and tampering attacks, particularly in the backend and database components. Key attack vectors include weak input validation, improper logging, and third-party integrations. Prioritized areas for security controls should focus on strengthening data input sanitization, enhancing logging mechanisms, and ensuring the integrity of payment processing."
   agent: threat_modeling_expert
 

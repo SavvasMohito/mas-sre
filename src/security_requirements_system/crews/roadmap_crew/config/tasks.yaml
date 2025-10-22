@@ -68,9 +68,59 @@ create_implementation_roadmap:
     
     5. Consider technical dependencies (e.g., must implement authentication before authorization)
     
-    6. Ensure the output is a valid JSON object matching the ImplementationRoadmapOutput schema.
+    6. Output as clean, well-formatted MARKDOWN matching the structure below.
   expected_output: >
-    A comprehensive JSON object matching the ImplementationRoadmapOutput schema with
-    prioritization criteria, phased implementation plan, and resource requirements.
+    A comprehensive implementation roadmap in MARKDOWN format with the following structure:
+    
+    IMPORTANT: Output the markdown content directly. DO NOT wrap your output in ```markdown code blocks.
+    
+    ### 10.1. Prioritization Framework
+    
+    A sentence or paragraph listing the criteria (e.g., "Risk level (from threat modeling), Compliance deadlines and regulatory requirements, Technical complexity and dependencies, Resource availability, Business impact")
+    
+    ### 10.2. Phased Implementation Plan
+    
+    For EACH phase, create a subsection (####):
+    
+    #### Phase: IMMEDIATE
+    
+    **Timeline:** 0-1 months
+    
+    **Rationale:** [Why these controls are in this phase]
+    
+    **Controls to Implement:**
+    - Control 1
+    - Control 2
+    - Control 3
+    
+    **Dependencies:**
+    - Dependency 1
+    - Dependency 2
+    (Only include if there are dependencies)
+    
+    Example:
+    #### Phase: SHORT-TERM
+    
+    **Timeline:** 1-3 months
+    
+    **Rationale:** These controls build upon immediate security measures, focusing on improving access control adjustments and ensuring that logging and API security mitigate identified threats effectively.
+    
+    **Controls to Implement:**
+    - Enhance user authentication through comprehensive multi-factor authentication
+    - Deploy role-based access controls across the admin dashboard
+    - Implement comprehensive logging and monitoring for all administrative actions
+    - Strengthen API security with input validation and HTTPS protocols
+    - Begin encryption for all sensitive data at rest
+    
+    **Dependencies:**
+    - Completion of TLS Implementation
+    - Completion of multi-factor authentication
+    
+    ### 10.3. Resource Requirements
+    
+    A paragraph or structured text covering skills, tools, and estimated time effort.
+    
+    Example:
+    "Skills: Security engineers, Security architects, Web developers, Compliance specialists; Recommended tools: SIEM solutions for logging and monitoring, Vulnerability scanners for testing, Encryption libraries for data protection, API management tools for secure interfaces; Estimated time effort: Approximately 3-6 months for initial phases, with ongoing efforts extending resources as per system complexity and requirements."
   agent: implementation_planner
 

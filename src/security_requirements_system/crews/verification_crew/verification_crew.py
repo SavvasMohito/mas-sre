@@ -4,8 +4,6 @@ from crewai import Agent, Crew, Process, Task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from crewai.project import CrewBase, agent, crew, task
 
-from security_requirements_system.data_models import VerificationTestingOutput
-
 
 @CrewBase
 class VerificationCrew:
@@ -29,7 +27,6 @@ class VerificationCrew:
         return Task(
             name="design_verification_strategy",
             config=self.tasks_config["design_verification_strategy"],
-            output_pydantic=VerificationTestingOutput,
         )
 
     @crew

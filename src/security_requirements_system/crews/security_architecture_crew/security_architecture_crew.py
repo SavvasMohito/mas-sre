@@ -4,8 +4,6 @@ from crewai import Agent, Crew, Process, Task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from crewai.project import CrewBase, agent, crew, task
 
-from security_requirements_system.data_models import SecurityArchitectureOutput
-
 
 @CrewBase
 class SecurityArchitectureCrew:
@@ -29,7 +27,6 @@ class SecurityArchitectureCrew:
         return Task(
             name="design_security_architecture",
             config=self.tasks_config["design_security_architecture"],
-            output_pydantic=SecurityArchitectureOutput,
         )
 
     @crew

@@ -4,8 +4,6 @@ from crewai import Agent, Crew, Process, Task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from crewai.project import CrewBase, agent, crew, task
 
-from security_requirements_system.data_models import ImplementationRoadmapOutput
-
 
 @CrewBase
 class RoadmapCrew:
@@ -29,7 +27,6 @@ class RoadmapCrew:
         return Task(
             name="create_implementation_roadmap",
             config=self.tasks_config["create_implementation_roadmap"],
-            output_pydantic=ImplementationRoadmapOutput,
         )
 
     @crew

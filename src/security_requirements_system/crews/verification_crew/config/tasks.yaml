@@ -93,9 +93,52 @@ design_verification_strategy:
     
     6. Map each testing method to specific OWASP controls it verifies
     
-    7. Ensure the output is a valid JSON object matching the VerificationTestingOutput schema.
+    7. Output as clean, well-formatted MARKDOWN matching the structure below.
   expected_output: >
-    A comprehensive JSON object matching the VerificationTestingOutput schema with
-    testing approach, methods, compliance verification, continuous monitoring, and KPIs.
+    A comprehensive verification and testing strategy in MARKDOWN format with the following structure:
+    
+    IMPORTANT: Output the markdown content directly. DO NOT wrap your output in ```markdown code blocks.
+    
+    ### 11.1. Testing Approach
+    
+    A paragraph describing the overall approach (e.g., "Integrate security testing throughout the software development lifecycle (SDLC) with an emphasis on continuous security practices. Balance automated scanning with manual evaluations to prioritize high-risk areas based on business impact, adhering to shift-left security principles by incorporating security testing earlier and continuously.")
+    
+    ### 11.2. Testing Methods
+    
+    A markdown table with columns: Method | Frequency | Tools
+    
+    Example:
+    | Method | Frequency | Tools |
+    |--------|-----------|-------|
+    | STATIC APPLICATION SECURITY TESTING (SAST) | Every commit/build | SonarQube, Semgrep, Checkmarx |
+    | DYNAMIC APPLICATION SECURITY TESTING (DAST) | Nightly/weekly | OWASP ZAP, Burp Suite, Acunetix |
+    | DEPENDENCY SCANNING | Every build | Snyk, Dependabot, OWASP Dependency-Check |
+    | SECRETS SCANNING | Every commit | TruffleHog, GitLeaks, GitHub Secret Scanning |
+    | CONTAINER/INFRASTRUCTURE SCANNING | Every deployment | Trivy, Clair, Prowler |
+    | PENETRATION TESTING | Quarterly or before major releases | Custom scripts, Metasploit, Burp Suite Pro |
+    | SECURITY CODE REVIEW | For critical features | GitHub/GitLab code review, Security checklists |
+    | COMPLIANCE SCANNING | Continuous | AWS Config, Azure Policy, Cloud Custodian |
+    
+    ### 11.3. Compliance Verification
+    
+    A paragraph describing how compliance will be verified (e.g., "OWASP ASVS compliance will be verified through automated tools and manual checks against regulatory requirements such as GDPR, CCPA, and PCI-DSS. Audit preparation will involve ensuring documentation and evidence collection for external audits. Recommendations will include engaging third-party auditors for comprehensive evaluations.")
+    
+    ### 11.4. Continuous Monitoring
+    
+    A paragraph describing the monitoring strategy (e.g., "Implement Security Information and Event Management (SIEM) for real-time monitoring, supported by Intrusion Detection/Prevention Systems (IDS/IPS) to identify and mitigate threats. All logs will be aggregated and analyzed for anomalies, with integration into incident response processes to ensure prompt action against security events.")
+    
+    ### 11.5. Key Performance Indicators (KPIs)
+    
+    A bulleted list:
+    - KPI 1
+    - KPI 2
+    
+    Example:
+    - Mean time to detect (MTTD) security issues
+    - Mean time to remediate (MTTR) vulnerabilities
+    - Percentage of critical vulnerabilities patched within SLA
+    - Security test coverage percentage
+    - False positive rate in automated scanning
+    - Compliance audit pass rate
   agent: security_testing_expert
 
