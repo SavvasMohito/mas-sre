@@ -62,3 +62,6 @@ temp/
 inputs/*.txt
 !inputs/requirements.txt
 !inputs/sample_*.txt
+
+/.quarto/
+**/*.quarto_ipynb
