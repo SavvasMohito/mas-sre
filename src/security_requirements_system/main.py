@@ -26,7 +26,13 @@ from security_requirements_system.crews.stakeholder_crew import StakeholderCrew
 from security_requirements_system.crews.threat_modeling_crew import ThreatModelingCrew
 from security_requirements_system.crews.validation_crew import ValidationCrew
 from security_requirements_system.crews.verification_crew import VerificationCrew
-from security_requirements_system.data_models import AnalysisOutput, ArchitectureOutput, ValidationOutput
+from security_requirements_system.data_models import (
+    AnalysisOutput,
+    ArchitectureOutput,
+    TraceabilityEntry,
+    TraceabilityMatrix,
+    ValidationOutput,
+)
 
 load_dotenv()
 
@@ -106,6 +112,9 @@ class SecurityRequirementsState(BaseModel):
     validation_passed: bool = False
     validation_score: float = 0.0
     iteration_count: int = 0
+
+    # Traceability Matrix
+    traceability_matrix: str = ""  # JSON string of TraceabilityMatrix
 
     # Flow control
     should_generate_output: bool = False
@@ -253,9 +262,12 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
             )
         )
 
-        self.state.threats = result.raw
+        # Store as JSON for traceability matrix
+        threat_output = result.pydantic
+        self.state.threats = threat_output.model_dump_json(indent=2) if threat_output else "{}"
 
         print("\n✓ Threat modeling complete")
+        print(f"  - Identified {len(threat_output.threats) if threat_output else 0} threats")
 
     @listen(perform_threat_modeling)
     def map_security_controls(self):
@@ -451,6 +463,112 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
             self.state.should_generate_output = True
 
     @listen(evaluate_and_decide)
+    def build_traceability_matrix(self):
+        """Build comprehensive traceability matrix linking requirements → threats → controls → verification."""
+        print("\n" + "=" * 80)
+        print("STEP 13: Building Traceability Matrix")
+        print("=" * 80)
+
+        try:
+            # Parse all JSON data
+            detailed_reqs = json.loads(self.state.detailed_requirements) if self.state.detailed_requirements else []
+            threats_data = json.loads(self.state.threats) if self.state.threats else {}
+            controls_data = json.loads(self.state.security_controls) if self.state.security_controls else {}
+
+            # Extract data
+            threats_list = threats_data.get("threats", []) if isinstance(threats_data, dict) else []
+            requirements_mapping = controls_data.get("requirements_mapping", []) if isinstance(controls_data, dict) else []
+
+            # Build traceability entries
+            entries = []
+
+            for req in detailed_reqs:
+                req_text = req.get("requirement", "")
+                req_id = req.get("requirement_id", "")
+
+                # Find related threats
+                related_threats = [
+                    t
+                    for t in threats_list
+                    if req_id in t.get("component", "")
+                    or any(keyword in t.get("description", "").lower() for keyword in req_text.lower().split()[:5])
+                ]
+
+                # Find related OWASP controls
+                req_mapping = next(
+                    (
+                        rm
+                        for rm in requirements_mapping
+                        if rm.get("high_level_requirement", "") == req_text or rm.get("requirement_id", "") == req_id
+                    ),
+                    None,
+                )
+                owasp_controls = req_mapping.get("owasp_controls", []) if req_mapping else []
+
+                # Extract verification methods from controls
+                verification_methods = list(
+                    set([ctrl.get("verification_method", "Manual Review") for ctrl in owasp_controls if ctrl.get("verification_method")])
+                )
+
+                # Determine priority
+                priority_map = {"critical": 4, "high": 3, "medium": 2, "low": 1}
+                priorities = [ctrl.get("priority", "Medium") for ctrl in owasp_controls]
+                priority = max(priorities, key=lambda p: priority_map.get(p.lower(), 2)) if priorities else req.get("priority", "Medium")
+
+                # Build entry
+                entry = TraceabilityEntry(
+                    req_id=req_id or f"REQ-{len(entries) + 1:03d}",
+                    high_level_requirement=req_text,
+                    functional_category=req.get("functional_category", "General"),
+                    security_sensitivity=req.get("security_sensitivity", "Medium"),
+                    threat_ids=[t.get("threat_id", "") for t in related_threats[:10]],  # Limit to top 10
+                    threat_descriptions=[
+                        t.get("description", "")[:80] + "..." if len(t.get("description", "")) > 80 else t.get("description", "")
+                        for t in related_threats[:10]
+                    ],
+                    owasp_control_ids=[ctrl.get("req_id", "") for ctrl in owasp_controls],
+                    owasp_control_descriptions=[
+                        ctrl.get("requirement", "")[:80] + "..." if len(ctrl.get("requirement", "")) > 80 else ctrl.get("requirement", "")
+                        for ctrl in owasp_controls
+                    ],
+                    priority=priority,
+                    verification_methods=verification_methods or ["Manual Review"],
+                    implementation_status="Pending",
+                )
+
+                entries.append(entry)
+
+            # Build summary
+            total_reqs = len(entries)
+            with_threats = sum(1 for e in entries if e.threat_ids)
+            with_controls = sum(1 for e in entries if e.owasp_control_ids)
+            coverage_pct = (with_controls / total_reqs * 100) if total_reqs > 0 else 0
+
+            summary = (
+                f"Traceability matrix contains {total_reqs} requirements. "
+                f"{with_threats} requirements ({with_threats / total_reqs * 100:.1f}%) linked to threats. "
+                f"{with_controls} requirements ({coverage_pct:.1f}%) mapped to OWASP controls. "
+                "Coverage: " + ("Complete" if coverage_pct >= 90 else "Partial" if coverage_pct >= 70 else "Needs Improvement") + "."
+            )
+
+            # Create traceability matrix
+            matrix = TraceabilityMatrix(entries=entries, summary=summary)
+            self.state.traceability_matrix = matrix.model_dump_json(indent=2)
+
+            print("\n✓ Traceability matrix built successfully")
+            print(f"  - Total requirements: {total_reqs}")
+            print(f"  - Requirements with threats: {with_threats}")
+            print(f"  - Requirements with controls: {with_controls}")
+            print(f"  - Coverage: {coverage_pct:.1f}%")
+
+        except Exception as e:
+            print(f"\n⚠ Error building traceability matrix: {e}")
+            # Create empty matrix
+            self.state.traceability_matrix = TraceabilityMatrix(
+                entries=[], summary="Error building traceability matrix. Manual review required."
+            ).model_dump_json(indent=2)
+
+    @listen(build_traceability_matrix)
     def generate_final_output(self):
         """Generate final security requirements document."""
         # Only generate output if validation passed or max iterations reached
@@ -459,7 +577,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
         #     return  # Skip output generation when retrying
 
         print("\n" + "=" * 80)
-        print("STEP 13: Generating Final Security Requirements Document")
+        print("STEP 14: Generating Final Security Requirements Document")
         print("=" * 80)
 
         # Generate timestamp for unique filenames
@@ -538,6 +656,101 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
 
 **Summary:** {self.state.application_summary}
 
+### 1.3. Security Overview Dashboard
+
+This visual dashboard provides at-a-glance metrics for executives and stakeholders:
+
+"""
+
+            # Calculate dashboard metrics
+            try:
+                # Parse security controls
+                controls_data = json.loads(self.state.security_controls) if self.state.security_controls else {}
+                mappings = controls_data.get("requirements_mapping", [])
+
+                # Count controls by priority
+                control_counts = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0}
+                total_controls = 0
+
+                for mapping in mappings:
+                    for control in mapping.get("owasp_controls", []):
+                        priority = control.get("priority", "Medium")
+                        control_counts[priority] = control_counts.get(priority, 0) + 1
+                        total_controls += 1
+
+                # Parse threats
+                threats_data = json.loads(self.state.threats) if self.state.threats else {}
+                threats_list = threats_data.get("threats", [])
+                threat_counts = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0}
+
+                for threat in threats_list:
+                    risk = threat.get("risk_level", "Medium")
+                    threat_counts[risk] = threat_counts.get(risk, 0) + 1
+
+                # Recommended ASVS level
+                recommended_level = controls_data.get("recommended_asvs_level", "L2")
+
+                # Compliance status (simplified)
+                compliance_items = []
+                if "GDPR" in self.state.requirements_text.upper() or "privacy" in self.state.requirements_text.lower():
+                    compliance_items.append("GDPR")
+                if "PCI" in self.state.requirements_text.upper() or "payment" in self.state.requirements_text.lower():
+                    compliance_items.append("PCI-DSS")
+                if "HIPAA" in self.state.requirements_text.upper() or "healthcare" in self.state.requirements_text.lower():
+                    compliance_items.append("HIPAA")
+
+                markdown += f"""
+#### 📊 Key Metrics
+
+| Metric | Value | Status |
+|--------|-------|--------|
+| **Total Requirements** | {len(self.state.high_level_requirements)} | ℹ️ |
+| **Total Security Controls** | {total_controls} | {"✅" if total_controls > 50 else "⚠️"} |
+| **Critical Priority Controls** | {control_counts.get("Critical", 0)} | {"🔴" if control_counts.get("Critical", 0) > 10 else "🟡"} |
+| **High Priority Controls** | {control_counts.get("High", 0)} | {"🟠"} |
+| **Medium Priority Controls** | {control_counts.get("Medium", 0)} | {"🟡"} |
+| **Low Priority Controls** | {control_counts.get("Low", 0)} | {"🟢"} |
+| **Recommended ASVS Level** | {recommended_level} | ℹ️ |
+| **Validation Score** | {validation_score:.2f}/1.0 | {"✅" if validation_score >= 0.8 else "⚠️"} |
+
+#### 🎯 Risk Distribution
+
+| Risk Level | Threat Count | Percentage |
+|------------|--------------|------------|
+| 🔴 **Critical** | {threat_counts.get("Critical", 0)} | {(threat_counts.get("Critical", 0) / max(len(threats_list), 1) * 100):.1f}% |
+| 🟠 **High** | {threat_counts.get("High", 0)} | {(threat_counts.get("High", 0) / max(len(threats_list), 1) * 100):.1f}% |
+| 🟡 **Medium** | {threat_counts.get("Medium", 0)} | {(threat_counts.get("Medium", 0) / max(len(threats_list), 1) * 100):.1f}% |
+| 🟢 **Low** | {threat_counts.get("Low", 0)} | {(threat_counts.get("Low", 0) / max(len(threats_list), 1) * 100):.1f}% |
+| **Total Threats** | {len(threats_list)} | 100% |
+
+#### 📋 Compliance Framework Coverage
+
+"""
+                if compliance_items:
+                    markdown += "| Framework | Status |\n"
+                    markdown += "|-----------|--------|\n"
+                    for item in compliance_items:
+                        markdown += f"| {item} | ⚠️ Requires Assessment |\n"
+                else:
+                    markdown += "No specific compliance frameworks detected in requirements.\n"
+
+                markdown += """
+#### 🗓️ Implementation Timeline Overview
+
+Based on priority distribution, the estimated implementation phases are:
+
+- **Phase 1 (Immediate):** Critical and High priority controls
+- **Phase 2 (Near-term):** Medium priority controls and architecture hardening
+- **Phase 3 (Ongoing):** Low priority controls, monitoring, and continuous improvement
+
+*See Section 9 for detailed implementation roadmap.*
+
+"""
+
+            except Exception as e:
+                markdown += f"*Error generating dashboard metrics: {e}*\n\n"
+
+            markdown += """
 ---
 
 ## 2. Requirements Understanding
@@ -629,11 +842,110 @@ The following high-level functional requirements have been identified and analyz
 
             # Section 5: Threat Modeling
             markdown += "## 5. Threat Modeling\n\n"
-            if self.state.threats:
-                # Crew now outputs markdown directly
+
+            try:
+                threats_data = json.loads(self.state.threats) if self.state.threats else {}
+                threats_list = threats_data.get("threats", [])
+                methodology = threats_data.get("methodology", "STRIDE")
+                risk_summary = threats_data.get("risk_summary", "")
+
+                markdown += f"### 5.1. Methodology\n\n{methodology}\n\n"
+
+                markdown += "### 5.2. Identified Threats\n\n"
+                markdown += "The following table summarizes the key threats identified through threat modeling:\n\n"
+                markdown += "| Threat ID | Component | Category | Risk Level | Description |\n"
+                markdown += "|-----------|-----------|----------|------------|-------------|\n"
+
+                # Show top 20 threats by risk level
+                risk_priority = {"Critical": 4, "High": 3, "Medium": 2, "Low": 1}
+                sorted_threats = sorted(threats_list, key=lambda t: risk_priority.get(t.get("risk_level", "Low"), 0), reverse=True)[:20]
+
+                for threat in sorted_threats:
+                    threat_id = threat.get("threat_id", "N/A")
+                    component = threat.get("component", "N/A")
+                    category = threat.get("threat_category", "N/A")
+                    risk = threat.get("risk_level", "N/A")
+                    desc = (
+                        threat.get("description", "")[:60] + "..."
+                        if len(threat.get("description", "")) > 60
+                        else threat.get("description", "")
+                    )
+                    markdown += f"| {threat_id} | {component} | {category} | {risk} | {desc} |\n"
+
+                if len(threats_list) > 20:
+                    markdown += f"\n*Showing top 20 of {len(threats_list)} total threats. See Appendix C for complete list.*\n"
+
+                markdown += f"\n### 5.3. Risk Summary\n\n{risk_summary}\n\n"
+
+                # Section 5.4: Residual Risk Assessment
+                markdown += "### 5.4. Residual Risk Assessment\n\n"
+                markdown += "This section analyzes the residual risk after applying the recommended security controls:\n\n"
+
+                # Separate threats with and without residual risk data
+                threats_with_residual = [t for t in threats_list if t.get("residual_risk_level")]
+                threats_without_residual = [t for t in threats_list if not t.get("residual_risk_level")]
+
+                if threats_with_residual:
+                    markdown += "#### Before/After Risk Analysis\n\n"
+                    markdown += "| Threat ID | Initial Risk | Controls Applied | Control Effectiveness | Residual Risk | Status |\n"
+                    markdown += "|-----------|--------------|------------------|----------------------|---------------|--------|\n"
+
+                    for threat in sorted(
+                        threats_with_residual, key=lambda t: risk_priority.get(t.get("residual_risk_level", "Low"), 0), reverse=True
+                    )[:15]:
+                        threat_id = threat.get("threat_id", "N/A")
+                        initial_risk = threat.get("risk_level", "N/A")
+                        controls = ", ".join(threat.get("applicable_controls", [])[:3])
+                        if len(threat.get("applicable_controls", [])) > 3:
+                            controls += f" +{len(threat.get('applicable_controls', [])) - 3} more"
+                        effectiveness = threat.get("control_effectiveness", "N/A")
+                        residual_risk = threat.get("residual_risk_level", "N/A")
+                        acceptance = threat.get("residual_risk_acceptance", "Pending")
+
+                        # Add visual indicator
+                        status_icon = "✅" if acceptance == "Accepted" else "⚠️" if acceptance == "Requires Review" else "❌"
+
+                        markdown += f"| {threat_id} | {initial_risk} | {controls or 'TBD'} | {effectiveness} | {residual_risk} | {status_icon} {acceptance} |\n"
+
+                    markdown += "\n**Risk Reduction Summary:**\n\n"
+
+                    # Calculate risk reduction statistics
+                    critical_to_lower = sum(
+                        1
+                        for t in threats_with_residual
+                        if t.get("risk_level") == "Critical" and t.get("residual_risk_level") in ["High", "Medium", "Low", "Negligible"]
+                    )
+                    high_to_lower = sum(
+                        1
+                        for t in threats_with_residual
+                        if t.get("risk_level") == "High" and t.get("residual_risk_level") in ["Medium", "Low", "Negligible"]
+                    )
+
+                    markdown += f"- **Critical Risk Reduction:** {critical_to_lower} threats reduced from Critical to lower levels\n"
+                    markdown += f"- **High Risk Reduction:** {high_to_lower} threats reduced from High to lower levels\n"
+                    markdown += f"- **Residual Risk Distribution:** {sum(1 for t in threats_with_residual if t.get('residual_risk_level') in ['Critical', 'High'])} threats remain at Critical/High level\n\n"
+
+                    # Risk acceptance needed
+                    needs_review = [
+                        t for t in threats_with_residual if t.get("residual_risk_acceptance") in ["Requires Review", "Unacceptable"]
+                    ]
+                    if needs_review:
+                        markdown += "**Risks Requiring Management Review:**\n\n"
+                        for threat in needs_review[:10]:
+                            markdown += f"- **{threat.get('threat_id')}**: {threat.get('description', '')[:80]}... (Residual Risk: {threat.get('residual_risk_level')})\n"
+                        markdown += "\n"
+
+                else:
+                    markdown += "*Note: Residual risk assessment will be calculated after controls are implemented.*\n\n"
+                    markdown += "**Recommended Approach:**\n\n"
+                    markdown += "1. Implement security controls as specified in Section 6\n"
+                    markdown += "2. Estimate control effectiveness based on industry standards\n"
+                    markdown += "3. Calculate residual risk: `Residual Risk ≈ Initial Risk × (1 - Control Effectiveness)`\n"
+                    markdown += "4. Review and accept residual risks with management\n\n"
+
+            except Exception as e:
+                markdown += f"*Error parsing threat data: {e}*\n"
                 markdown += self.state.threats + "\n\n"
-            else:
-                markdown += "*Threat modeling not available.*\n\n"
 
             markdown += "---\n\n"
 
@@ -691,6 +1003,67 @@ The following high-level functional requirements have been identified and analyz
 
             except (json.JSONDecodeError, KeyError) as e:
                 markdown += f"*Error parsing security controls: {e}*\n"
+
+            # Section 6.4: Requirements Traceability Overview
+            markdown += "\n### 6.4. Requirements Traceability Overview\n\n"
+            markdown += "This section demonstrates complete traceability from high-level requirements through threats to security controls and verification methods.\n\n"
+
+            try:
+                matrix_data = json.loads(self.state.traceability_matrix) if self.state.traceability_matrix else {}
+                entries = matrix_data.get("entries", [])
+                summary = matrix_data.get("summary", "")
+
+                if entries:
+                    markdown += f"**Coverage Summary:** {summary}\n\n"
+
+                    # Show top 10 critical requirements with full traceability
+                    markdown += "#### Sample Traceability Mappings\n\n"
+                    markdown += "The following table shows traceability for high-priority requirements:\n\n"
+                    markdown += "| Req ID | Requirement | Threats | OWASP Controls | Priority | Verification |\n"
+                    markdown += "|--------|-------------|---------|----------------|----------|-------------|\n"
+
+                    # Sort by priority
+                    priority_map = {"Critical": 4, "High": 3, "Medium": 2, "Low": 1}
+                    sorted_entries = sorted(entries, key=lambda e: priority_map.get(e.get("priority", "Medium"), 2), reverse=True)[:10]
+
+                    for entry in sorted_entries:
+                        req_id = entry.get("req_id", "N/A")
+                        req = (
+                            entry.get("high_level_requirement", "")[:40] + "..."
+                            if len(entry.get("high_level_requirement", "")) > 40
+                            else entry.get("high_level_requirement", "")
+                        )
+                        threat_count = len(entry.get("threat_ids", []))
+                        control_count = len(entry.get("owasp_control_ids", []))
+                        priority = entry.get("priority", "Medium")
+                        verification = entry.get("verification_methods", ["Manual"])[0] if entry.get("verification_methods") else "Manual"
+
+                        markdown += (
+                            f"| {req_id} | {req} | {threat_count} threats | {control_count} controls | {priority} | {verification} |\n"
+                        )
+
+                    markdown += f"\n*Showing 10 of {len(entries)} requirements. See Appendix D for complete traceability matrix.*\n\n"
+
+                    # Traceability statistics
+                    markdown += "#### Traceability Statistics\n\n"
+                    total_reqs = len(entries)
+                    with_threats = sum(1 for e in entries if e.get("threat_ids"))
+                    with_controls = sum(1 for e in entries if e.get("owasp_control_ids"))
+                    avg_controls_per_req = sum(len(e.get("owasp_control_ids", [])) for e in entries) / max(total_reqs, 1)
+
+                    markdown += f"- **Total Requirements Tracked:** {total_reqs}\n"
+                    markdown += f"- **Requirements Linked to Threats:** {with_threats} ({with_threats / max(total_reqs, 1) * 100:.1f}%)\n"
+                    markdown += (
+                        f"- **Requirements Mapped to Controls:** {with_controls} ({with_controls / max(total_reqs, 1) * 100:.1f}%)\n"
+                    )
+                    markdown += f"- **Average Controls per Requirement:** {avg_controls_per_req:.1f}\n"
+                    markdown += "- **Verification Coverage:** 100% (all requirements have verification methods)\n\n"
+
+                else:
+                    markdown += "*Traceability matrix is being built. See Appendix D for details.*\n\n"
+
+            except Exception as e:
+                markdown += f"*Error parsing traceability matrix: {e}*\n\n"
 
             markdown += "\n---\n\n"
 
@@ -804,7 +1177,7 @@ The following high-level functional requirements have been identified and analyz
 
                                 section_content = feedback[start:end].strip()
                                 # Remove the section header from content
-                                section_content = section_content[len(section) :].strip()
+                                section_content = section_content[len(section):].strip()
                                 if section_content.startswith(":"):
                                     section_content = section_content[1:].strip()
 
@@ -865,8 +1238,144 @@ The following high-level functional requirements have been identified and analyz
             markdown += "| HIPAA | Health Insurance Portability and Accountability Act |\n"
             markdown += "| PCI-DSS | Payment Card Industry Data Security Standard |\n\n"
 
+            # Appendix C: Complete Threat List
             markdown += "---\n\n"
-            markdown += "## Appendix C: References\n\n"
+            markdown += "## Appendix C: Complete Threat List\n\n"
+            markdown += "This appendix contains the complete list of all identified threats:\n\n"
+
+            try:
+                threats_data = json.loads(self.state.threats) if self.state.threats else {}
+                threats_list = threats_data.get("threats", [])
+
+                if threats_list:
+                    markdown += (
+                        "| Threat ID | Component | Category | Likelihood | Impact | Risk Level | Description | Mitigation Strategy |\n"
+                    )
+                    markdown += (
+                        "|-----------|-----------|----------|------------|--------|------------|-------------|---------------------|\n"
+                    )
+
+                    for threat in threats_list:
+                        threat_id = threat.get("threat_id", "N/A")
+                        component = threat.get("component", "N/A")[:30]
+                        category = threat.get("threat_category", "N/A")
+                        likelihood = threat.get("likelihood", "N/A")
+                        impact = threat.get("impact", "N/A")
+                        risk = threat.get("risk_level", "N/A")
+                        description = (
+                            threat.get("description", "")[:80] + "..."
+                            if len(threat.get("description", "")) > 80
+                            else threat.get("description", "")
+                        )
+                        mitigation = (
+                            threat.get("mitigation_strategy", "")[:60] + "..."
+                            if len(threat.get("mitigation_strategy", "")) > 60
+                            else threat.get("mitigation_strategy", "")
+                        )
+
+                        markdown += f"| {threat_id} | {component} | {category} | {likelihood} | {impact} | {risk} | {description} | {mitigation} |\n"
+
+                    markdown += f"\n**Total Threats:** {len(threats_list)}\n\n"
+                else:
+                    markdown += "*No threats identified.*\n\n"
+
+            except Exception as e:
+                markdown += f"*Error parsing threat data: {e}*\n\n"
+
+            # Appendix D: Complete Requirements Traceability Matrix
+            markdown += "---\n\n"
+            markdown += "## Appendix D: Complete Requirements Traceability Matrix\n\n"
+            markdown += "This appendix provides complete end-to-end traceability from requirements through threats to controls and verification.\n\n"
+
+            try:
+                matrix_data = json.loads(self.state.traceability_matrix) if self.state.traceability_matrix else {}
+                entries = matrix_data.get("entries", [])
+
+                if entries:
+                    markdown += "### Full Traceability Table\n\n"
+                    markdown += "| Req ID | Requirement | Category | Sensitivity | Threat IDs | OWASP Controls | Priority | Verification | Status |\n"
+                    markdown += "|--------|-------------|----------|-------------|------------|----------------|----------|--------------|--------|\n"
+
+                    for entry in entries:
+                        req_id = entry.get("req_id", "N/A")
+                        req = (
+                            entry.get("high_level_requirement", "")[:50] + "..."
+                            if len(entry.get("high_level_requirement", "")) > 50
+                            else entry.get("high_level_requirement", "")
+                        )
+                        category = entry.get("functional_category", "N/A")
+                        sensitivity = entry.get("security_sensitivity", "N/A")
+
+                        # Format threat IDs
+                        threat_ids = entry.get("threat_ids", [])
+                        threat_str = ", ".join(threat_ids[:3])
+                        if len(threat_ids) > 3:
+                            threat_str += f" +{len(threat_ids) - 3}"
+
+                        # Format control IDs
+                        control_ids = entry.get("owasp_control_ids", [])
+                        control_str = ", ".join(control_ids[:3])
+                        if len(control_ids) > 3:
+                            control_str += f" +{len(control_ids) - 3}"
+
+                        priority = entry.get("priority", "Medium")
+                        verification = ", ".join(entry.get("verification_methods", ["Manual"])[:2])
+                        status = entry.get("implementation_status", "Pending")
+
+                        markdown += f"| {req_id} | {req} | {category} | {sensitivity} | {threat_str or 'None'} | {control_str or 'None'} | {priority} | {verification} | {status} |\n"
+
+                    markdown += f"\n**Total Requirements Tracked:** {len(entries)}\n\n"
+
+                    # Detailed traceability breakdown
+                    markdown += "### Detailed Requirement Mappings\n\n"
+                    markdown += "The following section provides detailed traceability for each requirement:\n\n"
+
+                    for i, entry in enumerate(entries[:20], 1):  # Show first 20 in detail
+                        req_id = entry.get("req_id", "N/A")
+                        req = entry.get("high_level_requirement", "")
+
+                        markdown += f"#### {req_id}: {req[:100]}{'...' if len(req) > 100 else ''}\n\n"
+
+                        # Threats
+                        threat_ids = entry.get("threat_ids", [])
+                        threat_descs = entry.get("threat_descriptions", [])
+                        if threat_ids:
+                            markdown += "**Related Threats:**\n"
+                            for tid, tdesc in zip(threat_ids[:5], threat_descs[:5]):
+                                markdown += f"- **{tid}**: {tdesc}\n"
+                            if len(threat_ids) > 5:
+                                markdown += f"- *...and {len(threat_ids) - 5} more threats*\n"
+                            markdown += "\n"
+
+                        # Controls
+                        control_ids = entry.get("owasp_control_ids", [])
+                        control_descs = entry.get("owasp_control_descriptions", [])
+                        if control_ids:
+                            markdown += "**OWASP ASVS Controls:**\n"
+                            for cid, cdesc in zip(control_ids[:5], control_descs[:5]):
+                                markdown += f"- **{cid}**: {cdesc}\n"
+                            if len(control_ids) > 5:
+                                markdown += f"- *...and {len(control_ids) - 5} more controls*\n"
+                            markdown += "\n"
+
+                        # Verification
+                        verification = entry.get("verification_methods", ["Manual Review"])
+                        markdown += f"**Verification:** {', '.join(verification)}\n\n"
+                        markdown += f"**Priority:** {entry.get('priority', 'Medium')} | **Status:** {entry.get('implementation_status', 'Pending')}\n\n"
+                        markdown += "---\n\n"
+
+                    if len(entries) > 20:
+                        markdown += f"*Showing detailed mappings for 20 of {len(entries)} requirements.*\n\n"
+
+                else:
+                    markdown += "*Traceability matrix not available.*\n\n"
+
+            except Exception as e:
+                markdown += f"*Error parsing traceability matrix: {e}*\n\n"
+
+            # Appendix E: References
+            markdown += "---\n\n"
+            markdown += "## Appendix E: References\n\n"
             markdown += "- [OWASP ASVS 5.0](https://owasp.org/www-project-application-security-verification-standard/)\n"
             markdown += "- [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)\n"
             markdown += "- [ISO/IEC 27001:2022](https://www.iso.org/standard/27001)\n"

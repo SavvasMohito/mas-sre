@@ -106,6 +106,14 @@ class Threat(BaseModel):
     impact: str = Field(..., description="Impact (High, Medium, Low)")
     risk_level: str = Field(..., description="Overall risk level (Critical, High, Medium, Low)")
     mitigation_strategy: str = Field(..., description="Recommended mitigation approach")
+    applicable_controls: Optional[List[str]] = Field(default=None, description="OWASP control IDs that mitigate this threat")
+    control_effectiveness: Optional[str] = Field(
+        default=None, description="Effectiveness of controls (High=80-100%, Medium=50-79%, Low=20-49%)"
+    )
+    residual_risk_level: Optional[str] = Field(
+        default=None, description="Risk level after controls applied (Critical, High, Medium, Low, Negligible)"
+    )
+    residual_risk_acceptance: Optional[str] = Field(default=None, description="Acceptance status (Accepted, Requires Review, Unacceptable)")
 
 
 class ThreatModelingOutput(BaseModel):
@@ -249,6 +257,34 @@ class VerificationTestingOutput(BaseModel):
     compliance_verification: str = Field(..., description="How compliance will be verified")
     continuous_monitoring: str = Field(..., description="Continuous monitoring and improvement strategy")
     kpis: List[str] = Field(default=[], description="Key performance indicators for security")
+
+
+# ============================================================================
+# Traceability Matrix Models
+# ============================================================================
+
+
+class TraceabilityEntry(BaseModel):
+    """A single row in the traceability matrix."""
+
+    req_id: str = Field(..., description="Requirement identifier (e.g., REQ-001)")
+    high_level_requirement: str = Field(..., description="High-level requirement text")
+    functional_category: Optional[str] = Field(default=None, description="Functional category")
+    security_sensitivity: Optional[str] = Field(default=None, description="Security sensitivity level")
+    threat_ids: List[str] = Field(default_factory=list, description="Related threat IDs")
+    threat_descriptions: List[str] = Field(default_factory=list, description="Brief threat descriptions")
+    owasp_control_ids: List[str] = Field(default_factory=list, description="OWASP ASVS control IDs")
+    owasp_control_descriptions: List[str] = Field(default_factory=list, description="Brief control descriptions")
+    priority: str = Field(default="Medium", description="Implementation priority")
+    verification_methods: List[str] = Field(default_factory=list, description="Verification methods")
+    implementation_status: str = Field(default="Pending", description="Implementation status")
+
+
+class TraceabilityMatrix(BaseModel):
+    """Complete traceability matrix linking requirements → threats → controls → verification."""
+
+    entries: List[TraceabilityEntry] = Field(..., description="All traceability entries")
+    summary: str = Field(..., description="Summary of coverage and gaps")
 
 
 # ============================================================================

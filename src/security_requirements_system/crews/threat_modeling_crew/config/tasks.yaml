@@ -47,40 +47,41 @@ perform_threat_modeling:
     
     6. Output as clean, well-formatted MARKDOWN matching the structure below.
   expected_output: >
-    A comprehensive threat modeling analysis in MARKDOWN format with the following structure:
+    A ThreatModelingOutput Pydantic model with the following structure:
     
-    IMPORTANT: Output the markdown content directly. DO NOT wrap your output in ```markdown code blocks.
+    {
+      "methodology": "STRIDE (or other methodology used)",
+      "threats": [
+        {
+          "threat_id": "THR-001",
+          "component": "Component or requirement this threat applies to",
+          "threat_category": "STRIDE category (e.g., Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege)",
+          "description": "Detailed description of the threat scenario",
+          "likelihood": "High/Medium/Low - based on attack complexity and exposure",
+          "impact": "High/Medium/Low - based on potential damage",
+          "risk_level": "Critical/High/Medium/Low - based on likelihood × impact",
+          "mitigation_strategy": "Specific mitigation recommendations",
+          "applicable_controls": ["V2.1.1", "V3.2.3"] // Optional: OWASP control IDs if known,
+          "control_effectiveness": "High/Medium/Low" // Optional: estimate how effective controls are,
+          "residual_risk_level": "Critical/High/Medium/Low/Negligible" // Optional: risk after controls,
+          "residual_risk_acceptance": "Accepted/Requires Review/Unacceptable" // Optional: acceptance status
+        }
+      ],
+      "risk_summary": "Comprehensive paragraph highlighting most critical threats, overall risk posture, key attack vectors, and priority areas for security controls"
+    }
     
-    ### 5.1. Methodology
-    
-    State the methodology used (e.g., "STRIDE")
-    
-    ### 5.2. Identified Threats
-    
-    A markdown table with columns: Threat ID | Component | Category | Risk Level | Description
-    
-    IMPORTANT: Truncate descriptions to ~50 characters in the table. List up to 20 most critical threats.
-    
-    Example:
-    | Threat ID | Component | Category | Risk Level | Description |
-    |-----------|-----------|----------|------------|-------------|
-    | THR-001 | User Authentication | Spoofing | Critical | An attacker could create fake login credentials to... |
-    | THR-002 | Backend API | Tampering | High | API requests could be intercepted and modified to... |
-    | THR-003 | Database | Information Disclosure | Critical | SQL injection vulnerabilities could expose sensitiv... |
-    | THR-004 | Payment Gateway | Spoofing | High | Weak certificate validation could allow man-in-the... |
-    | THR-005 | Admin Dashboard | Elevation of Privilege | High | Inadequate access controls could allow regular use... |
-    
-    If more than 20 threats exist, add: "*Showing 20 of X total threats. See appendix for complete list.*"
-    
-    ### 5.3. Risk Summary
-    
-    A comprehensive paragraph highlighting:
-    - The most critical threats requiring immediate attention
-    - Overall risk posture
-    - Key attack vectors and entry points
-    - Prioritized areas for security controls
-    
-    Example:
-    "The most critical threats requiring immediate attention are related to SQL injection in the database and authentication spoofing on the frontend. Overall, the risk posture indicates a high likelihood of information disclosure and tampering attacks, particularly in the backend and database components. Key attack vectors include weak input validation, improper logging, and third-party integrations. Prioritized areas for security controls should focus on strengthening data input sanitization, enhancing logging mechanisms, and ensuring the integrity of payment processing."
+    CRITICAL INSTRUCTIONS:
+    - Identify 20-40 threats covering all major components and requirements
+    - For residual risk fields: If you have information about applicable controls from the context, 
+      estimate their effectiveness and calculate residual risk. Otherwise, leave these fields null.
+    - Risk calculation: 
+      * High Likelihood + High Impact = Critical
+      * High Likelihood + Medium Impact OR Medium Likelihood + High Impact = High
+      * Medium Likelihood + Medium Impact OR High/Medium Likelihood + Low Impact = Medium
+      * Low Likelihood + Low Impact = Low
+    - Residual risk calculation:
+      * High Control Effectiveness (80-100% reduction): typically reduces risk 2 levels
+      * Medium Control Effectiveness (50-79% reduction): typically reduces risk 1 level
+      * Low Control Effectiveness (20-49% reduction): typically reduces risk 0-1 levels
   agent: threat_modeling_expert
 
