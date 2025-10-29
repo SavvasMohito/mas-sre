@@ -805,7 +805,7 @@ format:
     fig-width: 8
     fig-height: 5
     fig-dpi: 300
-    number-sections: true
+    number-sections: false
     smooth-scroll: true
   pdf:
     pdf-engine: lualatex
@@ -830,8 +830,6 @@ execute:
   freeze: auto
 jupyter: python3
 ---
-
-# Security Requirements Analysis Report
 
 *Generated: {timestamp}*
 *Report Version: 2.0 - Comprehensive Security Analysis*
