@@ -980,24 +980,49 @@ jupyter: python3
 
 ## 1. Executive Summary
 
+This section provides a high-level overview of the security requirements analysis, presenting key findings, validation results, and an interactive dashboard for stakeholders and decision-makers. The executive summary enables rapid comprehension of the security posture, critical risks, control coverage, and compliance status without requiring detailed technical knowledge.
+
 ### 1.1. Purpose and Scope
 
-**Purpose:** This document presents a comprehensive security requirements analysis for the proposed application, mapping high-level business requirements to specific, actionable security controls based on industry standards (OWASP ASVS, NIST CSF, ISO 27001).
+**Purpose**
 
-**Scope:** This analysis covers all functional requirements provided, including stakeholder analysis, threat modeling, security control mapping, compliance requirements, architectural security recommendations, implementation planning, and verification strategies.
+This document presents a comprehensive security requirements analysis for the proposed application, systematically mapping high-level business requirements to specific, actionable security controls aligned with industry standards including OWASP Application Security Verification Standard (ASVS), NIST Cybersecurity Framework, and ISO 27001. The analysis provides a complete security requirements specification that guides secure system design, implementation, and verification.
+
+**Scope**
+
+This analysis encompasses all functional requirements provided, delivering comprehensive coverage across multiple security domains:
+
+- **Requirements Analysis**: Systematic decomposition and security-relevant extraction from business requirements
+- **Stakeholder Analysis**: Identification of stakeholders, trust boundaries, and security responsibilities
+- **Threat Modeling**: Systematic identification and assessment of security threats using STRIDE methodology
+- **Security Control Mapping**: Mapping requirements to OWASP ASVS controls with detailed implementation guidance
+- **Compliance Requirements**: Identification of regulatory and legal compliance obligations
+- **Architectural Security**: Security architecture recommendations and design patterns
+- **Implementation Planning**: Prioritized, phased implementation roadmap
+- **Verification Strategies**: Testing and validation approaches for security controls
+
+The analysis provides both strategic guidance for security planning and tactical details for implementation teams.
 
 ### 1.2. Key Findings
+
+This section summarizes the most critical results from the security requirements analysis, providing executives and stakeholders with immediate insight into the security posture and validation status.
+
+**Analysis Metrics**
 
 - **Validation Score**: {validation_score:.2f}/1.0
 - **Validation Status**: {"✅ Passed" if validation_passed else "❌ Needs Review"}
 - **Analysis Iterations**: {iterations}
 - **Requirements Analyzed**: {len(self.state.high_level_requirements)}
 
-**Summary:** {self.state.application_summary}
+**Application Summary**
+
+{self.state.application_summary}
+
+The validation score reflects the quality and completeness of the security requirements across five dimensions: completeness, consistency, correctness, implementability, and alignment with business objectives. A score of 0.8 or higher indicates that the requirements are ready for implementation, while scores below this threshold may require refinement before proceeding.
 
 ### 1.3. Security Overview Dashboard
 
-This interactive dashboard provides at-a-glance metrics for executives and stakeholders. For best experience, render this document with Quarto to enable interactive visualizations.
+This interactive dashboard provides executive-level visualization of key security metrics and trends, enabling rapid assessment of the security posture through intuitive charts and data visualizations. The dashboard presents critical information across multiple dimensions: risk distribution, security control coverage, compliance status, implementation progress, and data quality metrics. For optimal viewing experience, render this document with Quarto to enable interactive chart functionality, allowing stakeholders to explore data dynamically and drill down into specific areas of interest.
 
 ::: {{.panel-tabset}}
 
@@ -1077,8 +1102,19 @@ except Exception as e:
 #| output: asis
 #| warning: false
 top_risks = threats.nlargest(5, ["likelihood", "impact"])
-for idx, risk in top_risks.iterrows():
-    print(f"- **{{risk['id']}}** ({{risk['risk_level']}}): {{risk['description'][:100]}}...")
+for idx, risk_row in top_risks.iterrows():
+    risk_id = risk_row['id']
+    risk_level = risk_row['risk_level']
+    component = risk_row.get('component', 'Unknown Component')
+    category = risk_row.get('category', 'N/A')
+    likelihood = risk_row.get('likelihood', 'N/A')
+    impact = risk_row.get('impact', 'N/A')
+    description = risk_row['description']
+    print(f"**{{risk_id}}** ({{risk_level}}) - {{component}}")
+    print(f"- **Category:** {{category}}")
+    print(f"- **Likelihood:** {{likelihood}} | **Impact:** {{impact}}")
+    print(f"- **Description:** {{description}}")
+    print("")
 ```
 
 #### Controls
@@ -1420,9 +1456,11 @@ print(f"**Data Quality:** {{"✅ Excellent" if val_score >= 0.8 else "⚠️ Goo
 
 ## 2. Requirements Understanding
 
+This section presents a comprehensive analysis of the functional requirements, extracting security-relevant information and establishing the foundation for the security requirements specification. Understanding the functional requirements is essential for identifying security implications, data sensitivity, trust boundaries, and security-critical components. This analysis transforms business requirements into security-aware specifications that inform threat modeling, control selection, and compliance assessment.
+
 ### 2.1. High-Level Requirements Analysis
 
-The following high-level functional requirements have been identified and analyzed:
+The following high-level functional requirements have been identified and analyzed for security implications:
 
 """
             # Add high-level requirements list
@@ -1468,6 +1506,16 @@ The following high-level functional requirements have been identified and analyz
 
             # Section 3: Stakeholder Analysis
             markdown += "## 3. Stakeholder Analysis\n\n"
+            markdown += "This section identifies and analyzes all stakeholders involved in or affected by the system, including users, "
+            markdown += "administrators, external partners, and regulatory bodies. Stakeholder analysis establishes trust boundaries, "
+            markdown += (
+                "defines security responsibilities, and identifies potential security concerns from different stakeholder perspectives. "
+            )
+            markdown += (
+                "Understanding stakeholder relationships and trust boundaries is critical for designing appropriate access controls, "
+            )
+            markdown += "authentication mechanisms, and data protection measures.\n\n"
+
             if self.state.stakeholders:
                 # Crew now outputs markdown directly
                 markdown += self.state.stakeholders + "\n\n"
@@ -1541,97 +1589,108 @@ The following high-level functional requirements have been identified and analyz
                     markdown += "identify and categorize security threats across the system architecture. "
                     markdown += "Each threat is evaluated based on likelihood and impact to determine overall risk level.\n\n"
 
-                markdown += "### 5.2. Identified Threats\n\n"
-                markdown += "The following table summarizes the key threats identified through threat modeling:\n\n"
-                markdown += "| Threat ID | Component | Category | Risk Level | Description |\n"
-                markdown += "|-----------|-----------|----------|------------|-------------|\n"
+                # Merged Section 5.2: Threat Analysis and Risk Assessment
+                markdown += "### 5.2. Threat Analysis and Risk Assessment\n\n"
 
-                # Show top 20 threats by risk level
                 risk_priority = {"Critical": 4, "High": 3, "Medium": 2, "Low": 1}
-                sorted_threats = sorted(threats_list, key=lambda t: risk_priority.get(t.get("risk_level", "Low"), 0), reverse=True)[:20]
+                sorted_threats = sorted(threats_list, key=lambda t: risk_priority.get(t.get("risk_level", "Low"), 0), reverse=True)
+
+                # 5.2.1: Threat Overview (Quick Reference Table)
+                markdown += "#### 5.2.1. Threat Overview\n\n"
+                markdown += "The following table provides a quick reference of all identified threats. Detailed analysis "
+                markdown += "including descriptions, mitigation strategies, and residual risk assessment (where available) "
+                markdown += "is provided in the section below.\n\n"
+                markdown += "| Threat ID | Component | Category | Risk Level | Likelihood | Impact |\n"
+                markdown += "|-----------|-----------|----------|------------|-----------|--------|\n"
 
                 for threat in sorted_threats:
                     threat_id = threat.get("threat_id", "N/A")
                     component = threat.get("component", "N/A")
                     category = threat.get("threat_category", "N/A")
                     risk = threat.get("risk_level", "N/A")
-                    desc = (
-                        threat.get("description", "")[:60] + "..."
-                        if len(threat.get("description", "")) > 60
-                        else threat.get("description", "")
-                    )
-                    markdown += f"| {threat_id} | {component} | {category} | {risk} | {desc} |\n"
+                    likelihood = threat.get("likelihood", "N/A")
+                    impact = threat.get("impact", "N/A")
+                    markdown += f"| {threat_id} | {component} | {category} | {risk} | {likelihood} | {impact} |\n"
 
-                if len(threats_list) > 20:
-                    markdown += f"\n*Showing top 20 of {len(threats_list)} total threats. See Appendix C for complete list.*\n"
+                markdown += f"\n**Total Threats Identified:** {len(threats_list)}\n\n"
 
-                markdown += f"\n### 5.3. Risk Summary\n\n{risk_summary}\n\n"
+                # 5.2.2: Detailed Threat Analysis (Combined descriptions and residual risk)
+                markdown += "#### 5.2.2. Detailed Threat Analysis\n\n"
+                markdown += "This section provides comprehensive analysis of each identified threat, including descriptions, "
+                markdown += "mitigation strategies, and residual risk assessment (where controls have been evaluated). "
+                markdown += "Threats are organized by risk level for prioritized review.\n\n"
 
-                # Section 5.4: Residual Risk Assessment
-                markdown += "### 5.4. Residual Risk Assessment\n\n"
-                markdown += "This section analyzes the residual risk after applying the recommended security controls:\n\n"
+                # Group threats by risk level
+                threats_by_risk = {}
+                for threat in sorted_threats:
+                    risk = threat.get("risk_level", "Low")
+                    if risk not in threats_by_risk:
+                        threats_by_risk[risk] = []
+                    threats_by_risk[risk].append(threat)
 
-                # Separate threats with and without residual risk data
+                # Calculate risk reduction statistics for summary
                 threats_with_residual = [t for t in threats_list if t.get("residual_risk_level")]
-                threats_without_residual = [t for t in threats_list if not t.get("residual_risk_level")]
+                critical_to_lower = sum(
+                    1
+                    for t in threats_with_residual
+                    if t.get("risk_level") == "Critical" and t.get("residual_risk_level") in ["High", "Medium", "Low", "Negligible"]
+                )
+                high_to_lower = sum(
+                    1
+                    for t in threats_with_residual
+                    if t.get("risk_level") == "High" and t.get("residual_risk_level") in ["Medium", "Low", "Negligible"]
+                )
 
+                # Display threats by risk level (Critical, High, Medium, Low)
+                for risk_level in ["Critical", "High", "Medium", "Low"]:
+                    if risk_level in threats_by_risk:
+                        markdown += f"##### {risk_level} Risk Threats\n\n"
+                        for threat in threats_by_risk[risk_level]:
+                            threat_id = threat.get("threat_id", "N/A")
+                            component = threat.get("component", "N/A")
+                            category = threat.get("threat_category", "N/A")
+                            likelihood = threat.get("likelihood", "N/A")
+                            impact = threat.get("impact", "N/A")
+                            description = threat.get("description", "No description provided.")
+                            mitigation = threat.get("mitigation_strategy", "")
+                            initial_risk = threat.get("risk_level", "N/A")
+
+                            markdown += f"**{threat_id}** - {component}\n\n"
+                            markdown += f"- **Category:** {category}\n"
+                            markdown += f"- **Likelihood:** {likelihood} | **Impact:** {impact}\n"
+                            markdown += f"- **Initial Risk Level:** {initial_risk}\n"
+                            markdown += f"- **Description:** {description}\n"
+                            if mitigation:
+                                markdown += f"- **Mitigation Strategy:** {mitigation}\n"
+
+                            # Add residual risk information if available
+                            if threat.get("residual_risk_level"):
+                                controls = threat.get("applicable_controls", [])
+                                controls_str = ", ".join(controls) if controls else "TBD"
+                                effectiveness = threat.get("control_effectiveness", "N/A")
+                                residual_risk = threat.get("residual_risk_level", "N/A")
+                                acceptance = threat.get("residual_risk_acceptance", "Pending")
+                                status_icon = "✅" if acceptance == "Accepted" else "⚠️" if acceptance == "Requires Review" else "❌"
+
+                                markdown += f"- **Controls Applied:** {controls_str}\n"
+                                markdown += f"- **Control Effectiveness:** {effectiveness}\n"
+                                markdown += f"- **Residual Risk Level:** {residual_risk}\n"
+                                markdown += f"- **Status:** {status_icon} {acceptance}\n"
+
+                            markdown += "\n"
+
+                # Add risk reduction summary if we have residual risk data
                 if threats_with_residual:
-                    markdown += "#### Before/After Risk Analysis\n\n"
-                    markdown += "| Threat ID | Initial Risk | Controls Applied | Control Effectiveness | Residual Risk | Status |\n"
-                    markdown += "|-----------|--------------|------------------|----------------------|---------------|--------|\n"
-
-                    for threat in sorted(
-                        threats_with_residual, key=lambda t: risk_priority.get(t.get("residual_risk_level", "Low"), 0), reverse=True
-                    )[:15]:
-                        threat_id = threat.get("threat_id", "N/A")
-                        initial_risk = threat.get("risk_level", "N/A")
-                        controls = ", ".join(threat.get("applicable_controls", [])[:3])
-                        if len(threat.get("applicable_controls", [])) > 3:
-                            controls += f" +{len(threat.get('applicable_controls', [])) - 3} more"
-                        effectiveness = threat.get("control_effectiveness", "N/A")
-                        residual_risk = threat.get("residual_risk_level", "N/A")
-                        acceptance = threat.get("residual_risk_acceptance", "Pending")
-
-                        # Add visual indicator
-                        status_icon = "✅" if acceptance == "Accepted" else "⚠️" if acceptance == "Requires Review" else "❌"
-
-                        markdown += f"| {threat_id} | {initial_risk} | {controls or 'TBD'} | {effectiveness} | {residual_risk} | {status_icon} {acceptance} |\n"
-
-                    markdown += "\n**Risk Reduction Summary:**\n\n"
-
-                    # Calculate risk reduction statistics
-                    critical_to_lower = sum(
-                        1
-                        for t in threats_with_residual
-                        if t.get("risk_level") == "Critical" and t.get("residual_risk_level") in ["High", "Medium", "Low", "Negligible"]
-                    )
-                    high_to_lower = sum(
-                        1
-                        for t in threats_with_residual
-                        if t.get("risk_level") == "High" and t.get("residual_risk_level") in ["Medium", "Low", "Negligible"]
-                    )
-
+                    markdown += "**Risk Reduction Summary:**\n\n"
                     markdown += f"- **Critical Risk Reduction:** {critical_to_lower} threats reduced from Critical to lower levels\n"
                     markdown += f"- **High Risk Reduction:** {high_to_lower} threats reduced from High to lower levels\n"
                     markdown += f"- **Residual Risk Distribution:** {sum(1 for t in threats_with_residual if t.get('residual_risk_level') in ['Critical', 'High'])} threats remain at Critical/High level\n\n"
-
-                    # Risk acceptance needed
-                    needs_review = [
-                        t for t in threats_with_residual if t.get("residual_risk_acceptance") in ["Requires Review", "Unacceptable"]
-                    ]
-                    if needs_review:
-                        markdown += "**Risks Requiring Management Review:**\n\n"
-                        for threat in needs_review[:10]:
-                            markdown += f"- **{threat.get('threat_id')}**: {threat.get('description', '')[:80]}... (Residual Risk: {threat.get('residual_risk_level')})\n"
-                        markdown += "\n"
-
                 else:
-                    markdown += "*Note: Residual risk assessment will be calculated after controls are implemented.*\n\n"
-                    markdown += "**Recommended Approach:**\n\n"
-                    markdown += "1. Implement security controls as specified in Section 6\n"
-                    markdown += "2. Estimate control effectiveness based on industry standards\n"
-                    markdown += "3. Calculate residual risk: `Residual Risk ≈ Initial Risk × (1 - Control Effectiveness)`\n"
-                    markdown += "4. Review and accept residual risks with management\n\n"
+                    markdown += "*Note: Residual risk assessment will be calculated after controls are implemented. "
+                    markdown += "Once security controls are implemented, this section will show the effectiveness of controls "
+                    markdown += "and the resulting residual risk levels.*\n\n"
+
+                markdown += f"\n### 5.3. Risk Summary\n\n{risk_summary}\n\n"
 
             except Exception as e:
                 markdown += f"*Error parsing threat data: {e}*\n"
@@ -1714,7 +1773,8 @@ The following high-level functional requirements have been identified and analyz
                     markdown += "All security controls referenced in this document align with this recommended compliance level.\n\n"
 
                 markdown += "### 6.2. Requirements Mapping\n\n"
-                markdown += "The following table maps each high-level requirement to specific OWASP ASVS controls:\n\n"
+                markdown += "This section maps each high-level requirement to specific OWASP ASVS controls with detailed "
+                markdown += "descriptions, relevance explanations, and integration guidance.\n\n"
 
                 mappings = security_controls_data.get("requirements_mapping", [])
 
@@ -1732,21 +1792,15 @@ The following high-level functional requirements have been identified and analyz
                         markdown += "*No specific OWASP controls mapped.*\n"
                         continue
 
-                    markdown += "| Control ID | Level | Priority | Requirement |\n"
-                    markdown += "|------------|-------|----------|-------------|\n"
-                    for control in controls:
-                        markdown += f"| {control.get('req_id', 'N/A')} | {control.get('level', 'N/A')} | {control.get('priority', 'Medium')} | {control.get('requirement', 'N/A')[:60]}... |\n"
-
-                    # Add detailed control information
+                    # Remove summary table - go directly to detailed control information
                     for j, control in enumerate(controls, 1):
-                        markdown += f"\n##### Control {control.get('req_id', 'N/A')}\n\n"
+                        markdown += f"##### Control {control.get('req_id', 'N/A')}\n\n"
                         markdown += f"**Requirement:** {control.get('requirement', 'N/A')}\n\n"
-                        markdown += f"**Chapter/Section:** {control.get('chapter', 'N/A')} / {control.get('section', 'N/A')}\n\n"
-                        markdown += f"**Level:** {control.get('level', 'N/A')} | **Priority:** {control.get('priority', 'Medium')}\n\n"
                         markdown += f"**Relevance:**\n{control.get('relevance', 'No relevance explanation provided.')}\n\n"
                         markdown += f"**Integration Tips:**\n{control.get('integration_tips', 'No integration tips provided.')}\n\n"
                         if control.get("verification_method"):
                             markdown += f"**Verification Method:** {control.get('verification_method')}\n\n"
+                        markdown += f"**Level:** {control.get('level', 'N/A')} | **Priority:** {control.get('priority', 'Medium')}\n\n"
 
                 # Add cross-functional controls
                 if security_controls_data.get("cross_functional_controls"):
@@ -2075,39 +2129,46 @@ The following high-level functional requirements have been identified and analyz
             # Appendix C: Complete Threat List
             markdown += "---\n\n"
             markdown += "## Appendix C: Complete Threat List\n\n"
-            markdown += "This appendix contains the complete list of all identified threats:\n\n"
+            markdown += "This appendix contains the complete list of all identified threats with full descriptions and "
+            markdown += "mitigation strategies. Threats are organized by risk level for easy reference.\n\n"
 
             try:
                 threats_data = json.loads(self.state.threats) if self.state.threats else {}
                 threats_list = threats_data.get("threats", [])
 
                 if threats_list:
-                    markdown += (
-                        "| Threat ID | Component | Category | Likelihood | Impact | Risk Level | Description | Mitigation Strategy |\n"
-                    )
-                    markdown += (
-                        "|-----------|-----------|----------|------------|--------|------------|-------------|---------------------|\n"
-                    )
+                    risk_priority = {"Critical": 4, "High": 3, "Medium": 2, "Low": 1}
+                    sorted_threats = sorted(threats_list, key=lambda t: risk_priority.get(t.get("risk_level", "Low"), 0), reverse=True)
 
-                    for threat in threats_list:
-                        threat_id = threat.get("threat_id", "N/A")
-                        component = threat.get("component", "N/A")[:30]
-                        category = threat.get("threat_category", "N/A")
-                        likelihood = threat.get("likelihood", "N/A")
-                        impact = threat.get("impact", "N/A")
-                        risk = threat.get("risk_level", "N/A")
-                        description = (
-                            threat.get("description", "")[:80] + "..."
-                            if len(threat.get("description", "")) > 80
-                            else threat.get("description", "")
-                        )
-                        mitigation = (
-                            threat.get("mitigation_strategy", "")[:60] + "..."
-                            if len(threat.get("mitigation_strategy", "")) > 60
-                            else threat.get("mitigation_strategy", "")
-                        )
+                    # Group threats by risk level
+                    threats_by_risk = {}
+                    for threat in sorted_threats:
+                        risk = threat.get("risk_level", "Low")
+                        if risk not in threats_by_risk:
+                            threats_by_risk[risk] = []
+                        threats_by_risk[risk].append(threat)
 
-                        markdown += f"| {threat_id} | {component} | {category} | {likelihood} | {impact} | {risk} | {description} | {mitigation} |\n"
+                    # Display threats by risk level (Critical, High, Medium, Low)
+                    for risk_level in ["Critical", "High", "Medium", "Low"]:
+                        if risk_level in threats_by_risk:
+                            markdown += f"### {risk_level} Risk Threats\n\n"
+                            for threat in threats_by_risk[risk_level]:
+                                threat_id = threat.get("threat_id", "N/A")
+                                component = threat.get("component", "N/A")
+                                category = threat.get("threat_category", "N/A")
+                                likelihood = threat.get("likelihood", "N/A")
+                                impact = threat.get("impact", "N/A")
+                                description = threat.get("description", "No description provided.")
+                                mitigation = threat.get("mitigation_strategy", "")
+
+                                markdown += f"**{threat_id}** - {component}\n\n"
+                                markdown += f"- **Category:** {category}\n"
+                                markdown += f"- **Likelihood:** {likelihood} | **Impact:** {impact}\n"
+                                markdown += f"- **Risk Level:** {risk_level}\n"
+                                markdown += f"- **Description:** {description}\n"
+                                if mitigation:
+                                    markdown += f"- **Mitigation Strategy:** {mitigation}\n"
+                                markdown += "\n"
 
                     markdown += f"\n**Total Threats:** {len(threats_list)}\n\n"
                 else:
