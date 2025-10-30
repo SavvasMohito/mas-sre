@@ -919,7 +919,15 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
             # Relative path to artifacts for Quarto execution
-            rel_artifacts_path = str(artifacts_dir.relative_to(output_path.parent))
+            # Ensure both paths are absolute for relative_to() to work
+            output_path_abs = output_path.resolve() if not output_path.is_absolute() else output_path
+            artifacts_dir_abs = artifacts_dir.resolve() if not artifacts_dir.is_absolute() else artifacts_dir
+
+            try:
+                rel_artifacts_path = str(artifacts_dir_abs.relative_to(output_path_abs.parent))
+            except ValueError:
+                # If paths don't share a common parent, use absolute path
+                rel_artifacts_path = str(artifacts_dir_abs)
 
             # Start building the comprehensive report with Quarto YAML header
             markdown = f"""---
@@ -990,8 +998,6 @@ jupyter: python3
 ### 1.3. Security Overview Dashboard
 
 This interactive dashboard provides at-a-glance metrics for executives and stakeholders. For best experience, render this document with Quarto to enable interactive visualizations.
-
-**Dashboard Artifacts Location:** `{rel_artifacts_path}/`
 
 ::: {{.panel-tabset}}
 
@@ -1068,10 +1074,11 @@ except Exception as e:
 
 ```{{python}}
 #| echo: false
+#| output: asis
 #| warning: false
 top_risks = threats.nlargest(5, ["likelihood", "impact"])
 for idx, risk in top_risks.iterrows():
-    print(f"- **{{risk['id']}}** ({{risk['risk_level']}}): {{risk['description'][:100]}}...")
+    print(f"- **{{risk['id']}}** ({{risk['risk_level']}}): {{risk['description']}}...")
 ```
 
 #### Controls
@@ -1088,11 +1095,15 @@ try:
     dist = asvs.groupby("v_category").size().reset_index(name="controls")
     dist = dist.sort_values("v_category")
     
+    # Add percentage for better context
+    total = dist["controls"].sum()
+    dist["percentage"] = (dist["controls"] / total * 100).round(1)
+    
     fig_asvs = px.bar(
         dist, 
         x="v_category", 
         y="controls", 
-        text="controls",
+        text=[f"{{c}}<br>({{p}}%)" for c, p in zip(dist["controls"], dist["percentage"])],
         title="ASVS Controls by Verification Category",
         labels={{"v_category": "ASVS Category", "controls": "Control Count"}},
         color="controls",
@@ -1146,14 +1157,21 @@ except Exception as e:
 
 ```{{python}}
 #| echo: false
+#| output: asis
 #| warning: false
 total_controls = len(asvs)
 total_reqs = len(coverage)
 req_coverage = (coverage["has_asvs"].mean() * 100) if not coverage.empty else 0
 verif_coverage = (coverage["tests"].gt(0).mean() * 100) if not coverage.empty else 0
 
+# Calculate additional metrics
+avg_controls_per_req = (total_controls / total_reqs) if total_reqs > 0 else 0
+critical_controls = len(asvs[asvs["priority"] == "Critical"]) if "priority" in asvs.columns else 0
+
 print(f"- **Total ASVS Controls Mapped:** {{total_controls}}")
 print(f"- **Requirements with ASVS Mapping:** {{req_coverage:.1f}}% ({{coverage['has_asvs'].sum()}}/{{total_reqs}})")
+print(f"- **Average Controls per Requirement:** {{avg_controls_per_req:.1f}}")
+print(f"- **Critical Controls:** {{critical_controls}} ({{critical_controls/total_controls*100:.1f}}% of total)")
 print(f"- **Requirements with Verification:** {{verif_coverage:.1f}}% ({{coverage['tests'].gt(0).sum()}}/{{total_reqs}})")
 print(f"- **Recommended ASVS Level:** L2 (Standard)")
 ```
@@ -1162,11 +1180,18 @@ print(f"- **Recommended ASVS Level:** L2 (Standard)")
 
 ```{{python}}
 #| label: fig-compliance-rag
-#| fig-cap: "Compliance status by framework (Red-Amber-Green rating)."
+#| fig-cap: "OWASP ASVS compliance status (Red-Amber-Green rating). Note: Only frameworks with mapped controls are shown."
 #| echo: false
 #| warning: false
 try:
     import plotly.express as px
+    
+    # Filter to only show OWASP ASVS (since we only have ASVS controls mapped)
+    comp_filtered = compliance[compliance["framework"].str.contains("ASVS", case=False, na=False)]
+    
+    if comp_filtered.empty:
+        # Fallback to all if no ASVS found
+        comp_filtered = compliance
     
     # Compliance RAG status
     status_map = {{
@@ -1176,7 +1201,7 @@ try:
     }}
     
     # Sort frameworks alphabetically
-    comp_sorted = compliance.sort_values("framework")
+    comp_sorted = comp_filtered.sort_values("framework")
     
     fig_comp = px.bar(
         comp_sorted,
@@ -1184,7 +1209,7 @@ try:
         y=[1] * len(comp_sorted),  # Equal height bars
         color="status",
         color_discrete_map=status_map,
-        title="Compliance Framework Status",
+        title="OWASP ASVS Compliance Status",
         labels={{"framework": "Framework", "y": ""}},
         text="status",
         height=400
@@ -1203,6 +1228,7 @@ except Exception as e:
 
 ```{{python}}
 #| echo: false
+#| output: asis
 #| warning: false
 for _, row in compliance.iterrows():
     status_icon = "✅" if row["status"] == "Compliant" else "⚠️" if row["status"] == "In Progress" else "❌"
@@ -1213,14 +1239,14 @@ for _, row in compliance.iterrows():
 
 ```{{python}}
 #| label: fig-delivery-burndown
-#| fig-cap: "Implementation progress burndown by phase and week."
+#| fig-cap: "Projected implementation timeline by phase and week (based on priority-based planning)."
 #| echo: false
 #| warning: false
 try:
     import plotly.express as px
     import plotly.graph_objects as go
     
-    # Create burndown chart with planned vs completed
+    # Create burndown chart with planned vs projected completion
     fig_burn = go.Figure()
     
     for phase in delivery["phase"].unique():
@@ -1232,21 +1258,21 @@ try:
             y=phase_data["planned"],
             mode='lines',
             name=f"{{phase}} (Planned)",
-            line=dict(dash='dash'),
+            line=dict(dash='dash', color='gray'),
             showlegend=True
         ))
         
-        # Completed line
+        # Projected completion line
         fig_burn.add_trace(go.Scatter(
             x=phase_data["week"],
             y=phase_data["completed"],
             mode='lines+markers',
-            name=f"{{phase}} (Completed)",
+            name=f"{{phase}} (Projected)",
             showlegend=True
         ))
     
     fig_burn.update_layout(
-        title="Security Controls Implementation Burndown",
+        title="Security Controls Implementation Timeline (Projected)",
         xaxis_title="Week",
         yaxis_title="Number of Controls",
         height=400,
@@ -1257,23 +1283,26 @@ except Exception as e:
     print(f"⚠️ Could not generate delivery chart: {{e}}")
 ```
 
-**Implementation Timeline:**
+**Implementation Timeline (Projected):**
 
 ```{{python}}
 #| echo: false
+#| output: asis
 #| warning: false
 phase1 = delivery[delivery["phase"].str.contains("Phase 1")]
 phase2 = delivery[delivery["phase"].str.contains("Phase 2")]
 
 if not phase1.empty:
     p1_progress = (phase1["completed"].iloc[-1] / phase1["planned"].iloc[-1] * 100) if phase1["planned"].iloc[-1] > 0 else 0
-    print(f"- **Phase 1 (Critical/High):** {{p1_progress:.0f}}% complete (Weeks 1-8)")
+    print(f"- **Phase 1 (Critical/High):** {{p1_progress:.0f}}% projected completion (Weeks 1-8)")
 
 if not phase2.empty:
     p2_progress = (phase2["completed"].iloc[-1] / phase2["planned"].iloc[-1] * 100) if phase2["planned"].iloc[-1] > 0 else 0
-    print(f"- **Phase 2 (Medium):** {{p2_progress:.0f}}% complete (Weeks 9-16)")
+    print(f"- **Phase 2 (Medium):** {{p2_progress:.0f}}% projected completion (Weeks 9-16)")
 
 print(f"- **Phase 3 (Low/Ongoing):** Continuous improvement and monitoring")
+print(f"")
+print(f"*Note: Timeline is based on priority-based planning and assumes steady implementation progress.*")
 ```
 
 #### Data Quality
@@ -1282,16 +1311,20 @@ print(f"- **Phase 3 (Low/Ongoing):** Continuous improvement and monitoring")
 
 ```{{python}}
 #| echo: false
+#| output: asis
 #| warning: false
 val_score = validation.get("score", 0)
 val_passed = validation.get("passed", False)
 dims = validation.get("dims", {{}})
 
 status_icon = "✅" if val_passed else "⚠️" if val_score >= 0.7 else "❌"
-print(f"\\n**Overall Validation Score:** {{status_icon}} {{val_score:.2f}}/1.0\\n")
+print(f"")
+print(f"**Overall Validation Score:** {{status_icon}} {{val_score:.2f}}/1.0")
+print(f"")
 
 if dims:
-    print("**Dimension Scores:**\\n")
+    print("**Dimension Scores:**")
+    print(f"")
     for dim, score in dims.items():
         dim_icon = "✅" if score >= 0.8 else "⚠️" if score >= 0.7 else "❌"
         print(f"- {{dim_icon}} **{{dim.capitalize()}}:** {{score:.2f}}")
@@ -1308,19 +1341,33 @@ try:
     import plotly.graph_objects as go
     
     # Calculate quality metrics
+    threats_linked_pct = (coverage["has_threat"].mean() * 100) if not coverage.empty else 0
+    
+    # Calculate average controls per requirement
+    avg_controls_per_req = (total_controls / total_reqs) if total_reqs > 0 else 0
+    
+    # For the chart, we'll show percentage-based metrics and handle avg controls separately
     metrics = {{
         "Requirements Mapped": req_coverage,
-        "Threats Linked": (coverage["has_threat"].mean() * 100) if not coverage.empty else 0,
-        "ASVS Controls": req_coverage,
+        "Threats Linked": threats_linked_pct,
         "Verification Coverage": verif_coverage,
+        "Avg Controls/Req": avg_controls_per_req * 20,  # Scale for visual comparison (multiply by 20 to fit chart scale)
         "Validation Score": val_score * 100
     }}
+    
+    # Create custom text labels (show actual values for avg controls, percentages for others)
+    text_labels = []
+    for key, val in metrics.items():
+        if key == "Avg Controls/Req":
+            text_labels.append(f"{{avg_controls_per_req:.1f}}")
+        else:
+            text_labels.append(f"{{val:.1f}}%")
     
     fig_quality = go.Figure(go.Bar(
         x=list(metrics.values()),
         y=list(metrics.keys()),
         orientation='h',
-        text=[f"{{v:.1f}}%" for v in metrics.values()],
+        text=text_labels,
         textposition='outside',
         marker=dict(
             color=list(metrics.values()),
@@ -1332,7 +1379,7 @@ try:
     
     fig_quality.update_layout(
         title="Data Quality & Coverage Metrics",
-        xaxis_title="Percentage (%)",
+        xaxis_title="Score / Percentage (%)",
         xaxis=dict(range=[0, 110]),
         height=400,
         showlegend=False
@@ -1346,6 +1393,7 @@ except Exception as e:
 
 ```{{python}}
 #| echo: false
+#| output: asis
 #| warning: false
 # Parser and data quality stats
 total_entries = len(coverage)
@@ -1353,22 +1401,17 @@ with_threats = coverage["has_threat"].sum()
 with_controls = coverage["has_asvs"].sum()
 with_tests = coverage["tests"].gt(0).sum()
 
-print(f"\\n**Traceability Matrix:**")
+print(f"")
+print(f"**Traceability Matrix:**")
 print(f"- Total Requirements: {{total_entries}}")
 print(f"- Linked to Threats: {{with_threats}} ({{with_threats/max(total_entries,1)*100:.1f}}%)")
 print(f"- Mapped to ASVS: {{with_controls}} ({{with_controls/max(total_entries,1)*100:.1f}}%)")
 print(f"- With Verification: {{with_tests}} ({{with_tests/max(total_entries,1)*100:.1f}}%)")
-print(f"\\n**Data Quality:** {{"✅ Excellent" if val_score >= 0.8 else "⚠️ Good" if val_score >= 0.7 else "❌ Needs Improvement"}}")
+print(f"")
+print(f"**Data Quality:** {{"✅ Excellent" if val_score >= 0.8 else "⚠️ Good" if val_score >= 0.7 else "❌ Needs Improvement"}}")
 ```
 
 :::
-
-**Note:** To render this dashboard with interactive visualizations:
-```bash
-# Install Quarto: https://quarto.org/docs/get-started/
-quarto render security_requirements_*.md --to html    # Interactive HTML
-quarto render security_requirements_*.md --to pdf     # Static PDF
-```
 
 """
 
