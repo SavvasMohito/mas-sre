@@ -44,6 +44,9 @@ outputs/
 !README.md
 !QUICKSTART.md
 
+test_outputs/
+_freeze/
+
 # Logs
 *.log
 
