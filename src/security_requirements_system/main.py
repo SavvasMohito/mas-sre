@@ -989,7 +989,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
             with open(artifacts_dir / "delivery.json", "w") as f:
                 json.dump(delivery_data, f, indent=2)
 
-            # 6. Coverage (req_id, has_threat, has_asvs, tests)
+            # 6. Coverage (req_id, has_threat, has_controls, tests)
             coverage_data = []
             entries = matrix_data.get("entries", [])
             for entry in entries:
@@ -997,7 +997,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                     {
                         "req_id": entry.get("req_id", ""),
                         "has_threat": len(entry.get("threat_ids", [])) > 0,
-                        "has_asvs": len(entry.get("owasp_control_ids", [])) > 0,
+                        "has_controls": len(entry.get("owasp_control_ids", [])) > 0,  # Contains controls from all standards
                         "tests": len(entry.get("verification_methods", [])),
                         "priority": entry.get("priority", "Medium"),
                     }
@@ -1344,7 +1344,7 @@ except Exception as e:
 #| warning: false
 total_controls = len(asvs)
 total_reqs = len(coverage)
-req_coverage = (coverage["has_asvs"].mean() * 100) if not coverage.empty else 0
+req_coverage = (coverage["has_controls"].mean() * 100) if not coverage.empty else 0
 verif_coverage = (coverage["tests"].gt(0).mean() * 100) if not coverage.empty else 0
 
 # Calculate additional metrics
@@ -1363,9 +1363,9 @@ if "standard" in asvs.columns:
     print(f"  - NIST SP 800-53: {{nist_count}} controls")
     print(f"  - ISO 27001: {{iso_count}} controls")
 else:
-    print(f"- **Total ASVS Controls Mapped:** {{total_controls}}")
+    print(f"- **Total Security Controls Mapped:** {{total_controls}} (OWASP ASVS, NIST SP 800-53, ISO 27001)")
 
-print(f"- **Requirements with Security Control Mapping:** {{req_coverage:.1f}}% ({{coverage['has_asvs'].sum()}}/{{total_reqs}})")
+print(f"- **Requirements with Security Control Mapping:** {{req_coverage:.1f}}% ({{coverage['has_controls'].sum()}}/{{total_reqs}})")
 print(f"- **Average Controls per Requirement:** {{avg_controls_per_req:.1f}}")
 print(f"- **Critical Controls:** {{critical_controls}} ({{critical_controls/total_controls*100:.1f}}% of total)" if total_controls > 0 else "- **Critical Controls:** {{critical_controls}}")
 print(f"- **Requirements with Verification:** {{verif_coverage:.1f}}% ({{coverage['tests'].gt(0).sum()}}/{{total_reqs}})")
@@ -1581,8 +1581,6 @@ except Exception as e:
     print(f"⚠️ Could not generate quality chart: {{e}}")
 ```
 
-**Coverage Statistics:**
-
 ```{{python}}
 #| echo: false
 #| output: asis
@@ -1590,14 +1588,15 @@ except Exception as e:
 # Parser and data quality stats
 total_entries = len(coverage)
 with_threats = coverage["has_threat"].sum()
-with_controls = coverage["has_asvs"].sum()
+with_controls = coverage["has_controls"].sum()
 with_tests = coverage["tests"].gt(0).sum()
 
 print(f"")
 print(f"**Traceability Matrix:**")
+print(f"")
 print(f"- Total Requirements: {{total_entries}}")
 print(f"- Linked to Threats: {{with_threats}} ({{with_threats/max(total_entries,1)*100:.1f}}%)")
-print(f"- Mapped to ASVS: {{with_controls}} ({{with_controls/max(total_entries,1)*100:.1f}}%)")
+print(f"- Mapped to Security Controls: {{with_controls}} ({{with_controls/max(total_entries,1)*100:.1f}}%)")
 print(f"- With Verification: {{with_tests}} ({{with_tests/max(total_entries,1)*100:.1f}}%)")
 print(f"")
 print(f"**Data Quality:** {{"✅ Excellent" if val_score >= 0.8 else "⚠️ Good" if val_score >= 0.7 else "❌ Needs Improvement"}}")
@@ -1686,8 +1685,23 @@ The following high-level functional requirements have been identified and analyz
 
             markdown += "### 4.2. Architecture Diagram\n\n"
             if self.state.architecture_diagram:
+                # Add CSS to make Mermaid SVG full width
+                markdown += "<style>\n.mermaid svg { width: 100% !important; max-width: 100% !important; }\n</style>\n\n"
                 markdown += "```{mermaid}\n"
-                markdown += self.state.architecture_diagram
+                # Update Mermaid init to use full width
+                diagram_content = self.state.architecture_diagram
+                if "%%{init:" in diagram_content:
+                    # Replace existing init with one that includes useMaxWidth
+                    diagram_content = diagram_content.replace(
+                        "%%{init: {'theme':'dark'}}%%",
+                        "%%{init: {'theme':'dark', 'flowchart': {'htmlLabels': True, 'useMaxWidth': True}}}%%",
+                    )
+                else:
+                    # Add init if it doesn't exist
+                    diagram_content = (
+                        "%%{init: {'theme':'dark', 'flowchart': {'htmlLabels': True, 'useMaxWidth': True}}}%%\n" + diagram_content
+                    )
+                markdown += diagram_content
                 markdown += "\n```\n\n"
             else:
                 markdown += "*Architecture diagram not available.*\n\n"
@@ -1925,7 +1939,7 @@ The following high-level functional requirements have been identified and analyz
                         markdown += "This compliance level has been selected based on the system's data sensitivity, "
                         markdown += "regulatory requirements, and threat landscape assessment.\n\n"
 
-                    markdown += "The recommendation considers factors such as:\n"
+                    markdown += "The recommendation considers factors such as:\n\n"
                     markdown += "- Data sensitivity and classification levels\n"
                     markdown += "- Regulatory and compliance requirements (GDPR, HIPAA, PCI-DSS, etc.)\n"
                     markdown += "- Threat landscape and risk assessment from threat modeling\n"
