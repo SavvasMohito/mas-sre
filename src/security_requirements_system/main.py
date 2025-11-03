@@ -498,7 +498,6 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                     inputs={
                         "security_controls": self.state.security_controls,
                         "compliance_requirements": self.state.compliance_requirements,
-                        "owasp_controls": self.state.security_controls,  # Same as security_controls for now
                     }
                 )
             )
@@ -688,18 +687,8 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                             req_mapping = rm
                             break
 
-                # Get controls from both owasp_controls (backward compatibility) and security_controls (multi-standard)
-                owasp_controls = req_mapping.get("owasp_controls", []) if req_mapping else []
-                security_controls = req_mapping.get("security_controls", []) if req_mapping else []
-                
-                # Combine all controls (prefer security_controls if available, fallback to owasp_controls)
-                all_controls = security_controls if security_controls else owasp_controls
-                
-                # If we have security_controls, extract OWASP ones for backward compatibility field
-                if security_controls:
-                    owasp_only = [ctrl for ctrl in security_controls if ctrl.get("standard", "").upper() == "OWASP"]
-                    if owasp_only:
-                        owasp_controls = owasp_only
+                # Get security controls (multi-standard)
+                all_controls = req_mapping.get("security_controls", []) if req_mapping else []
 
                 # Extract verification methods from all controls
                 verification_methods = list(
@@ -887,15 +876,11 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                     high_level_req = mapping.get("high_level_requirement", "").strip().lower()
                     req_id = req_text_to_id.get(high_level_req, "")
 
-                # Get controls from both owasp_controls (backward compatibility) and security_controls (multi-standard)
-                owasp_controls = mapping.get("owasp_controls", [])
-                security_controls = mapping.get("security_controls", [])
-                
-                # Use security_controls if available, otherwise fallback to owasp_controls
-                all_controls = security_controls if security_controls else owasp_controls
+                # Get security controls (multi-standard)
+                all_controls = mapping.get("security_controls", [])
                 
                 for control in all_controls:
-                    standard = control.get("standard", "OWASP")  # Default to OWASP for backward compatibility
+                    standard = control.get("standard", "OWASP")
                     control_id = control.get("req_id", "")
                     chapter = control.get("chapter", "")
                     
@@ -953,7 +938,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
             # 3. Priorities (level, count)
             priority_counts = {"Critical": 0, "High": 0, "Medium": 0, "Low": 0}
             for mapping in mappings:
-                for control in mapping.get("owasp_controls", []):
+                for control in mapping.get("security_controls", []):
                     priority = control.get("priority", "Medium")
                     priority_counts[priority] = priority_counts.get(priority, 0) + 1
 
@@ -1981,12 +1966,8 @@ The following high-level functional requirements have been identified and analyz
                         req_id = req_text_to_id.get(high_level_req, f"REQ-{i:03d}")
                     markdown += f"\n#### 6.2.{i}. {req_id}: {req}\n\n"
 
-                    # Get controls from both owasp_controls (backward compatibility) and security_controls (multi-standard)
-                    owasp_controls = mapping.get("owasp_controls", [])
-                    security_controls = mapping.get("security_controls", [])
-                    
-                    # Use security_controls if available, otherwise fallback to owasp_controls
-                    all_controls = security_controls if security_controls else owasp_controls
+                    # Get security controls (multi-standard)
+                    all_controls = mapping.get("security_controls", [])
                     
                     if not all_controls:
                         markdown += "*No specific security controls mapped.*\n"

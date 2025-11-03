@@ -163,7 +163,6 @@ class RequirementMapping(BaseModel):
 
     high_level_requirement: str = Field(..., description="A single high-level requirement from the input list.")
     requirement_id: Optional[str] = Field(default=None, description="Unique identifier for this requirement")
-    owasp_controls: List[OwaspControl] = Field(default=[], description="A list of relevant OWASP controls for the requirement (backward compatibility).")
     security_controls: List[SecurityControl] = Field(default=[], description="A list of relevant security controls from all standards (OWASP, NIST, ISO27001).")
 
 
