@@ -1376,18 +1376,14 @@ print(f"- **Recommended ASVS Level:** L2 (Standard)")
 
 ```{{python}}
 #| label: fig-compliance-rag
-#| fig-cap: "OWASP ASVS compliance status (Red-Amber-Green rating). Note: Only frameworks with mapped controls are shown."
+#| fig-cap: "Compliance status across all applicable frameworks (Red-Amber-Green rating). Shows regulatory compliance (GDPR, HIPAA, PCI-DSS, etc.) and security standards (OWASP ASVS, NIST SP 800-53, ISO 27001)."
 #| echo: false
 #| warning: false
 try:
     import plotly.express as px
     
-    # Filter to only show OWASP ASVS (since we only have ASVS controls mapped)
-    comp_filtered = compliance[compliance["framework"].str.contains("ASVS", case=False, na=False)]
-    
-    if comp_filtered.empty:
-        # Fallback to all if no ASVS found
-        comp_filtered = compliance
+    # Show all compliance frameworks (regulatory and security standards)
+    comp_filtered = compliance
     
     # Compliance RAG status
     status_map = {{
@@ -1405,7 +1401,7 @@ try:
         y=[1] * len(comp_sorted),  # Equal height bars
         color="status",
         color_discrete_map=status_map,
-        title="OWASP ASVS Compliance Status",
+        title="Compliance Status Across All Frameworks",
         labels={{"framework": "Framework", "y": ""}},
         text="status",
         height=400
