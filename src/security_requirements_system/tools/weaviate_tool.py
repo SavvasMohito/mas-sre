@@ -22,9 +22,12 @@ class WeaviateQueryTool(BaseTool):
 
     name: str = "Query Security Standards Database"
     description: str = (
-        "Searches the security standards database (OWASP, NIST, ISO 27001) "
-        "for relevant controls and requirements based on a semantic query. "
-        "Returns the most relevant security controls with their descriptions."
+        "Use this tool to search the security standards database containing controls from "
+        "OWASP ASVS, NIST SP 800-53, and ISO 27001. Provide a semantic query describing "
+        "the security concern (e.g., 'authentication', 'encryption', 'access control'). "
+        "The tool searches across all standards and returns the best matching controls. "
+        "Returns controls with their exact IDs, descriptions, chapters, sections, and standard. "
+        "You MUST use this tool to find controls - copy the data exactly from tool results."
     )
     args_schema: Type[BaseModel] = WeaviateQueryInput
 
