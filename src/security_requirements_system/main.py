@@ -688,17 +688,52 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                             req_mapping = rm
                             break
 
+                # Get controls from both owasp_controls (backward compatibility) and security_controls (multi-standard)
                 owasp_controls = req_mapping.get("owasp_controls", []) if req_mapping else []
+                security_controls = req_mapping.get("security_controls", []) if req_mapping else []
+                
+                # Combine all controls (prefer security_controls if available, fallback to owasp_controls)
+                all_controls = security_controls if security_controls else owasp_controls
+                
+                # If we have security_controls, extract OWASP ones for backward compatibility field
+                if security_controls:
+                    owasp_only = [ctrl for ctrl in security_controls if ctrl.get("standard", "").upper() == "OWASP"]
+                    if owasp_only:
+                        owasp_controls = owasp_only
 
-                # Extract verification methods from controls
+                # Extract verification methods from all controls
                 verification_methods = list(
-                    set([ctrl.get("verification_method", "Manual Review") for ctrl in owasp_controls if ctrl.get("verification_method")])
+                    set([ctrl.get("verification_method", "Manual Review") for ctrl in all_controls if ctrl.get("verification_method")])
                 )
 
-                # Determine priority
+                # Determine priority from all controls
                 priority_map = {"critical": 4, "high": 3, "medium": 2, "low": 1}
-                priorities = [ctrl.get("priority", "Medium") for ctrl in owasp_controls]
+                priorities = [ctrl.get("priority", "Medium") for ctrl in all_controls]
                 priority = max(priorities, key=lambda p: priority_map.get(p.lower(), 2)) if priorities else req.get("priority", "Medium")
+
+                # Build control IDs and descriptions with standard prefixes for multi-standard support
+                # Format: "[STANDARD] CONTROL_ID" for easy identification
+                control_ids = []
+                control_descriptions = []
+                
+                for ctrl in all_controls:
+                    standard = ctrl.get("standard", "UNKNOWN")
+                    ctrl_id = ctrl.get("req_id", "")
+                    ctrl_desc = ctrl.get("requirement", "")
+                    
+                    # Format control ID with standard prefix
+                    if standard and ctrl_id:
+                        formatted_id = f"[{standard}] {ctrl_id}"
+                        control_ids.append(formatted_id)
+                    elif ctrl_id:
+                        control_ids.append(ctrl_id)
+                    
+                    # Format description with standard prefix
+                    if standard and ctrl_desc:
+                        formatted_desc = f"[{standard}] {ctrl_desc[:80]}{'...' if len(ctrl_desc) > 80 else ''}"
+                        control_descriptions.append(formatted_desc)
+                    elif ctrl_desc:
+                        control_descriptions.append(ctrl_desc[:80] + "..." if len(ctrl_desc) > 80 else ctrl_desc)
 
                 # Build entry
                 entry = TraceabilityEntry(
@@ -711,11 +746,8 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                         t.get("description", "")[:80] + "..." if len(t.get("description", "")) > 80 else t.get("description", "")
                         for t in related_threats[:10]
                     ],
-                    owasp_control_ids=[ctrl.get("req_id", "") for ctrl in owasp_controls],
-                    owasp_control_descriptions=[
-                        ctrl.get("requirement", "")[:80] + "..." if len(ctrl.get("requirement", "")) > 80 else ctrl.get("requirement", "")
-                        for ctrl in owasp_controls
-                    ],
+                    owasp_control_ids=control_ids,  # Now contains all standards with prefixes
+                    owasp_control_descriptions=control_descriptions,  # Now contains all standards with prefixes
                     priority=priority,
                     verification_methods=verification_methods or ["Manual Review"],
                     implementation_status="Pending",
@@ -845,7 +877,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                     if req_text and req_id:
                         req_text_to_id[req_text] = req_id
 
-            # 1. ASVS Mapping (control_id, v_category, requirement_id, level, priority)
+            # 1. Multi-Standard Control Mapping (control_id, standard, category, requirement_id, level, priority)
             asvs_mapping = []
             mappings = controls_data.get("requirements_mapping", [])
             for mapping in mappings:
@@ -855,13 +887,35 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                     high_level_req = mapping.get("high_level_requirement", "").strip().lower()
                     req_id = req_text_to_id.get(high_level_req, "")
 
-                for control in mapping.get("owasp_controls", []):
+                # Get controls from both owasp_controls (backward compatibility) and security_controls (multi-standard)
+                owasp_controls = mapping.get("owasp_controls", [])
+                security_controls = mapping.get("security_controls", [])
+                
+                # Use security_controls if available, otherwise fallback to owasp_controls
+                all_controls = security_controls if security_controls else owasp_controls
+                
+                for control in all_controls:
+                    standard = control.get("standard", "OWASP")  # Default to OWASP for backward compatibility
+                    control_id = control.get("req_id", "")
+                    chapter = control.get("chapter", "")
+                    
+                    # Format category based on standard
+                    if standard.upper() == "OWASP":
+                        v_category = chapter.replace("V", "V") if chapter else ""  # Ensure V prefix
+                    elif standard.upper() == "NIST":
+                        v_category = chapter  # NIST family (e.g., "AC", "AU")
+                    elif standard.upper() == "ISO27001":
+                        v_category = chapter  # ISO chapter (e.g., "A.5", "A.8")
+                    else:
+                        v_category = chapter if chapter else ""
+                    
                     asvs_mapping.append(
                         {
-                            "control_id": control.get("req_id", ""),
-                            "v_category": control.get("chapter", "").replace("V", "V"),  # Ensure V prefix
+                            "control_id": control_id,
+                            "standard": standard,
+                            "v_category": v_category,
                             "requirement_id": req_id,
-                            "level": control.get("level", "L2"),
+                            "level": control.get("level", "L2" if standard.upper() == "OWASP" else ""),
                             "priority": control.get("priority", "Medium"),
                             "requirement": control.get("requirement", "")[:100],
                         }
@@ -1195,6 +1249,50 @@ for idx, risk_row in top_risks.iterrows():
 #### Controls
 
 ```{{python}}
+#| label: fig-standard-distribution
+#| fig-cap: "Security control distribution by standard (OWASP, NIST, ISO 27001)."
+#| echo: false
+#| warning: false
+try:
+    import plotly.express as px
+    
+    # Group by standard
+    if "standard" in asvs.columns:
+        dist = asvs.groupby("standard").size().reset_index(name="controls")
+        dist = dist.sort_values("controls", ascending=False)
+        
+        # Add percentage for better context
+        total = dist["controls"].sum()
+        dist["percentage"] = (dist["controls"] / total * 100).round(1)
+        
+        # Map standard codes to display names
+        standard_names = {{
+            "OWASP": "OWASP ASVS",
+            "NIST": "NIST SP 800-53",
+            "ISO27001": "ISO 27001:2022"
+        }}
+        dist["standard_name"] = dist["standard"].map(standard_names).fillna(dist["standard"])
+        
+        fig_std = px.bar(
+            dist, 
+            x="standard_name", 
+            y="controls", 
+            text=[f"{{c}}<br>({{p}}%)" for c, p in zip(dist["controls"], dist["percentage"])],
+            title="Security Controls by Standard",
+            labels={{"standard_name": "Security Standard", "controls": "Control Count"}},
+            color="controls",
+            color_continuous_scale="Blues"
+        )
+        fig_std.update_traces(textposition='outside')
+        fig_std.update_layout(height=400, showlegend=False)
+        fig_std.show()
+    else:
+        print("Standard distribution data not available.")
+except Exception as e:
+    print(f"⚠️ Could not generate standard distribution chart: {{e}}")
+```
+
+```{{python}}
 #| label: fig-asvs-distribution
 #| fig-cap: "OWASP ASVS control distribution by verification category (V1-V14)."
 #| echo: false
@@ -1202,20 +1300,23 @@ for idx, risk_row in top_risks.iterrows():
 try:
     import plotly.express as px
     
+    # Filter to OWASP controls only
+    asvs_owasp = asvs[asvs["standard"] == "OWASP"] if "standard" in asvs.columns else asvs
+    
     # Group by ASVS category
-    dist = asvs.groupby("v_category").size().reset_index(name="controls")
+    dist = asvs_owasp.groupby("v_category").size().reset_index(name="controls")
     dist = dist.sort_values("v_category")
     
     # Add percentage for better context
     total = dist["controls"].sum()
-    dist["percentage"] = (dist["controls"] / total * 100).round(1)
+    dist["percentage"] = (dist["controls"] / total * 100).round(1) if total > 0 else 0
     
     fig_asvs = px.bar(
         dist, 
         x="v_category", 
         y="controls", 
         text=[f"{{c}}<br>({{p}}%)" for c, p in zip(dist["controls"], dist["percentage"])],
-        title="ASVS Controls by Verification Category",
+        title="OWASP ASVS Controls by Verification Category",
         labels={{"v_category": "ASVS Category", "controls": "Control Count"}},
         color="controls",
         color_continuous_scale="Blues"
@@ -1279,10 +1380,23 @@ verif_coverage = (coverage["tests"].gt(0).mean() * 100) if not coverage.empty el
 avg_controls_per_req = (total_controls / total_reqs) if total_reqs > 0 else 0
 critical_controls = len(asvs[asvs["priority"] == "Critical"]) if "priority" in asvs.columns else 0
 
-print(f"- **Total ASVS Controls Mapped:** {{total_controls}}")
-print(f"- **Requirements with ASVS Mapping:** {{req_coverage:.1f}}% ({{coverage['has_asvs'].sum()}}/{{total_reqs}})")
+# Calculate standard distribution if available
+if "standard" in asvs.columns:
+    std_counts = asvs["standard"].value_counts()
+    owasp_count = std_counts.get("OWASP", 0)
+    nist_count = std_counts.get("NIST", 0)
+    iso_count = std_counts.get("ISO27001", 0)
+    
+    print(f"- **Total Security Controls Mapped:** {{total_controls}}")
+    print(f"  - OWASP ASVS: {{owasp_count}} controls")
+    print(f"  - NIST SP 800-53: {{nist_count}} controls")
+    print(f"  - ISO 27001: {{iso_count}} controls")
+else:
+    print(f"- **Total ASVS Controls Mapped:** {{total_controls}}")
+
+print(f"- **Requirements with Security Control Mapping:** {{req_coverage:.1f}}% ({{coverage['has_asvs'].sum()}}/{{total_reqs}})")
 print(f"- **Average Controls per Requirement:** {{avg_controls_per_req:.1f}}")
-print(f"- **Critical Controls:** {{critical_controls}} ({{critical_controls/total_controls*100:.1f}}% of total)")
+print(f"- **Critical Controls:** {{critical_controls}} ({{critical_controls/total_controls*100:.1f}}% of total)" if total_controls > 0 else "- **Critical Controls:** {{critical_controls}}")
 print(f"- **Requirements with Verification:** {{verif_coverage:.1f}}% ({{coverage['tests'].gt(0).sum()}}/{{total_reqs}})")
 print(f"- **Recommended ASVS Level:** L2 (Standard)")
 ```
@@ -1773,13 +1887,17 @@ The following high-level functional requirements have been identified and analyz
 
             markdown += "---\n\n"
 
-            # Section 6: OWASP ASVS Security Requirements Mapping
-            markdown += "## 6. OWASP ASVS Security Requirements Mapping\n\n"
-            markdown += "This section maps each functional requirement to specific security controls from the "
-            markdown += "OWASP Application Security Verification Standard (ASVS). The ASVS provides a comprehensive "
-            markdown += "set of security requirements organized into 14 verification categories (V1-V14), each "
-            markdown += "addressing critical security domains such as authentication, session management, input validation, "
-            markdown += "and cryptographic controls. Requirements are prioritized based on risk assessment and compliance needs.\n\n"
+            # Section 6: Multi-Standard Security Requirements Mapping
+            markdown += "## 6. Multi-Standard Security Requirements Mapping\n\n"
+            markdown += "This section maps each functional requirement to specific security controls from multiple "
+            markdown += "industry standards: OWASP Application Security Verification Standard (ASVS), NIST SP 800-53 Rev 5, "
+            markdown += "and ISO 27001:2022. This multi-standard approach provides comprehensive coverage across "
+            markdown += "application-level, enterprise-level, and organizational-level security domains:\n\n"
+            markdown += "- **OWASP ASVS**: Application-level security controls (code, APIs, authentication, session management)\n"
+            markdown += "- **NIST SP 800-53**: Enterprise security controls (governance, risk management, incident response)\n"
+            markdown += "- **ISO 27001**: Information security management controls (policies, procedures, organizational controls)\n\n"
+            markdown += "Requirements are prioritized based on risk assessment and compliance needs, with controls selected "
+            markdown += "from the most appropriate standard(s) for each requirement type.\n\n"
 
             try:
                 security_controls_data = json.loads(self.state.security_controls)
@@ -1848,8 +1966,9 @@ The following high-level functional requirements have been identified and analyz
                     markdown += "All security controls referenced in this document align with this recommended compliance level.\n\n"
 
                 markdown += "### 6.2. Requirements Mapping\n\n"
-                markdown += "This section maps each high-level requirement to specific OWASP ASVS controls with detailed "
-                markdown += "descriptions, relevance explanations, and integration guidance.\n\n"
+                markdown += "This section maps each high-level requirement to specific security controls from multiple "
+                markdown += "standards (OWASP ASVS, NIST SP 800-53, ISO 27001) with detailed descriptions, relevance "
+                markdown += "explanations, and integration guidance. Controls are grouped by standard for clarity.\n\n"
 
                 mappings = security_controls_data.get("requirements_mapping", [])
 
@@ -1862,20 +1981,49 @@ The following high-level functional requirements have been identified and analyz
                         req_id = req_text_to_id.get(high_level_req, f"REQ-{i:03d}")
                     markdown += f"\n#### 6.2.{i}. {req_id}: {req}\n\n"
 
-                    controls = mapping.get("owasp_controls", [])
-                    if not controls:
-                        markdown += "*No specific OWASP controls mapped.*\n"
+                    # Get controls from both owasp_controls (backward compatibility) and security_controls (multi-standard)
+                    owasp_controls = mapping.get("owasp_controls", [])
+                    security_controls = mapping.get("security_controls", [])
+                    
+                    # Use security_controls if available, otherwise fallback to owasp_controls
+                    all_controls = security_controls if security_controls else owasp_controls
+                    
+                    if not all_controls:
+                        markdown += "*No specific security controls mapped.*\n"
                         continue
 
-                    # Remove summary table - go directly to detailed control information
-                    for j, control in enumerate(controls, 1):
-                        markdown += f"##### Control {control.get('req_id', 'N/A')}\n\n"
-                        markdown += f"**Requirement:** {control.get('requirement', 'N/A')}\n\n"
-                        markdown += f"**Relevance:**\n{control.get('relevance', 'No relevance explanation provided.')}\n\n"
-                        markdown += f"**Integration Tips:**\n{control.get('integration_tips', 'No integration tips provided.')}\n\n"
-                        if control.get("verification_method"):
-                            markdown += f"**Verification Method:** {control.get('verification_method')}\n\n"
-                        markdown += f"**Level:** {control.get('level', 'N/A')} | **Priority:** {control.get('priority', 'Medium')}\n\n"
+                    # Group controls by standard
+                    controls_by_standard = {}
+                    for control in all_controls:
+                        standard = control.get("standard", "OWASP")
+                        if standard not in controls_by_standard:
+                            controls_by_standard[standard] = []
+                        controls_by_standard[standard].append(control)
+                    
+                    # Display controls grouped by standard
+                    for standard in ["OWASP", "NIST", "ISO27001"]:
+                        if standard not in controls_by_standard:
+                            continue
+                        
+                        standard_display_name = {
+                            "OWASP": "OWASP ASVS",
+                            "NIST": "NIST SP 800-53",
+                            "ISO27001": "ISO 27001:2022"
+                        }.get(standard, standard)
+                        
+                        markdown += f"##### {standard_display_name} Controls\n\n"
+                        
+                        for j, control in enumerate(controls_by_standard[standard], 1):
+                            control_id = control.get('req_id', 'N/A')
+                            markdown += f"**{control_id}**\n\n"
+                            markdown += f"**Requirement:** {control.get('requirement', 'N/A')}\n\n"
+                            markdown += f"**Relevance:**\n{control.get('relevance', 'No relevance explanation provided.')}\n\n"
+                            markdown += f"**Integration Tips:**\n{control.get('integration_tips', 'No integration tips provided.')}\n\n"
+                            if control.get("verification_method"):
+                                markdown += f"**Verification Method:** {control.get('verification_method')}\n\n"
+                            # Only show level for OWASP controls
+                            level_info = f"**Level:** {control.get('level', 'N/A')} | " if standard == "OWASP" and control.get('level') else ""
+                            markdown += f"{level_info}**Priority:** {control.get('priority', 'Medium')}\n\n"
 
                 # Add cross-functional controls
                 if security_controls_data.get("cross_functional_controls"):
@@ -1905,8 +2053,8 @@ The following high-level functional requirements have been identified and analyz
                     # Show top 10 critical requirements with full traceability
                     markdown += "#### Sample Traceability Mappings\n\n"
                     markdown += "The following table shows traceability for high-priority requirements:\n\n"
-                    markdown += "| Req ID | Requirement | Threats | OWASP Controls | Priority | Verification |\n"
-                    markdown += "|--------|-------------|---------|----------------|----------|-------------|\n"
+                    markdown += "| Req ID | Requirement | Threats | Security Controls | Standards | Priority | Verification |\n"
+                    markdown += "|--------|-------------|---------|-------------------|-----------|----------|-------------|\n"
 
                     # Sort by priority
                     priority_map = {"Critical": 4, "High": 3, "Medium": 2, "Low": 1}
@@ -1920,12 +2068,22 @@ The following high-level functional requirements have been identified and analyz
                             else entry.get("high_level_requirement", "")
                         )
                         threat_count = len(entry.get("threat_ids", []))
-                        control_count = len(entry.get("owasp_control_ids", []))
+                        control_ids = entry.get("owasp_control_ids", [])  # Now contains all standards with prefixes
+                        control_count = len(control_ids)
+                        
+                        # Extract unique standards from control IDs (format: "[STANDARD] CONTROL_ID")
+                        standards_set = set()
+                        for ctrl_id in control_ids:
+                            if ctrl_id.startswith("[") and "]" in ctrl_id:
+                                standard = ctrl_id.split("]")[0][1:]  # Extract "[STANDARD]"
+                                standards_set.add(standard)
+                        standards_str = ", ".join(sorted(standards_set)) if standards_set else "Multiple"
+                        
                         priority = entry.get("priority", "Medium")
                         verification = entry.get("verification_methods", ["Manual"])[0] if entry.get("verification_methods") else "Manual"
 
                         markdown += (
-                            f"| {req_id} | {req} | {threat_count} threats | {control_count} controls | {priority} | {verification} |\n"
+                            f"| {req_id} | {req} | {threat_count} threats | {control_count} controls | {standards_str} | {priority} | {verification} |\n"
                         )
 
                     markdown += f"\n*Showing 10 of {len(entries)} requirements. See Appendix D for complete traceability matrix.*\n\n"
@@ -1937,12 +2095,26 @@ The following high-level functional requirements have been identified and analyz
                     with_controls = sum(1 for e in entries if e.get("owasp_control_ids"))
                     avg_controls_per_req = sum(len(e.get("owasp_control_ids", [])) for e in entries) / max(total_reqs, 1)
 
+                    # Calculate standard distribution
+                    standard_counts = {}
+                    for entry in entries:
+                        control_ids = entry.get("owasp_control_ids", [])
+                        for ctrl_id in control_ids:
+                            if ctrl_id.startswith("[") and "]" in ctrl_id:
+                                standard = ctrl_id.split("]")[0][1:]
+                                standard_counts[standard] = standard_counts.get(standard, 0) + 1
+                    
                     markdown += f"- **Total Requirements Tracked:** {total_reqs}\n"
                     markdown += f"- **Requirements Linked to Threats:** {with_threats} ({with_threats / max(total_reqs, 1) * 100:.1f}%)\n"
                     markdown += (
                         f"- **Requirements Mapped to Controls:** {with_controls} ({with_controls / max(total_reqs, 1) * 100:.1f}%)\n"
                     )
                     markdown += f"- **Average Controls per Requirement:** {avg_controls_per_req:.1f}\n"
+                    if standard_counts:
+                        markdown += f"- **Control Distribution by Standard:**\n"
+                        for std, count in sorted(standard_counts.items(), key=lambda x: x[1], reverse=True):
+                            std_name = {"OWASP": "OWASP ASVS", "NIST": "NIST SP 800-53", "ISO27001": "ISO 27001"}.get(std, std)
+                            markdown += f"  - {std_name}: {count} controls\n"
                     markdown += "- **Verification Coverage:** 100% (all requirements have verification methods)\n\n"
 
                 else:

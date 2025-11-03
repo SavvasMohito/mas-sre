@@ -33,7 +33,7 @@ def prepare_owasp_asvs():
     owasp_controls = []
     for req in raw_data.get("requirements", []):
         control = {
-            "standard": "OWASP ASVS 5.0",
+            "standard": "OWASP",  # Normalized to match filter expectations
             "req_id": req.get("req_id", ""),
             "req_description": req.get("req_description", ""),
             "chapter_id": req.get("chapter_id", ""),

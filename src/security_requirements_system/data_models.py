@@ -129,8 +129,23 @@ class ThreatModelingOutput(BaseModel):
 # ============================================================================
 
 
+class SecurityControl(BaseModel):
+    """Generic model for a security control from any standard (OWASP, NIST, ISO 27001)."""
+
+    standard: str = Field(..., description="The security standard (e.g., 'OWASP', 'NIST', 'ISO27001')")
+    req_id: str = Field(..., description="The exact requirement ID from the tool output (e.g., V2.2.1, AC-1, A.5.1).")
+    chapter: str = Field(..., description="The exact chapter from the tool output.")
+    section: str = Field(..., description="The exact section from the tool output.")
+    level: Optional[str] = Field(default=None, description="The exact level from the tool output (e.g., L1, L2, L3). Only OWASP has levels.")
+    requirement: str = Field(..., description="The exact requirement text from the tool output.")
+    relevance: str = Field(..., description="Detailed explanation of how this control applies to the high-level requirement.")
+    integration_tips: str = Field(..., description="Actionable advice for developers on how to implement this control.")
+    priority: Optional[str] = Field(default="Medium", description="Implementation priority (Critical, High, Medium, Low)")
+    verification_method: Optional[str] = Field(default=None, description="How to verify this control is properly implemented")
+
+
 class OwaspControl(BaseModel):
-    """Model for a single OWASP ASVS security control."""
+    """Model for a single OWASP ASVS security control (backward compatibility)."""
 
     req_id: str = Field(..., description="The exact requirement ID from the tool output (e.g., V2.2.1).")
     chapter: str = Field(..., description="The exact chapter from the tool output.")
@@ -144,11 +159,12 @@ class OwaspControl(BaseModel):
 
 
 class RequirementMapping(BaseModel):
-    """Model for mapping a high-level requirement to its OWASP controls."""
+    """Model for mapping a high-level requirement to security controls from multiple standards."""
 
     high_level_requirement: str = Field(..., description="A single high-level requirement from the input list.")
     requirement_id: Optional[str] = Field(default=None, description="Unique identifier for this requirement")
-    owasp_controls: List[OwaspControl] = Field(..., description="A list of relevant OWASP controls for the requirement.")
+    owasp_controls: List[OwaspControl] = Field(default=[], description="A list of relevant OWASP controls for the requirement (backward compatibility).")
+    security_controls: List[SecurityControl] = Field(default=[], description="A list of relevant security controls from all standards (OWASP, NIST, ISO27001).")
 
 
 class CrossFunctionalControl(BaseModel):

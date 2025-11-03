@@ -1,213 +1,136 @@
 """
-Script to prepare NIST Cybersecurity Framework data for ingestion into Weaviate.
+Script to prepare NIST SP 800-53 Rev 5 data for ingestion into Weaviate.
 
-This script processes NIST CSF controls and converts them into structured JSON format.
+This script processes NIST SP 800-53 controls from OSCAL format and converts
+them into a structured JSON format compatible with the Weaviate schema.
 
-Source: https://www.nist.gov/cyberframework
+Source: https://github.com/usnistgov/oscal-content/tree/v1.3.0/nist.gov/SP800-53/rev5/json
 """
 
 import json
 from pathlib import Path
 
 
-def prepare_nist_csf():
+def extract_prose(part: dict) -> str:
     """
-    Prepare NIST Cybersecurity Framework controls as structured JSON.
+    Recursively extract prose text from OSCAL part structure.
 
-    This includes sample controls from the five core functions:
-    - Identify (ID)
-    - Protect (PR)
-    - Detect (DE)
-    - Respond (RS)
-    - Recover (RC)
+    Args:
+        part: OSCAL part dictionary
+
+    Returns:
+        Combined prose text from the part and all nested parts
+    """
+    prose_parts = []
+
+    # Add direct prose if present
+    if "prose" in part:
+        prose_parts.append(part["prose"])
+
+    # Recursively process nested parts
+    if "parts" in part:
+        for subpart in part["parts"]:
+            subprose = extract_prose(subpart)
+            if subprose:
+                prose_parts.append(subprose)
+
+    return " ".join(prose_parts).strip()
+
+
+def prepare_nist_sp80053():
+    """
+    Prepare NIST SP 800-53 Rev 5 controls from OSCAL catalog format.
+
+    Reads from: data/raw/NIST_SP-800-53_rev5_catalog-min.json
+    Outputs to: data/prepared/nist_sp80053.json
+
+    The OSCAL format has:
+    - catalog.groups[]: Control families (e.g., "ac" = Access Control)
+    - Each group has controls[]: Individual controls (e.g., "ac-1")
+    - Each control has parts[]: Statement, guidance, etc.
     """
 
-    nist_controls = [
-        # IDENTIFY
-        {
-            "standard_name": "NIST",
-            "control_id": "ID.AM-1",
-            "title": "Physical Devices and Systems Inventory",
-            "description": "Physical devices and systems within the organization are inventoried.",
-            "category": "Asset Management",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "ID.AM-2",
-            "title": "Software Platforms and Applications Inventory",
-            "description": "Software platforms and applications within the organization are inventoried.",
-            "category": "Asset Management",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "ID.RA-1",
-            "title": "Asset Vulnerabilities Identification",
-            "description": "Asset vulnerabilities are identified and documented.",
-            "category": "Risk Assessment",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "ID.RA-2",
-            "title": "Cyber Threat Intelligence",
-            "description": "Cyber threat intelligence is received from information sharing forums and sources.",
-            "category": "Risk Assessment",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "ID.GV-1",
-            "title": "Organizational Cybersecurity Policy",
-            "description": "Organizational cybersecurity policy is established and communicated.",
-            "category": "Governance",
-        },
-        # PROTECT
-        {
-            "standard_name": "NIST",
-            "control_id": "PR.AC-1",
-            "title": "Authorized User Identity Management",
-            "description": "Identities and credentials are issued, managed, verified, revoked, and audited for authorized devices, users and processes.",
-            "category": "Identity Management and Access Control",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "PR.AC-3",
-            "title": "Remote Access Management",
-            "description": "Remote access is managed.",
-            "category": "Identity Management and Access Control",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "PR.AC-4",
-            "title": "Access Permissions and Authorizations",
-            "description": "Access permissions and authorizations are managed, incorporating the principles of least privilege and separation of duties.",
-            "category": "Identity Management and Access Control",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "PR.AT-1",
-            "title": "Security Awareness Training",
-            "description": "All users are informed and trained on their cybersecurity responsibilities.",
-            "category": "Awareness and Training",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "PR.DS-1",
-            "title": "Data-at-Rest Protection",
-            "description": "Data-at-rest is protected using encryption and other appropriate mechanisms.",
-            "category": "Data Security",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "PR.DS-2",
-            "title": "Data-in-Transit Protection",
-            "description": "Data-in-transit is protected using encryption and other security measures.",
-            "category": "Data Security",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "PR.DS-5",
-            "title": "Data Leak Protection",
-            "description": "Protections against data leaks are implemented.",
-            "category": "Data Security",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "PR.IP-1",
-            "title": "Baseline Configuration",
-            "description": "A baseline configuration of information technology/industrial control systems is created and maintained incorporating security principles.",
-            "category": "Information Protection Processes",
-        },
-        # DETECT
-        {
-            "standard_name": "NIST",
-            "control_id": "DE.AE-1",
-            "title": "Baseline Network Operations",
-            "description": "A baseline of network operations and expected data flows for users and systems is established and managed.",
-            "category": "Anomalies and Events",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "DE.AE-2",
-            "title": "Detected Events Analysis",
-            "description": "Detected events are analyzed to understand attack targets and methods.",
-            "category": "Anomalies and Events",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "DE.CM-1",
-            "title": "Network Monitoring",
-            "description": "The network is monitored to detect potential cybersecurity events.",
-            "category": "Security Continuous Monitoring",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "DE.CM-3",
-            "title": "Personnel Activity Monitoring",
-            "description": "Personnel activity is monitored to detect potential cybersecurity events.",
-            "category": "Security Continuous Monitoring",
-        },
-        # RESPOND
-        {
-            "standard_name": "NIST",
-            "control_id": "RS.RP-1",
-            "title": "Response Plan Execution",
-            "description": "Response plan is executed during or after an incident.",
-            "category": "Response Planning",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "RS.CO-1",
-            "title": "Personnel Incident Notification",
-            "description": "Personnel know their roles and order of operations when a response is needed.",
-            "category": "Communications",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "RS.AN-1",
-            "title": "Incident Investigation",
-            "description": "Notifications from detection systems are investigated.",
-            "category": "Analysis",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "RS.MI-1",
-            "title": "Incident Containment",
-            "description": "Incidents are contained to prevent further damage.",
-            "category": "Mitigation",
-        },
-        # RECOVER
-        {
-            "standard_name": "NIST",
-            "control_id": "RC.RP-1",
-            "title": "Recovery Plan Execution",
-            "description": "Recovery plan is executed during or after a cybersecurity incident.",
-            "category": "Recovery Planning",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "RC.IM-1",
-            "title": "Recovery Plan Implementation",
-            "description": "Recovery plans incorporate lessons learned from past incidents.",
-            "category": "Improvements",
-        },
-        {
-            "standard_name": "NIST",
-            "control_id": "RC.CO-1",
-            "title": "Public Relations Management",
-            "description": "Public relations are managed during recovery operations.",
-            "category": "Communications",
-        },
-    ]
+    # Load raw NIST SP 800-53 OSCAL data
+    raw_file = Path(__file__).parent / "raw" / "NIST_SP-800-53_rev5_catalog-min.json"
+
+    if not raw_file.exists():
+        print(f"Error: Raw NIST file not found at {raw_file}")
+        return
+
+    with open(raw_file, "r", encoding="utf-8") as f:
+        raw_data = json.load(f)
+
+    # Extract catalog
+    catalog = raw_data.get("catalog", {})
+    groups = catalog.get("groups", [])
+
+    # Transform the data structure
+    nist_controls = []
+
+    for group in groups:
+        group_id = group.get("id", "").upper()  # e.g., "AC"
+        group_title = group.get("title", "")  # e.g., "Access Control"
+
+        # Process each control in the group
+        for control in group.get("controls", []):
+            control_id = control.get("id", "").upper()  # e.g., "AC-1"
+            control_title = control.get("title", "")
+
+            # Extract statement prose (main requirement text)
+            statement_prose = ""
+            guidance_prose = ""
+
+            for part in control.get("parts", []):
+                if part.get("name") == "statement":
+                    statement_prose = extract_prose(part)
+                elif part.get("name") == "guidance":
+                    guidance_prose = extract_prose(part)
+
+            # Use statement as primary description, append guidance if available
+            if statement_prose:
+                req_description = statement_prose
+                if guidance_prose:
+                    req_description += f" | Guidance: {guidance_prose}"
+            elif control_title:
+                req_description = control_title
+            else:
+                req_description = ""
+
+            # Map to Weaviate schema format
+            control_data = {
+                "standard": "NIST",
+                "req_id": control_id,  # e.g., "AC-1"
+                "req_description": req_description,
+                "chapter_id": group_id,  # e.g., "AC"
+                "chapter_name": group_title,  # e.g., "Access Control"
+                "section_id": group_id,  # Use group_id as section_id (NIST doesn't have sections)
+                "section_name": group_title,  # Use group_title as section_name
+                "level": "",  # NIST doesn't have OWASP-style levels
+            }
+
+            nist_controls.append(control_data)
 
     # Save to prepared directory
-    output_file = Path(__file__).parent / "prepared" / "nist_csf.json"
+    output_file = Path(__file__).parent / "prepared" / "nist_sp80053.json"
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(nist_controls, f, indent=2, ensure_ascii=False)
 
-    print(f"NIST CSF data prepared: {len(nist_controls)} controls")
+    print(f"NIST SP 800-53 Rev 5 data prepared: {len(nist_controls)} controls")
     print(f"Saved to: {output_file}")
+
+    # Print summary by control family
+    family_counts = {}
+    for control in nist_controls:
+        family = control.get("chapter_id", "Unknown")
+        family_counts[family] = family_counts.get(family, 0) + 1
+
+    print(f"\nControl families: {len(family_counts)}")
+    print("Top 5 families by control count:")
+    for family, count in sorted(family_counts.items(), key=lambda x: x[1], reverse=True)[:5]:
+        print(f"  {family}: {count} controls")
 
 
 if __name__ == "__main__":
-    prepare_nist_csf()
+    prepare_nist_sp80053()
