@@ -8,9 +8,6 @@ design_verification_strategy:
     Compliance Requirements:
     {compliance_requirements}
 
-    OWASP Controls:
-    {owasp_controls}
-
     Your goal is to design a comprehensive security verification and testing strategy.
 
     CRITICAL INSTRUCTIONS:
@@ -71,7 +68,7 @@ design_verification_strategy:
           - Tools: AWS Config, Azure Policy, Cloud Custodian
     
     3. Define compliance_verification:
-       - How OWASP ASVS compliance will be verified
+       - How multi-standard compliance (OWASP ASVS, NIST SP 800-53, ISO 27001) will be verified
        - Regulatory audit preparation (HIPAA, GDPR, PCI-DSS, etc.)
        - Evidence collection and documentation
        - Third-party audit recommendations
@@ -91,7 +88,7 @@ design_verification_strategy:
        - False positive rate in automated scanning
        - Compliance audit pass rate
     
-    6. Map each testing method to specific OWASP controls it verifies
+    6. Map each testing method to specific security controls (from OWASP ASVS, NIST SP 800-53, ISO 27001) it verifies
     
     7. Output as clean, well-formatted MARKDOWN matching the structure below.
   expected_output: >
@@ -121,7 +118,7 @@ design_verification_strategy:
     
     ### 11.3. Compliance Verification
     
-    A paragraph describing how compliance will be verified (e.g., "OWASP ASVS compliance will be verified through automated tools and manual checks against regulatory requirements such as GDPR, CCPA, and PCI-DSS. Audit preparation will involve ensuring documentation and evidence collection for external audits. Recommendations will include engaging third-party auditors for comprehensive evaluations.")
+    A paragraph describing how compliance will be verified (e.g., "Multi-standard compliance (OWASP ASVS, NIST SP 800-53, ISO 27001) will be verified through automated tools and manual checks against regulatory requirements such as GDPR, CCPA, and PCI-DSS. Audit preparation will involve ensuring documentation and evidence collection for external audits. Recommendations will include engaging third-party auditors for comprehensive evaluations.")
     
     ### 11.4. Continuous Monitoring
     
