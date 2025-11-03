@@ -101,13 +101,13 @@ create_implementation_roadmap:
     **Rationale:** [Why these controls are in this phase]
     
     **Controls to Implement:**
-
+    
     - Control 1
     - Control 2
     - Control 3
     
     **Dependencies:**
-
+    
     - Dependency 1
     - Dependency 2
     (Only include if there are dependencies)
@@ -120,7 +120,7 @@ create_implementation_roadmap:
     **Rationale:** These controls build upon immediate security measures, focusing on improving access control adjustments and ensuring that logging and API security mitigate identified threats effectively.
     
     **Controls to Implement:**
-
+    
     - Enhance user authentication through comprehensive multi-factor authentication
     - Deploy role-based access controls across the admin dashboard
     - Implement comprehensive logging and monitoring for all administrative actions
@@ -128,9 +128,11 @@ create_implementation_roadmap:
     - Begin encryption for all sensitive data at rest
     
     **Dependencies:**
-
+    
     - Completion of TLS Implementation
     - Completion of multi-factor authentication
+    
+    IMPORTANT: Always include a blank line between bold headers (like **Controls to Implement:** or **Dependencies:**) and the bullet list that follows. This ensures proper markdown rendering in Quarto.
     
     ### 10.3. Resource Requirements
     

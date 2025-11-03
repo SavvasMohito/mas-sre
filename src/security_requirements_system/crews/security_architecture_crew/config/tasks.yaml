@@ -74,12 +74,12 @@ design_security_architecture:
     #### Frontend User Interface
     
     **Required Controls:**
-
+    
     - Control 1
     - Control 2
     
     **Recommended Patterns:**
-
+    
     - Pattern 1
     - Pattern 2
     
@@ -87,7 +87,7 @@ design_security_architecture:
     #### Backend API
     
     **Required Controls:**
-
+    
     - OAuth2 for API authentication
     - Rate Limiting
     - Input Validation
@@ -97,6 +97,8 @@ design_security_architecture:
     
     - API Gateway for service aggregation
     - Microservices architecture
+    
+    IMPORTANT: Always include a blank line between bold headers (like **Required Controls:** or **Recommended Patterns:**) and the bullet list that follows. This ensures proper markdown rendering in Quarto.
     
     ### 9.3. Data Protection Strategy
     
@@ -124,7 +126,7 @@ design_security_architecture:
     **Integration Name**
     
     *Security Requirements:*
-
+    
     - Requirement 1
     - Requirement 2
     
@@ -134,11 +136,13 @@ design_security_architecture:
     **Stripe Payment Gateway**
     
     *Security Requirements:*
-
+    
     - Use of secure API keys stored in environment variables
     - Implementation of OAuth for user sessions
     - Data transmitted only via secure endpoints (HTTPS)
     
     *Risk Assessment:* Critical - involves sensitive financial information; requires robust security measures to prevent breaches.
+    
+    IMPORTANT: Always include a blank line between italic headers (like *Security Requirements:*) and the bullet list that follows. This ensures proper markdown rendering in Quarto.
   agent: security_architect
 
