@@ -704,19 +704,19 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                 # Format: "[STANDARD] CONTROL_ID" for easy identification
                 control_ids = []
                 control_descriptions = []
-                
+
                 for ctrl in all_controls:
                     standard = ctrl.get("standard", "UNKNOWN")
                     ctrl_id = ctrl.get("req_id", "")
                     ctrl_desc = ctrl.get("requirement", "")
-                    
+
                     # Format control ID with standard prefix
                     if standard and ctrl_id:
                         formatted_id = f"[{standard}] {ctrl_id}"
                         control_ids.append(formatted_id)
                     elif ctrl_id:
                         control_ids.append(ctrl_id)
-                    
+
                     # Format description with standard prefix
                     if standard and ctrl_desc:
                         formatted_desc = f"[{standard}] {ctrl_desc[:80]}{'...' if len(ctrl_desc) > 80 else ''}"
@@ -878,12 +878,12 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
 
                 # Get security controls (multi-standard)
                 all_controls = mapping.get("security_controls", [])
-                
+
                 for control in all_controls:
                     standard = control.get("standard", "OWASP")
                     control_id = control.get("req_id", "")
                     chapter = control.get("chapter", "")
-                    
+
                     # Format category based on standard
                     if standard.upper() == "OWASP":
                         v_category = chapter.replace("V", "V") if chapter else ""  # Ensure V prefix
@@ -893,7 +893,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                         v_category = chapter  # ISO chapter (e.g., "A.5", "A.8")
                     else:
                         v_category = chapter if chapter else ""
-                    
+
                     asvs_mapping.append(
                         {
                             "control_id": control_id,
@@ -1968,7 +1968,7 @@ The following high-level functional requirements have been identified and analyz
 
                     # Get security controls (multi-standard)
                     all_controls = mapping.get("security_controls", [])
-                    
+
                     if not all_controls:
                         markdown += "*No specific security controls mapped.*\n"
                         continue
@@ -1980,22 +1980,20 @@ The following high-level functional requirements have been identified and analyz
                         if standard not in controls_by_standard:
                             controls_by_standard[standard] = []
                         controls_by_standard[standard].append(control)
-                    
+
                     # Display controls grouped by standard
                     for standard in ["OWASP", "NIST", "ISO27001"]:
                         if standard not in controls_by_standard:
                             continue
-                        
-                        standard_display_name = {
-                            "OWASP": "OWASP ASVS",
-                            "NIST": "NIST SP 800-53",
-                            "ISO27001": "ISO 27001:2022"
-                        }.get(standard, standard)
-                        
+
+                        standard_display_name = {"OWASP": "OWASP ASVS", "NIST": "NIST SP 800-53", "ISO27001": "ISO 27001:2022"}.get(
+                            standard, standard
+                        )
+
                         markdown += f"##### {standard_display_name} Controls\n\n"
-                        
+
                         for j, control in enumerate(controls_by_standard[standard], 1):
-                            control_id = control.get('req_id', 'N/A')
+                            control_id = control.get("req_id", "N/A")
                             markdown += f"**{control_id}**\n\n"
                             markdown += f"**Requirement:** {control.get('requirement', 'N/A')}\n\n"
                             markdown += f"**Relevance:**\n{control.get('relevance', 'No relevance explanation provided.')}\n\n"
@@ -2003,7 +2001,9 @@ The following high-level functional requirements have been identified and analyz
                             if control.get("verification_method"):
                                 markdown += f"**Verification Method:** {control.get('verification_method')}\n\n"
                             # Only show level for OWASP controls
-                            level_info = f"**Level:** {control.get('level', 'N/A')} | " if standard == "OWASP" and control.get('level') else ""
+                            level_info = (
+                                f"**Level:** {control.get('level', 'N/A')} | " if standard == "OWASP" and control.get("level") else ""
+                            )
                             markdown += f"{level_info}**Priority:** {control.get('priority', 'Medium')}\n\n"
 
                 # Add cross-functional controls
@@ -2051,7 +2051,7 @@ The following high-level functional requirements have been identified and analyz
                         threat_count = len(entry.get("threat_ids", []))
                         control_ids = entry.get("owasp_control_ids", [])  # Now contains all standards with prefixes
                         control_count = len(control_ids)
-                        
+
                         # Extract unique standards from control IDs (format: "[STANDARD] CONTROL_ID")
                         standards_set = set()
                         for ctrl_id in control_ids:
@@ -2059,13 +2059,11 @@ The following high-level functional requirements have been identified and analyz
                                 standard = ctrl_id.split("]")[0][1:]  # Extract "[STANDARD]"
                                 standards_set.add(standard)
                         standards_str = ", ".join(sorted(standards_set)) if standards_set else "Multiple"
-                        
+
                         priority = entry.get("priority", "Medium")
                         verification = entry.get("verification_methods", ["Manual"])[0] if entry.get("verification_methods") else "Manual"
 
-                        markdown += (
-                            f"| {req_id} | {req} | {threat_count} threats | {control_count} controls | {standards_str} | {priority} | {verification} |\n"
-                        )
+                        markdown += f"| {req_id} | {req} | {threat_count} threats | {control_count} controls | {standards_str} | {priority} | {verification} |\n"
 
                     markdown += f"\n*Showing 10 of {len(entries)} requirements. See Appendix D for complete traceability matrix.*\n\n"
 
@@ -2084,7 +2082,7 @@ The following high-level functional requirements have been identified and analyz
                             if ctrl_id.startswith("[") and "]" in ctrl_id:
                                 standard = ctrl_id.split("]")[0][1:]
                                 standard_counts[standard] = standard_counts.get(standard, 0) + 1
-                    
+
                     markdown += f"- **Total Requirements Tracked:** {total_reqs}\n"
                     markdown += f"- **Requirements Linked to Threats:** {with_threats} ({with_threats / max(total_reqs, 1) * 100:.1f}%)\n"
                     markdown += (
@@ -2092,7 +2090,7 @@ The following high-level functional requirements have been identified and analyz
                     )
                     markdown += f"- **Average Controls per Requirement:** {avg_controls_per_req:.1f}\n"
                     if standard_counts:
-                        markdown += f"- **Control Distribution by Standard:**\n"
+                        markdown += "- **Control Distribution by Standard:**\n"
                         for std, count in sorted(standard_counts.items(), key=lambda x: x[1], reverse=True):
                             std_name = {"OWASP": "OWASP ASVS", "NIST": "NIST SP 800-53", "ISO27001": "ISO 27001"}.get(std, std)
                             markdown += f"  - {std_name}: {count} controls\n"
