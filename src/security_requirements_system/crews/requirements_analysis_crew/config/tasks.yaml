@@ -41,15 +41,29 @@ analyze_architecture:
         Describe the main components (e.g., frontend, backend, database) and how they interact.
     
     2.  Generate a Mermaid diagram (using `graph TB` or `graph TD` syntax) to visually represent the architecture.
-        IMPORTANT DIAGRAM REQUIREMENTS:
+        CRITICAL MERMAID SYNTAX REQUIREMENTS - YOU MUST FOLLOW THESE EXACTLY:
+        
         - Use ONLY `%%{init: {'theme':'dark'}}%%` at the start - NO other theme variables or custom styling
+        - ALL node labels MUST be on a SINGLE LINE - multi-line labels are INVALID and will break rendering
+        - Use spaces, slashes (/), ampersands (&), or hyphens (-) to separate text within labels
+        - DO NOT use actual line breaks or newlines inside square brackets []
+        - Example VALID syntax: `FE[Web App SPA & Admin UI]` or `API[Core API Users/Tasks/RBAC]`
+        - Example INVALID syntax: `FE[Web App\nAdmin UI]` or `API[Core API\n(Users/Tasks)]` - DO NOT DO THIS
+        
+        DIAGRAM STRUCTURE REQUIREMENTS:
         - Keep the diagram SIMPLE and report-friendly - avoid excessive detail
         - Group related components into logical subgraphs (e.g., "Frontend Layer", "Application Services", "Data Layer", "External Services")
         - Use high-level component groupings rather than listing every individual service
-        - Keep node labels concise (max 2-3 lines per node)
+        - Keep node labels concise and readable (use abbreviations if needed to fit on one line)
         - DO NOT use classDef or custom node styling
         - Focus on showing the main architectural layers and their relationships, not every internal component
         - Example structure: Users → Edge Layer → Frontend → Application Services → Data Layer → External Services
+        
+        VALIDATION CHECK: Before outputting, verify:
+        - Every node label is on a single line (no line breaks inside brackets)
+        - The diagram starts with `%%{init: {'theme':'dark'}}%%`
+        - All subgraphs use double quotes: `subgraph "Layer Name"`
+        - All connections use `-->` arrows
     
     3.  For EACH major HIGH-LEVEL component group (not individual services), provide analysis (components):
         - Component group name (e.g., "Frontend Layer", "Application Services", "Data Storage")
