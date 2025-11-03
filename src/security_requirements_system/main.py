@@ -382,7 +382,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
         print("\n✓ Phase 1 complete - All parallel crews finished")
         print("  - Stakeholder analysis: Complete")
         print(f"  - Threat modeling: {threat_count} threats identified")
-        print("  - Security controls: Mapped to OWASP ASVS")
+        print("  - Security controls: Mapped to OWASP ASVS, NIST SP 800-53, and ISO 27001")
 
     @listen(execute_phase1_parallel)
     def execute_phase2_parallel(self):
@@ -655,7 +655,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                     if keyword_matches >= 1 or component_match or category_match or component_in_req:
                         related_threats.append(t)
 
-                # Find related OWASP controls using multiple matching strategies
+                # Find related security controls using multiple matching strategies
                 req_mapping = None
 
                 # Strategy 1: Exact match on requirement_id
@@ -753,7 +753,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
             summary = (
                 f"Traceability matrix contains {total_reqs} requirements. "
                 f"{with_threats} requirements ({with_threats / total_reqs * 100:.1f}%) linked to threats. "
-                f"{with_controls} requirements ({coverage_pct:.1f}%) mapped to OWASP controls. "
+                f"{with_controls} requirements ({coverage_pct:.1f}%) mapped to security controls (OWASP ASVS, NIST SP 800-53, ISO 27001). "
                 "Coverage: " + ("Complete" if coverage_pct >= 90 else "Partial" if coverage_pct >= 70 else "Needs Improvement") + "."
             )
 
@@ -960,8 +960,10 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
             if "CCPA" in self.state.requirements_text.upper():
                 compliance_items.append({"framework": "CCPA", "status": "In Progress", "next_audit": "TBD"})
 
-            # Add OWASP as always applicable
+            # Add security standards as always applicable
             compliance_items.append({"framework": "OWASP ASVS", "status": "In Progress", "next_audit": "N/A"})
+            compliance_items.append({"framework": "NIST SP 800-53", "status": "In Progress", "next_audit": "N/A"})
+            compliance_items.append({"framework": "ISO 27001", "status": "In Progress", "next_audit": "N/A"})
 
             with open(artifacts_dir / "compliance.json", "w") as f:
                 json.dump(compliance_items, f, indent=2)
@@ -1084,7 +1086,7 @@ This section provides a high-level overview of the security requirements analysi
 
 **Purpose**
 
-This document presents a comprehensive security requirements analysis for the proposed application, systematically mapping high-level business requirements to specific, actionable security controls aligned with industry standards including OWASP Application Security Verification Standard (ASVS), NIST Cybersecurity Framework, and ISO 27001. The analysis provides a complete security requirements specification that guides secure system design, implementation, and verification.
+This document presents a comprehensive security requirements analysis for the proposed application, systematically mapping high-level business requirements to specific, actionable security controls aligned with multiple industry standards: OWASP Application Security Verification Standard (ASVS), NIST SP 800-53 Rev 5, and ISO 27001:2022. The analysis provides a complete security requirements specification that guides secure system design, implementation, and verification.
 
 **Scope**
 
@@ -1093,7 +1095,7 @@ This analysis encompasses all functional requirements provided, delivering compr
 - **Requirements Analysis**: Systematic decomposition and security-relevant extraction from business requirements
 - **Stakeholder Analysis**: Identification of stakeholders, trust boundaries, and security responsibilities
 - **Threat Modeling**: Systematic identification and assessment of security threats using STRIDE methodology
-- **Security Control Mapping**: Mapping requirements to OWASP ASVS controls with detailed implementation guidance
+- **Security Control Mapping**: Mapping requirements to multi-standard security controls (OWASP ASVS, NIST SP 800-53, ISO 27001) with detailed implementation guidance
 - **Compliance Requirements**: Identification of regulatory and legal compliance obligations
 - **Architectural Security**: Security architecture recommendations and design patterns
 - **Implementation Planning**: Prioritized, phased implementation roadmap
@@ -2224,7 +2226,7 @@ The following high-level functional requirements have been identified and analyz
                     markdown += "The security requirements fall below the quality threshold and require improvement before "
                     markdown += "implementation. Specific areas for enhancement are detailed in the sections below.\n\n"
 
-                markdown += "The validation assesses:\n"
+                markdown += "The validation assesses:\n\n"
                 markdown += "- **Completeness**: Are all identified security concerns adequately addressed?\n"
                 markdown += "- **Consistency**: Do requirements align with each other without contradictions?\n"
                 markdown += "- **Correctness**: Are controls appropriate for the identified risks and correctly applied?\n"
@@ -2398,7 +2400,7 @@ The following high-level functional requirements have been identified and analyz
 
                 if entries:
                     markdown += "### Full Traceability Table\n\n"
-                    markdown += "| Req ID | Requirement | Category | Sensitivity | Threat IDs | OWASP Controls | Priority | Verification | Status |\n"
+                    markdown += "| Req ID | Requirement | Category | Sensitivity | Threat IDs | Security Controls | Priority | Verification | Status |\n"
                     markdown += "|--------|-------------|----------|-------------|------------|----------------|----------|--------------|--------|\n"
 
                     for entry in entries:
@@ -2456,7 +2458,7 @@ The following high-level functional requirements have been identified and analyz
                         control_ids = entry.get("owasp_control_ids", [])
                         control_descs = entry.get("owasp_control_descriptions", [])
                         if control_ids:
-                            markdown += "**OWASP ASVS Controls:**\n\n"
+                            markdown += "**Security Controls:**\n\n"
                             for cid, cdesc in zip(control_ids[:5], control_descs[:5]):
                                 markdown += f"- **{cid}**: {cdesc}\n"
                             if len(control_ids) > 5:
