@@ -4,75 +4,29 @@ map_security_controls:
 
     {high_level_requirements}
 
-    Your task is to analyze EVERY SINGLE requirement and map it to specific,
-    relevant security controls from MULTIPLE standards: OWASP ASVS, NIST SP 800-53, and ISO 27001.
-    You MUST process ALL requirements - no exceptions.
+    Your task is to map each requirement to relevant security controls from OWASP ASVS, NIST SP 800-53, and ISO 27001.
 
-    CRITICAL INSTRUCTIONS:
-    1.  Iterate through EACH AND EVERY high-level requirement from the input list.
-        DO NOT skip any requirements. You must provide mappings for ALL of them.
+    Instructions:
+    1. For each requirement, use the "Query Security Standards Database" tool to find relevant controls.
+       Call the tool with a specific query (e.g., "authentication", "encryption", "access control").
+       Do NOT specify a standard_filter - let the tool find the best matches across all standards.
     
-    2.  For each requirement, formulate SEVERAL specific, targeted search queries
-        that capture the essence of the security risks for that feature.
-        - BAD QUERY (generic): "authentication security"
-        - GOOD QUERY (specific): "secure multi-factor authentication implementation"
-        - GOOD QUERY (specific): "protection against credential stuffing attacks"
-        - GOOD QUERY (specific): "secure session management after login"
+    2. From the tool results, select 3-8 most relevant controls per requirement.
+       Use the EXACT data from the tool output: standard, req_id, chapter, section, requirement text, level.
     
-    3.  Query ALL THREE standards for each requirement:
-        a. Query OWASP ASVS (standard_filter="OWASP") - application-level security controls
-        b. Query NIST SP 800-53 (standard_filter="NIST") - enterprise/organizational controls
-        c. Query ISO 27001 (standard_filter="ISO27001") - information security management controls
-        You MUST query the database multiple times for EACH standard and EACH high-level requirement
-        to ensure comprehensive coverage.
+    3. For each control, provide:
+       - relevance: Why this control applies (2-3 sentences)
+       - integration_tips: How to implement it (2-3 sentences)
+       - priority: Critical, High, Medium, or Low
+       - verification_method: How to verify implementation
     
-    4.  From the tool's results across all standards, select the 3-8 MOST relevant controls
-        that apply directly to the high-level requirement being analyzed.
-        - Prioritize OWASP controls for application-level security (code, APIs, authentication)
-        - Include NIST controls for enterprise security (governance, risk management, incident response)
-        - Include ISO 27001 controls for organizational security (policies, procedures, ISMS)
-        Aim for comprehensive coverage across different security aspects and standards.
+    4. Identify cross_functional_controls that apply globally (logging, encryption, error handling).
     
-    5.  For each selected control, you MUST provide:
-        - The EXACT `standard` ("OWASP", "NIST", or "ISO27001")
-        - The EXACT `req_id`, `chapter`, `section`, `requirement` text from the tool output
-        - The `level` (only for OWASP controls - L1, L2, L3; leave empty/null for NIST and ISO)
-        - DO NOT MODIFY OR FABRICATE THIS DATA.
-        - A detailed `relevance` explanation (2-3 sentences), clearly describing WHY
-          this specific control is critical for the high-level requirement and what
-          risks it mitigates.
-        - Actionable `integration_tips` (2-3 sentences) on how a development team
-          could implement this security control in practice, with specific technical guidance.
-        - A `priority` level (Critical, High, Medium, Low) based on risk and compliance needs
-        - A `verification_method` describing how to verify this control is properly implemented
-          (e.g., "Automated SAST scanning", "Manual penetration testing", "Code review", "Policy review")
+    5. Recommend a recommended_asvs_level (L1, L2, or L3) based on data sensitivity and compliance needs.
     
-    6.  Additionally, identify cross_functional_controls that apply globally across the system:
-        - Logging and monitoring controls that apply everywhere
-        - Encryption standards for all data transmission
-        - Error handling patterns across all components
-        - Security headers for all web responses
-    
-    7.  Recommend an overall recommended_asvs_level (L1, L2, or L3) based on:
-        - Data sensitivity (higher for healthcare, financial data)
-        - Regulatory requirements (HIPAA, PCI-DSS, GDPR)
-        - Threat landscape and risk level
-    
-    8.  Structure the final output as a valid JSON object matching the DomainSecurityOutput schema:
-        - For backward compatibility, populate `owasp_controls` with OWASP controls only
-        - Populate `security_controls` with ALL controls from all standards (OWASP, NIST, ISO27001)
-        - Each control in `security_controls` must include the `standard` field
-    
-    QUALITY CHECK BEFORE SUBMITTING:
-    - Count the number of high-level requirements in the input
-    - Count the number of mappings in your output
-    - THESE NUMBERS MUST MATCH. If they don't, you've missed requirements.
-    - Each requirement should have 3-8 controls mapped from multiple standards
-    - Verify that controls include the `standard` field when added to `security_controls`
+    IMPORTANT: You MUST use the tool to find controls. Copy control data exactly from tool results.
   expected_output: >
-    A comprehensive JSON object matching the DomainSecurityOutput schema with mappings
-    for EVERY requirement from ALL standards (OWASP, NIST, ISO27001), cross-functional controls,
-    and recommended ASVS level. Include both `owasp_controls` (backward compatibility) and
-    `security_controls` (multi-standard) fields.
+    A JSON object matching DomainSecurityOutput schema with security_controls for each requirement.
+    Each control must include the standard field ("OWASP", "NIST", or "ISO27001").
   agent: domain_security_expert
 
