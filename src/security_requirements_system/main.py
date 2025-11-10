@@ -2505,7 +2505,7 @@ The following high-level functional requirements have been identified and analyz
 def kickoff():
     """Run the security requirements flow."""
     # Get input file from environment or use default
-    input_file = os.getenv("INPUT_FILE", "inputs/requirements.txt")
+    input_file = os.getenv("INPUT_FILE", "inputs/sample_taskmgmt.txt")
 
     flow = SecurityRequirementsFlow()
     flow.state.input_file = input_file

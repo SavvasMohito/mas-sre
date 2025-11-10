@@ -129,7 +129,7 @@ This system uses 5 specialized AI agents orchestrated through CrewAI Flows to ge
 
 ### Running the System
 
-**Option 1: Use default input file** (`inputs/requirements.txt`):
+**Option 1: Use default input file** (`inputs/sample_taskmgmt.txt`):
 ```bash
 crewai run
 ```

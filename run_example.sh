@@ -7,7 +7,7 @@ if [ -z "$1" ]; then
     echo "Usage: ./run_example.sh [example_name]"
     echo ""
     echo "Available examples:"
-    echo "  default      - Task management app (inputs/requirements.txt)"
+    echo "  default      - Task management app (inputs/sample_taskmgmt.txt)"
     echo "  ecommerce    - E-commerce platform (inputs/sample_ecommerce.txt)"
     echo "  healthcare   - Telemedicine platform (inputs/sample_healthcare.txt)"
     echo "  custom       - Specify custom file path"
