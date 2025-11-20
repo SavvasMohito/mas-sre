@@ -22,7 +22,7 @@ class ValidationCrew:
         # Using GPT-5 for high-complexity validation
         # Critical quality gate requiring multi-dimensional scoring and comprehensive evaluation
         # Must provide actionable, specific feedback for improvement
-        llm = LLM(model="openai/gpt-5")
+        llm = LLM(model="openai/gpt-5-mini")
         return Agent(
             config=self.agents_config["validation_expert"],
             llm=llm,

@@ -4,29 +4,50 @@ map_security_controls:
 
     {high_level_requirements}
 
-    Your task is to map each requirement to relevant security controls from OWASP ASVS, NIST SP 800-53, and ISO 27001.
+    Your task is to map EACH AND EVERY requirement to relevant security controls from OWASP ASVS, NIST SP 800-53, and ISO 27001.
+
+    CRITICAL REQUIREMENT: You MUST process ALL requirements in the list. Do not skip any requirement. 
+    Count the total number of requirements first, then ensure your output includes mappings for every single one.
 
     Instructions:
-    1. For each requirement, use the "Query Security Standards Database" tool to find relevant controls.
-       Call the tool with a specific query (e.g., "authentication", "encryption", "access control").
-       Do NOT specify a standard_filter - let the tool find the best matches across all standards.
+    1. Count the total number of requirements in the provided list.
     
-    2. From the tool results, select 3-8 most relevant controls per requirement.
+    2. For EACH requirement, call the "Query Security Standards Database" tool.
+       
+       Tool call format: {{"query": "your search term", "limit": 4}}
+       
+       Example: {{"query": "authentication", "limit": 4}}
+       
+       IMPORTANT: 
+       - Pass only the dictionary. Do not include previous tool results.
+       - Use limit=4 to get a focused set of results (not too many controls per requirement).
+       - Choose search terms that best match the requirement (e.g., key security concepts from the requirement text).
+    
+    3. From the tool results, select 2-4 most relevant controls per requirement.
        Use the EXACT data from the tool output: standard, req_id, chapter, section, requirement text, level.
+       Do NOT select more than 4 controls per requirement to avoid overcrowding.
     
-    3. For each control, provide:
+    4. For each control, provide:
        - relevance: Why this control applies (2-3 sentences)
        - integration_tips: How to implement it (2-3 sentences)
        - priority: Critical, High, Medium, or Low
        - verification_method: How to verify implementation
     
-    4. Identify cross_functional_controls that apply globally (logging, encryption, error handling).
+    5. Identify cross_functional_controls that apply globally (logging, encryption, error handling).
     
-    5. Recommend a recommended_asvs_level (L1, L2, or L3) based on data sensitivity and compliance needs.
+    6. Recommend a recommended_asvs_level (L1, L2, or L3) based on data sensitivity and compliance needs.
     
-    IMPORTANT: You MUST use the tool to find controls. Copy control data exactly from tool results.
+    7. Before finalizing your output, verify that you have mapped controls for ALL requirements. 
+       The requirements_mapping array must contain one entry for each requirement in the input list.
+    
+    IMPORTANT: 
+    - You MUST use the tool to find controls. Copy control data exactly from tool results.
+    - You MUST process every requirement - incomplete mappings will cause the system to fail.
+    - Select 2-4 controls per requirement maximum (use limit=4 in tool calls).
+    - If a requirement has no direct security controls, still include it with a note explaining why.
   expected_output: >
-    A JSON object matching DomainSecurityOutput schema with security_controls for each requirement.
+    A JSON object matching DomainSecurityOutput schema with security_controls for EACH requirement.
+    The requirements_mapping array must contain entries for ALL requirements provided in the input.
     Each control must include the standard field ("OWASP", "NIST", or "ISO27001").
   agent: domain_security_expert
 

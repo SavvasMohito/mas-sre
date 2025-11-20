@@ -22,7 +22,7 @@ class ThreatModelingCrew:
         # Using GPT-5 for very high-complexity threat modeling
         # Requires sophisticated STRIDE analysis, risk assessment, and residual risk calculations
         # Complex multi-step reasoning (likelihood × impact → risk level)
-        llm = LLM(model="openai/gpt-5")
+        llm = LLM(model="openai/gpt-5-mini")
         return Agent(
             config=self.agents_config["threat_modeling_expert"],
             llm=llm,

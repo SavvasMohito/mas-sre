@@ -6,12 +6,14 @@ This flow orchestrates 5 agent crews to transform high-level product requirement
 into comprehensive, standards-aligned security requirements with self-evaluation.
 """
 
+import hashlib
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
+import weaviate
 import yaml
 from crewai.flow.flow import Flow, listen, start
 from dotenv import load_dotenv
@@ -88,6 +90,109 @@ def load_config():
     return {}
 
 
+def _get_requirements_hash(requirements: list[str]) -> str:
+    """Generate a hash of requirements for cache key."""
+    requirements_str = json.dumps(requirements, sort_keys=True)
+    return hashlib.md5(requirements_str.encode()).hexdigest()
+
+
+def pre_query_weaviate_for_requirements(
+    requirements: list[str],
+    limit_per_query: int = 8,
+    cache_dir: Optional[Path] = None,
+) -> dict[str, list[dict]]:
+    """
+    Pre-query Weaviate database for all requirements to avoid tool calling during LLM execution.
+    Results are cached based on requirements hash to avoid re-querying unchanged requirements.
+
+    Returns a dictionary mapping requirement text to structured JSON list of security controls.
+    Each control is a dict with: standard, req_id, chapter, section, level, requirement fields.
+    """
+    # Check cache first
+    if cache_dir:
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        req_hash = _get_requirements_hash(requirements)
+        cache_file = cache_dir / f"pre_queried_controls_{req_hash}.json"
+
+        if cache_file.exists():
+            print(f"\n📂 Loading cached pre-queried controls from {cache_file.name}...")
+            try:
+                with open(cache_file, "r", encoding="utf-8") as f:
+                    cached_results = json.load(f)
+                print(f"✓ Loaded cached pre-queried controls for {len(requirements)} requirements")
+                return cached_results
+            except Exception as e:
+                print(f"⚠️  Error loading cache: {e}. Re-querying...")
+
+    print(f"\n🔍 Pre-querying Weaviate for {len(requirements)} requirements...")
+
+    results = {}
+
+    try:
+        # Connect to Weaviate
+        client = weaviate.connect_to_local(
+            host=os.getenv("WEAVIATE_HOST", "localhost"),
+            port=int(os.getenv("WEAVIATE_PORT", "8080")),
+            grpc_port=int(os.getenv("WEAVIATE_GRPC_PORT", "50051")),
+        )
+
+        try:
+            collection = client.collections.get("SecurityControl")
+
+            for i, requirement in enumerate(requirements, 1):
+                # Extract key terms from requirement for querying
+                # Use the requirement text itself as the query
+                query_text = requirement[:200]  # Limit query length
+
+                try:
+                    response = collection.query.near_text(query=query_text, limit=limit_per_query)
+
+                    # Format results as structured JSON matching SecurityControl model
+                    if not response.objects:
+                        results[requirement] = []
+                    else:
+                        structured_controls = []
+                        for obj in response.objects:
+                            props = obj.properties
+                            control = {
+                                "standard": props.get("standard", "Unknown"),
+                                "req_id": props.get("req_id", "N/A"),
+                                "chapter": f"{props.get('chapter_id', '')} - {props.get('chapter_name', '')}".strip(" -"),
+                                "section": f"{props.get('section_id', '')} - {props.get('section_name', '')}".strip(" -"),
+                                "level": props.get("level") if props.get("level") else None,
+                                "requirement": props.get("req_description", "No description"),
+                            }
+                            structured_controls.append(control)
+
+                        results[requirement] = structured_controls
+
+                    if i % 5 == 0:
+                        print(f"  ✓ Queried {i}/{len(requirements)} requirements...")
+
+                except Exception as e:
+                    print(f"  ⚠️  Error querying for requirement {i}: {e}")
+                    results[requirement] = []
+
+            print(f"✓ Completed pre-querying all {len(requirements)} requirements")
+
+            # Save to cache
+            if cache_dir:
+                cache_file = cache_dir / f"pre_queried_controls_{_get_requirements_hash(requirements)}.json"
+                with open(cache_file, "w", encoding="utf-8") as f:
+                    json.dump(results, f, indent=2)
+                print(f"💾 Cached pre-queried controls to {cache_file.name}")
+
+        finally:
+            client.close()
+
+    except Exception as e:
+        print(f"⚠️  Error connecting to Weaviate: {e}")
+        # Return empty results - agent can still work without pre-queried data
+        return {}
+
+    return results
+
+
 # Load global configuration
 CONFIG = load_config()
 
@@ -108,6 +213,7 @@ class SecurityRequirementsState(BaseModel):
     # Input
     requirements_text: str = ""
     input_file: Optional[str] = None
+    participant_name: str = ""
 
     # Requirements Analysis outputs
     application_summary: str = ""
@@ -230,6 +336,52 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
 
         return results
 
+    def _get_crew_cache_dir(self) -> Path:
+        """Get the directory for caching crew outputs."""
+        cache_dir = Path(f"generations/{self.state.participant_name}/outputs/crews")
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        return cache_dir
+
+    def _save_crew_output(self, crew_name: str, result: Any) -> None:
+        """Save crew output to cache file."""
+        cache_dir = self._get_crew_cache_dir()
+        cache_file = cache_dir / f"{crew_name}.json"
+
+        # Extract relevant data from result
+        data = {}
+        if hasattr(result, "raw"):
+            data["raw"] = result.raw
+        if hasattr(result, "pydantic") and result.pydantic:
+            data["pydantic"] = result.pydantic.model_dump()
+        if hasattr(result, "tasks_output"):
+            data["tasks"] = []
+            for task in result.tasks_output:
+                task_data = {
+                    "name": task.name if hasattr(task, "name") else "unknown",
+                    "raw": task.raw if hasattr(task, "raw") else str(task),
+                }
+                if hasattr(task, "pydantic") and task.pydantic:
+                    task_data["pydantic"] = task.pydantic.model_dump()
+                data["tasks"].append(task_data)
+
+        # Save to file
+        with open(cache_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, default=str)
+
+        print(f"💾 Cached crew output: {cache_file}")
+
+    def _load_crew_output(self, crew_name: str) -> Optional[dict]:
+        """Load cached crew output if it exists."""
+        cache_dir = self._get_crew_cache_dir()
+        cache_file = cache_dir / f"{crew_name}.json"
+
+        if cache_file.exists():
+            with open(cache_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            print(f"📂 Loaded cached output for {crew_name} from {cache_file}")
+            return data
+        return None
+
     @start()
     def load_requirements(self):
         """Load product manager requirements from input file."""
@@ -259,19 +411,40 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
         print(f"STEP 2: Analyzing Requirements (Iteration {self.state.iteration_count + 1})")
         print("=" * 80)
 
-        # Add feedback context if this is a re-run
-        context = self.state.requirements_text
-        if self.state.validation_report and not self.state.validation_passed:
-            context += f"\n\nPREVIOUS VALIDATION FEEDBACK:\n{self.state.validation_report}"
+        # Check for cached output
+        cached_data = self._load_crew_output("requirements_analysis")
+        if cached_data and "tasks" in cached_data:
+            print("✓ Using cached requirements analysis output")
+            # Reconstruct outputs from cache
+            analysis_task_data = next((t for t in cached_data["tasks"] if t.get("name") == "analyze_requirements"), None)
+            architecture_task_data = next((t for t in cached_data["tasks"] if t.get("name") == "analyze_architecture"), None)
 
-        result = RequirementsAnalysisCrew().crew().kickoff(inputs={"requirements_text": context})
+            if analysis_task_data and "pydantic" in analysis_task_data:
+                analysis_output = AnalysisOutput(**analysis_task_data["pydantic"])
+            else:
+                raise ValueError("Cached data missing analysis output")
 
-        # Access tasks' outputs from CrewOutput
-        analysis_task_output = next(filter(lambda x: x.name == "analyze_requirements", result.tasks_output))
-        architecture_task_output = next(filter(lambda x: x.name == "analyze_architecture", result.tasks_output))
+            if architecture_task_data and "pydantic" in architecture_task_data:
+                architecture_output = ArchitectureOutput(**architecture_task_data["pydantic"])
+            else:
+                raise ValueError("Cached data missing architecture output")
+        else:
+            # Add feedback context if this is a re-run
+            context = self.state.requirements_text
+            if self.state.validation_report and not self.state.validation_passed:
+                context += f"\n\nPREVIOUS VALIDATION FEEDBACK:\n{self.state.validation_report}"
 
-        analysis_output: AnalysisOutput = analysis_task_output.pydantic  # type: ignore[assignment]
-        architecture_output: ArchitectureOutput = architecture_task_output.pydantic  # type: ignore[assignment]
+            result = RequirementsAnalysisCrew().crew().kickoff(inputs={"requirements_text": context})
+
+            # Save to cache
+            self._save_crew_output("requirements_analysis", result)
+
+            # Access tasks' outputs from CrewOutput
+            analysis_task_output = next(filter(lambda x: x.name == "analyze_requirements", result.tasks_output))
+            architecture_task_output = next(filter(lambda x: x.name == "analyze_architecture", result.tasks_output))
+
+            analysis_output: AnalysisOutput = analysis_task_output.pydantic  # type: ignore[assignment]
+            architecture_output: ArchitectureOutput = architecture_task_output.pydantic  # type: ignore[assignment]
 
         # Store basic analysis outputs
         self.state.application_summary = analysis_output.application_summary
@@ -325,6 +498,11 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
         # Define executor functions for each crew
         def exec_stakeholders():
             print("\n[PARALLEL] Starting Stakeholder Analysis...")
+            cached_data = self._load_crew_output("stakeholders")
+            if cached_data and "raw" in cached_data:
+                print("✓ Using cached stakeholder analysis output")
+                return ("stakeholders", cached_data["raw"])
+
             result = (
                 StakeholderCrew()
                 .crew()
@@ -335,10 +513,21 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                     }
                 )
             )
+            self._save_crew_output("stakeholders", result)
             return ("stakeholders", result.raw)
 
         def exec_threat_modeling():
             print("\n[PARALLEL] Starting Threat Modeling...")
+            cached_data = self._load_crew_output("threat_modeling")
+            if cached_data and "pydantic" in cached_data:
+                print("✓ Using cached threat modeling output")
+                from security_requirements_system.data_models import ThreatModelingOutput
+
+                threat_output = ThreatModelingOutput(**cached_data["pydantic"])
+                threats_json = threat_output.model_dump_json(indent=2)
+                threat_count = len(threat_output.threats) if threat_output else 0
+                return ("threats", threats_json, threat_count)
+
             result = (
                 ThreatModelingCrew()
                 .crew()
@@ -350,6 +539,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                     }
                 )
             )
+            self._save_crew_output("threat_modeling", result)
             threat_output = result.pydantic
             threats_json = threat_output.model_dump_json(indent=2) if threat_output else "{}"
             threat_count = len(threat_output.threats) if threat_output else 0
@@ -357,14 +547,46 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
 
         def exec_security_controls():
             print("\n[PARALLEL] Starting Security Controls Mapping...")
-            result = (
-                DomainSecurityCrew()
-                .crew()
-                .kickoff(inputs={"high_level_requirements": json.dumps(self.state.high_level_requirements, indent=2)})
-            )
-            domain_output = result.tasks_output[0]
-            controls_json = domain_output.pydantic.model_dump_json(indent=2)  # type: ignore[union-attr]
-            return ("security_controls", controls_json)
+            cached_data = self._load_crew_output("security_controls")
+            if cached_data and "tasks" in cached_data and len(cached_data["tasks"]) > 0:
+                print("✓ Using cached security controls output")
+                task_data = cached_data["tasks"][0]
+                if "pydantic" in task_data:
+                    controls_json = json.dumps(task_data["pydantic"], indent=2)
+                    return ("security_controls", controls_json)
+
+            # Retry logic for connection errors
+            import time
+
+            max_retries = 3
+            retry_delay = 5  # seconds
+
+            for attempt in range(max_retries):
+                try:
+                    result = (
+                        DomainSecurityCrew()
+                        .crew()
+                        .kickoff(
+                            inputs={
+                                "high_level_requirements": json.dumps(self.state.high_level_requirements, indent=2),
+                            }
+                        )
+                    )
+                    self._save_crew_output("security_controls", result)
+                    domain_output = result.tasks_output[0]
+                    controls_json = domain_output.pydantic.model_dump_json(indent=2)  # type: ignore[union-attr]
+                    return ("security_controls", controls_json)
+                except Exception as e:
+                    error_str = str(e).lower()
+                    # Retry on connection/reset errors
+                    if any(keyword in error_str for keyword in ["connection reset", "connection error", "timeout", "reset by peer"]):
+                        if attempt < max_retries - 1:
+                            wait_time = retry_delay * (attempt + 1)  # Exponential backoff
+                            print(f"⚠️  Connection error (attempt {attempt + 1}/{max_retries}). Retrying in {wait_time}s...")
+                            time.sleep(wait_time)
+                            continue
+                    # Re-raise if not a connection error or out of retries
+                    raise
 
         # Execute all three in parallel
         results = self._execute_crew_parallel(
@@ -379,10 +601,30 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
 
         threat_count = results["Threat Modeling"][2] if len(results["Threat Modeling"]) > 2 else 0
 
+        # Validate security controls completeness
+        try:
+            controls_data = json.loads(self.state.security_controls) if self.state.security_controls else {}
+            requirements_mapping = controls_data.get("requirements_mapping", []) if isinstance(controls_data, dict) else []
+            expected_count = len(self.state.high_level_requirements)
+            actual_count = len(requirements_mapping)
+
+            if actual_count < expected_count:
+                print("\n⚠️  WARNING: Security controls mapping is incomplete!")
+                print(f"  - Expected mappings: {expected_count}")
+                print(f"  - Actual mappings: {actual_count}")
+                print(f"  - Missing: {expected_count - actual_count} requirement(s)")
+                print("  - This will result in low traceability coverage.")
+                print("  - Consider re-running the security controls crew.")
+            else:
+                print(
+                    f"\n✓ Security controls: Mapped {actual_count}/{expected_count} requirements to OWASP ASVS, NIST SP 800-53, and ISO 27001"
+                )
+        except Exception as e:
+            print(f"\n⚠️  Warning: Could not validate security controls completeness: {e}")
+
         print("\n✓ Phase 1 complete - All parallel crews finished")
         print("  - Stakeholder analysis: Complete")
         print(f"  - Threat modeling: {threat_count} threats identified")
-        print("  - Security controls: Mapped to OWASP ASVS, NIST SP 800-53, and ISO 27001")
 
     @listen(execute_phase1_parallel)
     def execute_phase2_parallel(self):
@@ -399,6 +641,11 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
         # Define executor functions for each crew
         def exec_ai_security():
             print("\n[PARALLEL] Starting AI/ML Security Analysis...")
+            cached_data = self._load_crew_output("ai_security")
+            if cached_data and "raw" in cached_data:
+                print("✓ Using cached AI/ML security output")
+                return ("ai_security", cached_data["raw"])
+
             result = (
                 LLMSecurityCrew()
                 .crew()
@@ -409,10 +656,16 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                     }
                 )
             )
+            self._save_crew_output("ai_security", result)
             return ("ai_security", result.raw)
 
         def exec_compliance():
             print("\n[PARALLEL] Starting Compliance Assessment...")
+            cached_data = self._load_crew_output("compliance")
+            if cached_data and "raw" in cached_data:
+                print("✓ Using cached compliance output")
+                return ("compliance_requirements", cached_data["raw"])
+
             result = (
                 ComplianceCrew()
                 .crew()
@@ -423,6 +676,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                     }
                 )
             )
+            self._save_crew_output("compliance", result)
             return ("compliance_requirements", result.raw)
 
         # Execute both in parallel
@@ -443,20 +697,25 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
         print("STEP 8: Designing Security Architecture")
         print("=" * 80)
 
-        result = (
-            SecurityArchitectureCrew()
-            .crew()
-            .kickoff(
-                inputs={
-                    "requirements_text": self.state.requirements_text,
-                    "architecture_summary": self.state.architecture_summary,
-                    "components": self.state.components if self.state.components else "No detailed components available",
-                    "security_controls": self.state.security_controls,
-                }
+        cached_data = self._load_crew_output("security_architecture")
+        if cached_data and "raw" in cached_data:
+            print("✓ Using cached security architecture output")
+            self.state.security_architecture = cached_data["raw"]
+        else:
+            result = (
+                SecurityArchitectureCrew()
+                .crew()
+                .kickoff(
+                    inputs={
+                        "requirements_text": self.state.requirements_text,
+                        "architecture_summary": self.state.architecture_summary,
+                        "components": self.state.components if self.state.components else "No detailed components available",
+                        "security_controls": self.state.security_controls,
+                    }
+                )
             )
-        )
-
-        self.state.security_architecture = result.raw
+            self._save_crew_output("security_architecture", result)
+            self.state.security_architecture = result.raw
 
         print("\n✓ Security architecture design complete")
 
@@ -475,6 +734,11 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
         # Define executor functions for each crew
         def exec_roadmap():
             print("\n[PARALLEL] Starting Implementation Roadmap...")
+            cached_data = self._load_crew_output("implementation_roadmap")
+            if cached_data and "raw" in cached_data:
+                print("✓ Using cached implementation roadmap output")
+                return ("implementation_roadmap", cached_data["raw"])
+
             result = (
                 RoadmapCrew()
                 .crew()
@@ -487,10 +751,16 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                     }
                 )
             )
+            self._save_crew_output("implementation_roadmap", result)
             return ("implementation_roadmap", result.raw)
 
         def exec_verification():
             print("\n[PARALLEL] Starting Verification Strategy...")
+            cached_data = self._load_crew_output("verification")
+            if cached_data and "raw" in cached_data:
+                print("✓ Using cached verification output")
+                return ("verification_testing", cached_data["raw"])
+
             result = (
                 VerificationCrew()
                 .crew()
@@ -501,6 +771,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
                     }
                 )
             )
+            self._save_crew_output("verification", result)
             return ("verification_testing", result.raw)
 
         # Execute both in parallel
@@ -521,22 +792,32 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
         print("STEP 11: Validating Security Requirements")
         print("=" * 80)
 
-        result = (
-            ValidationCrew()
-            .crew()
-            .kickoff(
-                inputs={
-                    "requirements_text": self.state.requirements_text,
-                    "analyzed_requirements": f"Application Summary: {self.state.application_summary}\nHigh-Level Requirements: {self.state.high_level_requirements}",
-                    "security_controls": self.state.security_controls,
-                    "ai_security": self.state.ai_security,
-                    "compliance_requirements": self.state.compliance_requirements,
-                }
+        cached_data = self._load_crew_output("validation")
+        if cached_data and "tasks" in cached_data and len(cached_data["tasks"]) > 0:
+            print("✓ Using cached validation output")
+            task_data = cached_data["tasks"][0]
+            if "pydantic" in task_data:
+                validation_output = ValidationOutput(**task_data["pydantic"])
+            else:
+                raise ValueError("Cached validation data missing pydantic output")
+        else:
+            result = (
+                ValidationCrew()
+                .crew()
+                .kickoff(
+                    inputs={
+                        "requirements_text": self.state.requirements_text,
+                        "analyzed_requirements": f"Application Summary: {self.state.application_summary}\nHigh-Level Requirements: {self.state.high_level_requirements}",
+                        "security_controls": self.state.security_controls,
+                        "ai_security": self.state.ai_security,
+                        "compliance_requirements": self.state.compliance_requirements,
+                    }
+                )
             )
-        )
+            self._save_crew_output("validation", result)
+            validation_task_output = result.tasks_output[0]
+            validation_output: ValidationOutput = validation_task_output.pydantic  # type: ignore[assignment]
 
-        validation_task_output = result.tasks_output[0]
-        validation_output: ValidationOutput = validation_task_output.pydantic  # type: ignore[assignment]
         self.state.validation_report = validation_output.model_dump_json(indent=2)
         self.state.validation_score = validation_output.overall_score
         self.state.validation_passed = validation_output.validation_passed
@@ -799,7 +1080,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # Save to output file
-        output_dir = Path("outputs")
+        output_dir = Path(f"generations/{self.state.participant_name}/outputs")
         output_dir.mkdir(exist_ok=True)
 
         # Create artifacts directory for dashboard data
@@ -810,7 +1091,7 @@ class SecurityRequirementsFlow(Flow[SecurityRequirementsState]):
         self._export_dashboard_artifacts(artifacts_dir, timestamp)
 
         # Generate Quarto markdown as primary output
-        qmd_file = output_dir / f"security_requirements_{timestamp}.qmd"
+        qmd_file = output_dir / f"{self.state.participant_name}_security_report_{timestamp}.qmd"
         self._generate_markdown_summary(qmd_file, artifacts_dir)
 
         # # Compile all outputs into a comprehensive document (for backup)
@@ -1186,6 +1467,7 @@ try:
         title="Threat Risk Matrix (Likelihood × Impact)",
         xaxis_title="Likelihood →",
         yaxis_title="Impact →",
+        width=800,
         height=400
     )
     fig_risk.show()
@@ -1255,7 +1537,7 @@ try:
             color_continuous_scale="Blues"
         )
         fig_std.update_traces(textposition='outside')
-        fig_std.update_layout(height=400, showlegend=False)
+        fig_std.update_layout(width=800, height=400, showlegend=False)
         fig_std.show()
     else:
         print("Standard distribution data not available.")
@@ -1293,7 +1575,7 @@ try:
         color_continuous_scale="Blues"
     )
     fig_asvs.update_traces(textposition='outside')
-    fig_asvs.update_layout(height=400, showlegend=False)
+    fig_asvs.update_layout(width=800, height=400, showlegend=False)
     fig_asvs.show()
 except Exception as e:
     print(f"⚠️ Could not generate ASVS chart: {{e}}")
@@ -1330,7 +1612,7 @@ try:
         color_discrete_map=color_map
     )
     fig_prio.update_traces(textposition='outside')
-    fig_prio.update_layout(height=400, showlegend=False)
+    fig_prio.update_layout(width=800, height=400, showlegend=False)
     fig_prio.show()
 except Exception as e:
     print(f"⚠️ Could not generate priority chart: {{e}}")
@@ -1406,7 +1688,7 @@ try:
         text="status",
         height=400
     )
-    fig_comp.update_layout(showlegend=True, yaxis_visible=False, yaxis_showticklabels=False)
+    fig_comp.update_layout(width=800, height=400, showlegend=True, yaxis_visible=False, yaxis_showticklabels=False)
     fig_comp.update_traces(textposition='inside')
     fig_comp.show()
 except Exception as e:
@@ -1467,6 +1749,7 @@ try:
         title="Security Controls Implementation Timeline (Projected)",
         xaxis_title="Week",
         yaxis_title="Number of Controls",
+        width=800,
         height=400,
         hovermode='x unified'
     )
@@ -1573,6 +1856,7 @@ try:
         title="Data Quality & Coverage Metrics",
         xaxis_title="Score / Percentage (%)",
         xaxis=dict(range=[0, 110]),
+        width=800,
         height=400,
         showlegend=False
     )
@@ -2505,10 +2789,13 @@ The following high-level functional requirements have been identified and analyz
 def kickoff():
     """Run the security requirements flow."""
     # Get input file from environment or use default
-    input_file = os.getenv("INPUT_FILE", "inputs/sample_taskmgmt.txt")
+    # input_file = os.getenv("INPUT_FILE", "inputs/sample_taskmgmt.txt")
+    PARTICIPANT_NAME = os.getenv("PARTICIPANT_NAME")
+    input_file = f"generations/{PARTICIPANT_NAME}/{PARTICIPANT_NAME}.md"
 
     flow = SecurityRequirementsFlow()
     flow.state.input_file = input_file
+    flow.state.participant_name = PARTICIPANT_NAME
 
     print("\n" + "=" * 80)
     print("SECURITY REQUIREMENTS GENERATION SYSTEM")

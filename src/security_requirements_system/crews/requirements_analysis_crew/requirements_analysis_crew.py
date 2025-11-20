@@ -21,7 +21,7 @@ class RequirementsAnalysisCrew:
     def requirements_analyst(self) -> Agent:
         # Using GPT-5 for high-complexity requirements analysis
         # This is a foundation crew requiring deep understanding and complex reasoning
-        llm = LLM(model="openai/gpt-5")
+        llm = LLM(model="openai/gpt-5-mini")
         return Agent(
             config=self.agents_config["requirements_analyst"],
             llm=llm,
@@ -32,7 +32,7 @@ class RequirementsAnalysisCrew:
     def system_architect(self) -> Agent:
         # Using GPT-5 for high-complexity architecture analysis
         # Must maintain consistency across multiple outputs and generate structured data
-        llm = LLM(model="openai/gpt-5")
+        llm = LLM(model="openai/gpt-5-mini")
         return Agent(
             config=self.agents_config["system_architect"],
             llm=llm,

@@ -20,14 +20,22 @@ class DomainSecurityCrew:
 
     @agent
     def domain_security_expert(self) -> Agent:
-        # Using GPT-5 for very high-complexity security control mapping
-        # Requires robust tool/function calling for Weaviate database queries
+        # Using GPT-5-mini for security control mapping with tool-based database queries
+        # Agent queries database directly for each requirement
+        # Reduced query limit to 4 per requirement to avoid overcrowding
         # Complex multi-step task: analyze → query → map → explain
         # Must ensure completeness (no skipped requirements)
-        llm = LLM(model="openai/gpt-5")
+        # Increased timeout and added retry configuration for connection stability
+        llm = LLM(
+            model="openai/gpt-5-mini",
+            timeout=1200,  # 20 minutes for large requirement sets
+            max_retries=3,  # Retry on connection errors
+        )
+        # Tool for querying security standards database
+        tool = WeaviateQueryTool(name="Query Security Standards Database")
         return Agent(
             config=self.agents_config["domain_security_expert"],
-            tools=[WeaviateQueryTool()],
+            tools=[tool],
             llm=llm,
             verbose=True,
         )
