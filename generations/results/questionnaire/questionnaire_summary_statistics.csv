@@ -1,0 +1,8 @@
+Question,Mean,Std,Min,Max,Median
+Q1: Intend to use insights in next project,4.142857142857143,0.9492622930986468,3,5,4.5
+Q2: Plan to incorporate into requirements process,3.9285714285714284,0.6157279262148818,3,5,4.0
+Q3: Rely on OWASP/NIST/ISO mappings,4.285714285714286,0.9138735334633753,2,5,4.5
+Q4: Recommend for team projects,4.285714285714286,0.6112498455021267,3,5,4.0
+Q5: Request reports for new initiatives,4.285714285714286,0.6112498455021267,3,5,4.0
+Q6: Allocate time during requirements elicitation,4.142857142857143,0.7703288865196432,3,5,4.0
+Q7: Continue requesting after study,4.071428571428571,0.7300459115473716,3,5,4.0
