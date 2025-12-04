@@ -1,348 +1,139 @@
-# Security Requirements Generation System
+# Multi-Agent System for Security Requirements Engineering (MAS-SRE)
 
-A multi-agent system built with CrewAI that automatically translates high-level product requirements into comprehensive, standards-aligned security requirements.
+## 📖 Overview
 
-## Overview
+This repository contains the reference implementation for the Master's Thesis: **"A Multi-Agent Approach for a Security-Aware Translation of Software Business Requirements."**
 
-This system uses 5 specialized AI agents orchestrated through CrewAI Flows to generate security requirements from product manager inputs:
+The system is a Multi-Agent System (MAS) powered by Large Language Models (LLMs) designed to bridge the "translation gap" in software development. It automates the complex process of translating high-level business requirements into detailed, security-compliant technical specifications. By leveraging a fleet of specialized AI agents, the system simulates a team of security experts—including threat modelers, compliance officers, and security architects—to analyze input requirements, identify risks using the STRIDE methodology, and map actionable security controls from industry standards.
 
-1. **Requirements Analysis Agent** - Parses high-level requirements and identifies security implications
-2. **Domain Security Agent** - Maps requirements to OWASP, NIST, and ISO 27001 controls
-3. **LLM Security Specialist** - Identifies AI/ML components and adds specialized security controls
-4. **Compliance Agent** - Ensures regulatory alignment (GDPR, HIPAA, PCI-DSS, etc.)
-5. **Validation Agent** - Validates completeness and consistency with self-evaluation loop
+The goal of this project is to enable "Shift Left" security by making rigorous Security Requirements Engineering (SRE) faster, consistent, and accessible to development teams without deep security expertise.
+
+## 🏗️ System Architecture
+
+The system utilizes **CrewAI** for agent orchestration and **Weaviate** for Retrieval-Augmented Generation (RAG). It operates via a four-stage pipeline:
+
+1. **Requirements Analysis:** Extraction of architectural components and system boundaries.
+
+2. **Parallel Security Analysis:** Concurrent execution of Threat Modeling (STRIDE), Stakeholder Analysis, and Compliance checking.
+
+3. **Synthesis & Planning:** Aggregation of findings into a unified security architecture and implementation roadmap.
+
+4. **Validation:** Self-correction loops to ensure quality and completeness.
+
+![Multi-Agent System Flow Diagram](thesis-results-analysis/flow-diagram.png "Multi-Agent System Flow Diagram")
+*Figure 1: The Multi-Agent System Architecture featuring ten specialized agents.*
 
 ### Key Features
 
-- 📋 **Standards-Based**: Leverages OWASP ASVS, NIST CSF, and ISO 27001
-- 🤖 **AI-Aware**: Specialized handling of LLM and ML security threats
-- ✅ **Self-Evaluating**: Automatic validation with iterative refinement
-- 🗄️ **Vector Search**: Semantic search over security standards using Weaviate
-- 📊 **Comprehensive Output**: JSON and Markdown reports with validation scores
+* **Automated Threat Modeling:** Systematically identifies threats using the STRIDE methodology.
 
-## Architecture
+* **Standards Compliance:** Uses RAG to map requirements to **OWASP ASVS**, **NIST SP 800-53**, and **ISO 27001**.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Product Manager Input                     │
-│                   (High-level Requirements)                  │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│               Requirements Analysis Agent                    │
-│         (Extract security-relevant features)                 │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-         ┌───────────────┼───────────────┐
-         ▼               ▼               ▼
-┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-│   Domain    │ │  LLM/AI     │ │ Compliance  │
-│  Security   │ │  Security   │ │   Agent     │
-│   Agent     │ │  Specialist │ │             │
-└──────┬──────┘ └──────┬──────┘ └──────┬──────┘
-       │               │               │
-       └───────────────┼───────────────┘
-                       ▼
-         ┌─────────────────────────┐
-         │   Weaviate Vector DB     │
-         │ (Security Standards)     │
-         └─────────────────────────┘
-                       │
-                       ▼
-         ┌─────────────────────────┐
-         │   Validation Agent       │
-         │ (Self-Evaluation)        │
-         └──────────┬───────────────┘
-                    │
-         ┌──────────┴──────────┐
-         │ Score < 0.8?        │
-         │ Iterations < 3?     │
-         └──────┬──────────┬───┘
-                │          │
-             Yes│          │No
-                │          │
-         ┌──────▼──────┐   │
-         │   Refine    │   │
-         │Requirements │   │
-         └──────┬──────┘   │
-                │          │
-                └────┬─────┘
-                     ▼
-         ┌─────────────────────────┐
-         │  Final Security         │
-         │  Requirements Output    │
-         └─────────────────────────┘
-```
+* **Traceability:** Generates a full traceability matrix linking Business Requirement $\to$ Threat $\to$ Security Control $\to$ Verification Test.
 
-## Installation
+* **Iterative Quality Assurance:** Includes a Validation Agent that critiques and refines the output before final generation.
+
+## 🚀 Getting Started
+
+Follow these instructions to clone the project and run the analysis on your local machine using **uv** for fast dependency management.
 
 ### Prerequisites
 
-- Python 3.10-3.13
-- Docker and Docker Compose (for Weaviate)
-- OpenAI API key
+* **Python 3.12+**
 
-### Setup Steps
+* **uv** (High-performance Python package manager)
 
-1. **Clone and navigate to the project**:
+* **Docker** (for running the local Weaviate vector database)
+
+* **OpenAI API Key** (or compatible LLM API key)
+
+### Installation
+
+1. **Clone the repository**
+
    ```bash
-   cd security_requirements_system
+   git clone https://github.com/SavvasMohito/msc-thesis-code.git
+   cd msc-thesis-code
    ```
 
-2. **Configure environment variables**:
+2. **Set up the Virtual Environment**
+   Initialize a virtual environment using `uv`. By default, this creates a `.venv` directory.
+
    ```bash
-   cp env.template .env
-   # Edit .env and add your OPENAI_API_KEY
+   uv venv
    ```
 
-3. **Install dependencies using pnpm** (as per [[memory:5156816]]):
+3. **Install Dependencies**
+   Use `uv` to install the required packages efficiently.
+
    ```bash
-   pnpm install
-   ```
-   
-   Or if you prefer the CrewAI CLI:
-   ```bash
-   crewai install
+   uv sync
    ```
 
-4. **Start Weaviate database**:
+4. **Configure Environment Variables**
+   Create a `.env` file in the root directory and add your keys, just like the `.env.template` file:
+
+   ```bash
+   cp .env.template .env
+   ```
+
+5. **Start the Knowledge Base (Weaviate)**
+   Use Docker to spin up the vector database which houses the security standards (NIST, ISO, OWASP).
+
    ```bash
    docker-compose up -d
    ```
-   
-   Wait ~30 seconds for Weaviate to initialize.
 
-5. **Prepare security standards data**:
+6. **Import Security Controls to Weaviate**
+   After starting the vector database, you need to embed and instert the security controls.
+
    ```bash
-   python -m security_requirements_system.data.prepare_owasp_asvs
-   python -m security_requirements_system.data.prepare_nist
-   python -m security_requirements_system.data.prepare_iso27001
+   uv run src/security_requirements_system/tools/weaviate_setup.py
    ```
 
-6. **Initialize Weaviate with security standards**:
+## 💻 Usage
+
+1. **Prepare your Input:**
+   Place your high-level requirements document (MD format) in the `generations/{GENERATION-NAME}/{GENERATION-NAME.md}` folder, similar to the other generation directories.
+
+2. **Set your generation name in .env:**
+   For example, if you made a `test.md` under `generations/test/test.md`, then set `PARTICIPANT_NAME=test` in the `.env file.
+
+3. **Run the System (~15 mins):**
+
    ```bash
-   python -m security_requirements_system.tools.weaviate_setup
+   uv run src/security_requirements_system/main.py
    ```
 
-## Usage
+4. **View Results:**
+   The system will generate a comprehensive report in the `generations/{GENERATION-NAME}/outputs/` directory, including:
 
-### Running the System
+   * `{GENERATION-NAME}_security_report_{DATETIME}.qmd`
+   * A `crews` directory with the raw results of each agent.
 
-**Option 1: Use default input file** (`inputs/sample_taskmgmt.txt`):
-```bash
-crewai run
-```
+5. **Render the final HTML report:**
+   Browse in your `outputs` folder and use the generated qmd file to render the report in HTML format.
 
-**Option 2: Specify a custom input file**:
-```bash
-INPUT_FILE=inputs/sample_ecommerce.txt crewai run
-```
+   ```bash
+   cd generations/{GENERATION-NAME}/outputs
+   quarto render {YOUR-QMD-FILE.qmd} --to html --output-dir .
+   ```
 
-**Option 3: Run directly with Python**:
-```bash
-python -m security_requirements_system.main
-```
+> **\[Placeholder: Insert Figure 5.2 from Thesis here - Example Mermaid Diagram\]**
+> *Figure 2: Example of an automatically generated architectural diagram based on input requirements.*
 
-### Sample Inputs
+## 📄 License
 
-Two sample requirement files are provided:
+This project is licensed under the **MIT License**. This means you are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, provided that the original copyright notice is included. See the [LICENSE](LICENSE) file for details.
 
-- `inputs/sample_ecommerce.txt` - E-commerce platform requirements
-- `inputs/sample_healthcare.txt` - Telemedicine platform requirements
+## 📚 Citation
 
-Create your own by placing a text file in the `inputs/` directory with your product requirements.
+If you use this code or methodology in your research, please cite the Master's Thesis:
 
-### Output
-
-The system generates two files in the `outputs/` directory:
-
-1. **security_requirements.json** - Complete structured output with all agent analyses
-2. **security_requirements.md** - Human-readable markdown summary
-
-Example output structure:
-```json
-{
-  "metadata": {
-    "validation_score": 0.85,
-    "validation_passed": true,
-    "iterations": 1
-  },
-  "original_requirements": "...",
-  "requirements_analysis": "...",
-  "security_controls": "...",
-  "ai_ml_security": "...",
-  "compliance_requirements": "...",
-  "validation_report": "..."
+```bibtex
+@mastersthesis{mantzouranidis2024massre,
+  title={A Multi-Agent Approach for a Security-Aware Translation of Software Business Requirements},
+  author={Mantzouranidis, Savvas},
+  school={Blekinge Institute of Technology},
+  year={2024}
 }
-```
-
-## Flow Behavior
-
-### Self-Evaluation Loop
-
-The system implements automatic quality assurance:
-
-1. **Initial Generation**: All 5 agents process the requirements
-2. **Validation**: Validation agent scores the output (0-1) across 5 dimensions:
-   - Completeness
-   - Consistency
-   - Correctness
-   - Implementability
-   - Alignment
-3. **Decision**:
-   - If score ≥ 0.8 → Generate final output ✅
-   - If score < 0.8 and iterations < 3 → Refine with feedback 🔄
-   - If max iterations reached → Accept current version ⚠️
-
-### Configuration
-
-Adjust thresholds in `src/security_requirements_system/main.py`:
-
-```python
-MAX_ITERATIONS = 3  # Maximum refinement loops
-VALIDATION_THRESHOLD = 0.8  # Minimum score to pass
-```
-
-## Project Structure
-
-```
-security_requirements_system/
-├── src/
-│   └── security_requirements_system/
-│       ├── crews/                    # 5 agent crews
-│       │   ├── requirements_analysis_crew/
-│       │   ├── domain_security_crew/
-│       │   ├── llm_security_crew/
-│       │   ├── compliance_crew/
-│       │   └── validation_crew/
-│       ├── tools/                    # Custom tools
-│       │   ├── weaviate_tool.py     # Vector DB query tool
-│       │   └── weaviate_setup.py    # DB initialization
-│       ├── data/                     # Security standards
-│       │   ├── prepared/            # Processed JSON
-│       │   ├── prepare_owasp_asvs.py
-│       │   ├── prepare_nist.py
-│       │   └── prepare_iso27001.py
-│       └── main.py                  # Flow orchestration
-├── inputs/                          # Input requirements
-├── outputs/                         # Generated requirements
-├── docker-compose.yml              # Weaviate setup
-└── pyproject.toml                  # Dependencies
-
-```
-
-## Security Standards Coverage
-
-### OWASP ASVS
-- Authentication
-- Session Management
-- Access Control
-- Validation, Sanitization and Encoding
-- Cryptography
-- Error Handling and Logging
-- Data Protection
-- Communications
-- Malicious Code
-- Business Logic
-- File and Resources
-- API and Web Service
-- Configuration
-
-### NIST Cybersecurity Framework
-- Identify (Asset Management, Risk Assessment, Governance)
-- Protect (Access Control, Data Security, Training)
-- Detect (Anomalies, Monitoring)
-- Respond (Response Planning, Communications, Analysis, Mitigation)
-- Recover (Recovery Planning, Improvements)
-
-### ISO 27001:2022 Annex A
-- Organizational Controls
-- People Controls
-- Physical Controls
-- Technological Controls
-
-## Extending the System
-
-### Adding New Security Standards
-
-1. Create a preparation script in `src/security_requirements_system/data/`:
-   ```python
-   # prepare_custom_standard.py
-   def prepare_custom_standard():
-       controls = [
-           {
-               "standard_name": "CustomStandard",
-               "control_id": "CS-1",
-               "title": "Control Title",
-               "description": "Control description",
-               "category": "Category",
-           },
-           # ... more controls
-       ]
-       # Save to prepared/custom_standard.json
-   ```
-
-2. Run the preparation script and reingest data:
-   ```bash
-   python -m security_requirements_system.data.prepare_custom_standard
-   python -m security_requirements_system.tools.weaviate_setup
-   ```
-
-### Customizing Agents
-
-Edit the YAML configuration files in each crew's `config/` directory:
-- `agents.yaml` - Agent roles, goals, and backstories
-- `tasks.yaml` - Task descriptions and expected outputs
-
-## Troubleshooting
-
-### Weaviate Connection Issues
-```bash
-# Check Weaviate is running
-docker-compose ps
-
-# View logs
-docker-compose logs weaviate
-
-# Restart Weaviate
-docker-compose restart
-```
-
-### OpenAI API Issues
-- Verify your `OPENAI_API_KEY` in `.env`
-- Check API quota and billing
-
-### Low Validation Scores
-- Review validation feedback in output
-- Adjust input requirements to be more specific
-- Modify validation thresholds if appropriate
-
-## Research Context
-
-This system was developed as part of a Master's thesis investigating multi-agent approaches to security requirements engineering. The goal is to automate the translation of high-level business requirements into detailed, standards-compliant security specifications.
-
-### Thesis Objectives
-- Reduce manual effort in security requirements generation
-- Ensure comprehensive coverage of security standards
-- Address emerging AI/ML security concerns
-- Maintain alignment with regulatory compliance needs
-
-## License
-
-This project is for academic research purposes.
-
-## Contributing
-
-This is a thesis project, but feedback and suggestions are welcome.
-
-## Acknowledgments
-
-- **CrewAI** for the multi-agent orchestration framework
-- **Weaviate** for vector database capabilities
-- **OpenAI** for LLM infrastructure
-- **OWASP, NIST, ISO** for security standards
-
----
-
-**Note**: This system generates security requirements as recommendations. Always review outputs with qualified security professionals before implementation.
