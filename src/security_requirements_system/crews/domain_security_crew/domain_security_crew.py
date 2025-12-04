@@ -27,7 +27,7 @@ class DomainSecurityCrew:
         # Must ensure completeness (no skipped requirements)
         # Increased timeout and added retry configuration for connection stability
         llm = LLM(
-            model="openai/gpt-5-mini",
+            model="openai/gpt-5",
             timeout=1200,  # 20 minutes for large requirement sets
             max_retries=3,  # Retry on connection errors
         )

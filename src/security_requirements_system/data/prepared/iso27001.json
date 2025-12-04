@@ -1,0 +1,352 @@
+[
+  {
+    "standard": "ISO27001",
+    "req_id": "A.4.4",
+    "req_description": "Mechanisms exist to facilitate the implementation of cybersecurity and data protection governance controls. | Mechanisms exist to coordinate cybersecurity, data protection and business alignment through a steering committee or advisory board, comprised of key cybersecurity, data protection and business executives, which meets formally and on a regular basis.",
+    "chapter_id": "A.4",
+    "chapter_name": "General Controls",
+    "section_id": "A.4",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.5.1",
+    "req_description": "Mechanisms exist to facilitate the implementation of cybersecurity and data protection governance controls. | Mechanisms exist to establish, maintain and disseminate cybersecurity and data protection policies, standards and procedures. | Mechanisms exist to assign one or more qualified individuals with the mission and resources to centrally-manage, coordinate, develop, implement and maintain an enterprise-wide cybersecurity and data protection program. | Mechanisms exist to define the context of its business model and document the organization's mission. | Mechanisms exist to facilitate the implementation of cybersecurity and data protection-related resource planning controls that define a viable plan for achieving cybersecurity and data protection objectives. | Mechanisms exist to address all capital planning and investment requests, including the resources needed to implement the cybersecurity and data protection programs and document all exceptions to this requirement.",
+    "chapter_id": "A.5",
+    "chapter_name": "Organizational Controls",
+    "section_id": "A.5",
+    "section_name": "Organizational Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.6.1.1",
+    "req_description": "Mechanisms exist to facilitate the implementation of cybersecurity and data protection governance controls. | Mechanisms exist to facilitate the implementation of strategic, operational and tactical risk management controls.",
+    "chapter_id": "A.6",
+    "chapter_name": "People Controls",
+    "section_id": "A.6",
+    "section_name": "People Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.8.1",
+    "req_description": "Mechanisms exist to facilitate the implementation of cybersecurity and data protection governance controls. | Mechanisms exist to provide a cybersecurity and data protection controls oversight function that reports to the organization's executive leadership. | Mechanisms exist to regularly review processes and documented procedures to ensure conformity with the organization's cybersecurity and data protection policies, standards and other applicable requirements. | Mechanisms exist to facilitate the implementation of operational security controls. | Mechanisms exist to identify and document Standardized Operating Procedures (SOP), or similar documentation, to enable the proper execution of day-to-day / assigned tasks. | Mechanisms exist to define supporting business processes and implement appropriate governance and service management to ensure appropriate planning, delivery and support of the organization's technology capabilities supporting business functions, workforce, and/or customers based on industry-recognized standards to achieve the specific goals of the process area.",
+    "chapter_id": "A.8",
+    "chapter_name": "Technological Controls",
+    "section_id": "A.8",
+    "section_name": "Technological Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.10.1",
+    "req_description": "Mechanisms exist to facilitate the implementation of cybersecurity and data protection governance controls. | Mechanisms exist to coordinate cybersecurity, data protection and business alignment through a steering committee or advisory board, comprised of key cybersecurity, data protection and business executives, which meets formally and on a regular basis. | Mechanisms exist to provide a cybersecurity and data protection controls oversight function that reports to the organization's executive leadership.",
+    "chapter_id": "A.10",
+    "chapter_name": "General Controls",
+    "section_id": "A.10",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.5.3",
+    "req_description": "Mechanisms exist to coordinate cybersecurity, data protection and business alignment through a steering committee or advisory board, comprised of key cybersecurity, data protection and business executives, which meets formally and on a regular basis. | Mechanisms exist to assign one or more qualified individuals with the mission and resources to centrally-manage, coordinate, develop, implement and maintain an enterprise-wide cybersecurity and data protection program. | Mechanisms exist to define cybersecurity roles & responsibilities for all personnel.",
+    "chapter_id": "A.5",
+    "chapter_name": "Organizational Controls",
+    "section_id": "A.5",
+    "section_name": "Organizational Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.9.3",
+    "req_description": "Mechanisms exist to coordinate cybersecurity, data protection and business alignment through a steering committee or advisory board, comprised of key cybersecurity, data protection and business executives, which meets formally and on a regular basis. | Mechanisms exist to provide governance oversight reporting and recommendations to those entrusted to make executive decisions about matters considered material to the organization's cybersecurity and data protection program.",
+    "chapter_id": "A.9",
+    "chapter_name": "General Controls",
+    "section_id": "A.9",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.9.3.1",
+    "req_description": "Mechanisms exist to coordinate cybersecurity, data protection and business alignment through a steering committee or advisory board, comprised of key cybersecurity, data protection and business executives, which meets formally and on a regular basis. | Mechanisms exist to provide governance oversight reporting and recommendations to those entrusted to make executive decisions about matters considered material to the organization's cybersecurity and data protection program.",
+    "chapter_id": "A.9",
+    "chapter_name": "General Controls",
+    "section_id": "A.9",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.9.3.2",
+    "req_description": "Mechanisms exist to coordinate cybersecurity, data protection and business alignment through a steering committee or advisory board, comprised of key cybersecurity, data protection and business executives, which meets formally and on a regular basis. | Mechanisms exist to provide governance oversight reporting and recommendations to those entrusted to make executive decisions about matters considered material to the organization's cybersecurity and data protection program.",
+    "chapter_id": "A.9",
+    "chapter_name": "General Controls",
+    "section_id": "A.9",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.9.3.3",
+    "req_description": "Mechanisms exist to coordinate cybersecurity, data protection and business alignment through a steering committee or advisory board, comprised of key cybersecurity, data protection and business executives, which meets formally and on a regular basis. | Mechanisms exist to provide governance oversight reporting and recommendations to those entrusted to make executive decisions about matters considered material to the organization's cybersecurity and data protection program.",
+    "chapter_id": "A.9",
+    "chapter_name": "General Controls",
+    "section_id": "A.9",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.7.4",
+    "req_description": "Mechanisms exist to provide governance oversight reporting and recommendations to those entrusted to make executive decisions about matters considered material to the organization's cybersecurity and data protection program. | Mechanisms exist to facilitate the implementation of security workforce development and awareness controls. | Mechanisms exist to provide all employees and contractors appropriate awareness education and training that is relevant for their job function. | Mechanisms exist to maintain situational awareness of vulnerabilities and evolving threats by leveraging the knowledge of attacker tactics, techniques and procedures to facilitate the implementation of preventative and compensating controls.",
+    "chapter_id": "A.7",
+    "chapter_name": "Physical Controls",
+    "section_id": "A.7",
+    "section_name": "Physical Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.9.1",
+    "req_description": "Mechanisms exist to provide governance oversight reporting and recommendations to those entrusted to make executive decisions about matters considered material to the organization's cybersecurity and data protection program. | Mechanisms exist to develop, report and monitor cybersecurity and data protection program measures of performance. | Mechanisms exist to facilitate the identification and implementation of relevant statutory, regulatory and contractual controls. | Mechanisms exist to document and review instances of non-compliance with statutory, regulatory and/or contractual obligations to develop appropriate risk mitigation actions. | Mechanisms exist to document and validate the scope of cybersecurity and data protection controls that are determined to meet statutory, regulatory and/or contractual compliance obligations. | Mechanisms exist to regularly review processes and documented procedures to ensure conformity with the organization's cybersecurity and data protection policies, standards and other applicable requirements.",
+    "chapter_id": "A.9",
+    "chapter_name": "General Controls",
+    "section_id": "A.9",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.5.2",
+    "req_description": "Mechanisms exist to establish, maintain and disseminate cybersecurity and data protection policies, standards and procedures. | Mechanisms exist to establish control objectives as the basis for the selection, implementation and management of the organization's internal control system.",
+    "chapter_id": "A.5",
+    "chapter_name": "Organizational Controls",
+    "section_id": "A.5",
+    "section_name": "Organizational Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.7.5",
+    "req_description": "Mechanisms exist to establish, maintain and disseminate cybersecurity and data protection policies, standards and procedures.",
+    "chapter_id": "A.7",
+    "chapter_name": "Physical Controls",
+    "section_id": "A.7",
+    "section_name": "Physical Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.7.5.1",
+    "req_description": "Mechanisms exist to establish, maintain and disseminate cybersecurity and data protection policies, standards and procedures.",
+    "chapter_id": "A.7",
+    "chapter_name": "Physical Controls",
+    "section_id": "A.7",
+    "section_name": "Physical Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.7.5.2",
+    "req_description": "Mechanisms exist to establish, maintain and disseminate cybersecurity and data protection policies, standards and procedures. | Mechanisms exist to review the cybersecurity and data protection program, including policies, standards and procedures, at planned intervals or if significant changes occur to ensure their continuing suitability, adequacy and effectiveness.",
+    "chapter_id": "A.7",
+    "chapter_name": "Physical Controls",
+    "section_id": "A.7",
+    "section_name": "Physical Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.7.5.3",
+    "req_description": "Mechanisms exist to establish, maintain and disseminate cybersecurity and data protection policies, standards and procedures.",
+    "chapter_id": "A.7",
+    "chapter_name": "Physical Controls",
+    "section_id": "A.7",
+    "section_name": "Physical Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.4.1",
+    "req_description": "Mechanisms exist to define the context of its business model and document the organization's mission. | Mechanisms exist to establish control objectives as the basis for the selection, implementation and management of the organization's internal control system. | Mechanisms exist to facilitate the identification and implementation of relevant statutory, regulatory and contractual controls.",
+    "chapter_id": "A.4",
+    "chapter_name": "General Controls",
+    "section_id": "A.4",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.4.2",
+    "req_description": "Mechanisms exist to define the context of its business model and document the organization's mission. | Mechanisms exist to establish control objectives as the basis for the selection, implementation and management of the organization's internal control system. | Mechanisms exist to identify and involve pertinent stakeholders of critical Technology Assets, Applications, Services and/or Data (TAASD) to support the ongoing secure management of those assets.",
+    "chapter_id": "A.4",
+    "chapter_name": "General Controls",
+    "section_id": "A.4",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.4.3",
+    "req_description": "Mechanisms exist to define the context of its business model and document the organization's mission. | Mechanisms exist to determine cybersecurity and data protection control applicability by identifying, assigning and documenting the appropriate asset scope categorization for all Technology Assets, Applications and/or Services (TAAS) and personnel (internal and third-parties). | Mechanisms exist to formally document a Customer Responsibility Matrix (CRM), delineating assigned responsibilities for controls between the Cloud Service Provider (CSP) and its customers. | Mechanisms exist to document and validate the scope of cybersecurity and data protection controls that are determined to meet statutory, regulatory and/or contractual compliance obligations. | Mechanisms exist to document and maintain a Responsible, Accountable, Supportive, Consulted & Informed (RASCI) matrix, or similar documentation, to delineate assignment for cybersecurity and data protection controls between internal stakeholders and External Service Providers (ESPs).",
+    "chapter_id": "A.4",
+    "chapter_name": "General Controls",
+    "section_id": "A.4",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.6.2",
+    "req_description": "Mechanisms exist to establish control objectives as the basis for the selection, implementation and management of the organization's internal control system.",
+    "chapter_id": "A.6",
+    "chapter_name": "People Controls",
+    "section_id": "A.6",
+    "section_name": "People Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.9.2.2",
+    "req_description": "Mechanisms exist to compel data and/or process owners to monitor Technology Assets, Applications and/or Services (TAAS) under their control on an ongoing basis for applicable threats and risks, as well as to ensure cybersecurity and data protection controls are operating as intended. | Mechanisms exist to facilitate the identification and implementation of relevant statutory, regulatory and contractual controls. | Mechanisms exist to implement an internal audit function that is capable of providing senior organization management with insights into the appropriateness of the organization's technology and information governance processes.",
+    "chapter_id": "A.9",
+    "chapter_name": "General Controls",
+    "section_id": "A.9",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.6.3",
+    "req_description": "Mechanisms exist to facilitate the implementation of a change management program.",
+    "chapter_id": "A.6",
+    "chapter_name": "People Controls",
+    "section_id": "A.6",
+    "section_name": "People Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.9.2",
+    "req_description": "Mechanisms exist to facilitate the identification and implementation of relevant statutory, regulatory and contractual controls. | Mechanisms exist to implement an internal audit function that is capable of providing senior organization management with insights into the appropriateness of the organization's technology and information governance processes.",
+    "chapter_id": "A.9",
+    "chapter_name": "General Controls",
+    "section_id": "A.9",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.9.2.1",
+    "req_description": "Mechanisms exist to facilitate the identification and implementation of relevant statutory, regulatory and contractual controls. | Mechanisms exist to implement an internal audit function that is capable of providing senior organization management with insights into the appropriateness of the organization's technology and information governance processes.",
+    "chapter_id": "A.9",
+    "chapter_name": "General Controls",
+    "section_id": "A.9",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.10.2",
+    "req_description": "Mechanisms exist to document and review instances of non-compliance with statutory, regulatory and/or contractual obligations to develop appropriate risk mitigation actions.",
+    "chapter_id": "A.10",
+    "chapter_name": "General Controls",
+    "section_id": "A.10",
+    "section_name": "General Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.7.3",
+    "req_description": "Mechanisms exist to facilitate the implementation of personnel security controls. | Mechanisms exist to define cybersecurity roles & responsibilities for all personnel. | Mechanisms exist to communicate with users about their roles and responsibilities to maintain a safe and secure working environment. | Mechanisms exist to formally educate authorized users on proper data handling practices for all the relevant types of data to which they have access. | Mechanisms exist to require all employees and contractors to apply cybersecurity and data protection principles in their daily work. | Mechanisms exist to define acceptable and unacceptable rules of behavior for the use of technologies, including consequences for unacceptable behavior. | Mechanisms exist to define rules of behavior that contain explicit restrictions on the use of social media and networking sites, posting information on commercial websites and sharing account information. | Mechanisms exist to establish usage restrictions and implementation guidance for organizational technologies based on the potential to cause damage to Technology Assets, Applications and/or Services (TAAS), if used maliciously. | Mechanisms exist to govern usage policies for critical technologies. | Mechanisms exist to manage business risks associated with permitting mobile device access to organizational resources. | Mechanisms exist to ensure personnel receive recurring familiarization with the organization's cybersecurity and data protection policies and provide acknowledgement.",
+    "chapter_id": "A.7",
+    "chapter_name": "Physical Controls",
+    "section_id": "A.7",
+    "section_name": "Physical Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.7.2",
+    "req_description": "Mechanisms exist to facilitate the implementation of personnel security controls. | Mechanisms exist to manage personnel security risk by assigning a risk designation to all positions and establishing screening criteria for individuals filling those positions. | Mechanisms exist to ensure that all security-related positions are staffed by qualified individuals who have the necessary skill set. | Mechanisms exist to manage personnel security risk by screening individuals prior to authorizing access.",
+    "chapter_id": "A.7",
+    "chapter_name": "Physical Controls",
+    "section_id": "A.7",
+    "section_name": "Physical Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.7.1",
+    "req_description": "Mechanisms exist to address all capital planning and investment requests, including the resources needed to implement the cybersecurity and data protection programs and document all exceptions to this requirement.",
+    "chapter_id": "A.7",
+    "chapter_name": "Physical Controls",
+    "section_id": "A.7",
+    "section_name": "Physical Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.6.1",
+    "req_description": "Mechanisms exist to facilitate the implementation of strategic, operational and tactical risk management controls.",
+    "chapter_id": "A.6",
+    "chapter_name": "People Controls",
+    "section_id": "A.6",
+    "section_name": "People Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.6.1.2",
+    "req_description": "Mechanisms exist to facilitate the implementation of strategic, operational and tactical risk management controls. | Mechanisms exist to identify:\n(1) Assumptions affecting risk assessments, risk response and risk monitoring;\n(2) Constraints affecting risk assessments, risk response and risk monitoring;\n(3) The organizational risk tolerance; and\n(4) Priorities, benefits and trade-offs considered by the organization for managing risk. | Mechanisms exist to categorize Technology Assets, Applications, Services and/or Data (TAASD) in accordance with applicable laws, regulations and contractual obligations that:\n(1) Document the security categorization results (including supporting rationale) in the security plan for systems; and\n(2) Ensure the security categorization decision is reviewed and approved by the asset owner. | Mechanisms exist to identify and document risks, both internal and external. | Mechanisms exist to conduct recurring assessments of risk that includes the likelihood and magnitude of harm, from unauthorized access, use, disclosure, disruption, modification or destruction of the organization's Technology Assets, Applications, Services and/or Data (TAASD).",
+    "chapter_id": "A.6",
+    "chapter_name": "People Controls",
+    "section_id": "A.6",
+    "section_name": "People Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.8.2",
+    "req_description": "Mechanisms exist to facilitate the implementation of strategic, operational and tactical risk management controls. | Mechanisms exist to conduct recurring assessments of risk that includes the likelihood and magnitude of harm, from unauthorized access, use, disclosure, disruption, modification or destruction of the organization's Technology Assets, Applications, Services and/or Data (TAASD).",
+    "chapter_id": "A.8",
+    "chapter_name": "Technological Controls",
+    "section_id": "A.8",
+    "section_name": "Technological Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.6.1.3",
+    "req_description": "Mechanisms exist to remediate risks to an acceptable level. | Mechanisms exist to respond to findings from cybersecurity and data protection assessments, incidents and audits to ensure proper remediation has been performed.",
+    "chapter_id": "A.6",
+    "chapter_name": "People Controls",
+    "section_id": "A.6",
+    "section_name": "People Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.8.3",
+    "req_description": "Mechanisms exist to remediate risks to an acceptable level. | Mechanisms exist to respond to findings from cybersecurity and data protection assessments, incidents and audits to ensure proper remediation has been performed.",
+    "chapter_id": "A.8",
+    "chapter_name": "Technological Controls",
+    "section_id": "A.8",
+    "section_name": "Technological Controls",
+    "level": ""
+  },
+  {
+    "standard": "ISO27001",
+    "req_id": "A.3.0",
+    "req_description": "Mechanisms exist to standardize technology and process terminology to reduce confusion amongst groups and departments.",
+    "chapter_id": "A.3",
+    "chapter_name": "General Controls",
+    "section_id": "A.3",
+    "section_name": "General Controls",
+    "level": ""
+  }
+]

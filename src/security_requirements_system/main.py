@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import Any, Optional
 
 import weaviate
-import yaml
 from crewai.flow.flow import Flow, listen, start
 from dotenv import load_dotenv
 from pydantic import BaseModel
@@ -79,15 +78,6 @@ _STOP_WORDS = {
     "must",
     "can",
 }
-
-
-def load_config():
-    """Load configuration from config.yaml."""
-    config_path = Path("config.yaml")
-    if config_path.exists():
-        with open(config_path, "r") as f:
-            return yaml.safe_load(f)
-    return {}
 
 
 def _get_requirements_hash(requirements: list[str]) -> str:
@@ -191,20 +181,6 @@ def pre_query_weaviate_for_requirements(
         return {}
 
     return results
-
-
-# Load global configuration
-CONFIG = load_config()
-
-# Set LLM configuration from config.yaml (if not already set via environment)
-if CONFIG and "llm" in CONFIG:
-    llm_config = CONFIG["llm"]
-    # Set OPENAI_MODEL_NAME if not already set
-    if "model" in llm_config and not os.getenv("OPENAI_MODEL_NAME"):
-        os.environ["OPENAI_MODEL_NAME"] = llm_config["model"]
-    # Set temperature if available
-    if "temperature" in llm_config and not os.getenv("OPENAI_TEMPERATURE"):
-        os.environ["OPENAI_TEMPERATURE"] = str(llm_config["temperature"])
 
 
 class SecurityRequirementsState(BaseModel):

@@ -36,8 +36,6 @@ ENV/
 *.swo
 *~
 
-src/security_requirements_system/data/prepared/*
-src/security_requirements_system/data/raw/*
 # Output files
 outputs/
 *.md
@@ -61,11 +59,6 @@ temp/
 
 # CrewAI
 .crewai/
-
-# Custom inputs (keep samples)
-inputs/*.txt
-!inputs/requirements.txt
-!inputs/sample_*.txt
 
 /.quarto/
 **/*.quarto_ipynb
