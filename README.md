@@ -2,9 +2,9 @@
 
 ## 📖 Overview
 
-This repository contains the reference implementation for the Master's Thesis: **"A Multi-Agent Approach for a Security-Aware Translation of Software Business Requirements."**
+This repository contains the reference implementation for my Master's Thesis: **"A Multi-Agent Approach for a Security-Aware Translation of Software Business Requirements"**. The final thesis document can be viewed in [`Savvas_Mantzouranidis_MSc_Thesis.pdf`](Savvas_Mantzouranidis_MSc_Thesis.pdf).
 
-The system is a Multi-Agent System (MAS) powered by Large Language Models (LLMs) designed to bridge the "translation gap" in software development. It automates the complex process of translating high-level business requirements into detailed, security-compliant technical specifications. By leveraging a fleet of specialized AI agents, the system simulates a team of security experts—including threat modelers, compliance officers, and security architects—to analyze input requirements, identify risks using the STRIDE methodology, and map actionable security controls from industry standards.
+This is a Multi-Agent System (MAS) powered by Large Language Models (LLMs) designed to bridge the "translation gap" in software development. It automates the complex process of translating high-level business requirements into detailed, security-compliant technical specifications. By leveraging a fleet of specialized AI agents, the system simulates a team of security experts—including threat modelers, compliance officers, and security architects—to analyze input requirements, identify risks using the STRIDE methodology, and map actionable security controls from industry standards.
 
 The goal of this project is to enable "Shift Left" security by making rigorous Security Requirements Engineering (SRE) faster, consistent, and accessible to development teams without deep security expertise.
 
