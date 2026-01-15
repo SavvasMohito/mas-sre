@@ -119,9 +119,6 @@ Follow these instructions to clone the project and run the analysis on your loca
    quarto render {YOUR-QMD-FILE.qmd} --to html --output-dir .
    ```
 
-> **\[Placeholder: Insert Figure 5.2 from Thesis here - Example Mermaid Diagram\]**
-> *Figure 2: Example of an automatically generated architectural diagram based on input requirements.*
-
 ## 📄 License
 
 This project is licensed under the **MIT License**. This means you are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, provided that the original copyright notice is included. See the [LICENSE](LICENSE) file for details.
