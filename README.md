@@ -8,6 +8,8 @@ This is a Multi-Agent System (MAS) powered by Large Language Models (LLMs) desig
 
 The goal of this project is to enable "Shift Left" security by making rigorous Security Requirements Engineering (SRE) faster, consistent, and accessible to development teams without deep security expertise.
 
+All 15 reports generated for this thesis are available under [`./generations`](./generations).
+
 ## 🏗️ System Architecture
 
 The system utilizes **CrewAI** for agent orchestration and **Weaviate** for Retrieval-Augmented Generation (RAG). It operates via a four-stage pipeline:
