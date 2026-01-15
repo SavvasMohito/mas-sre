@@ -1,0 +1,98 @@
+[
+  {
+    "phase": "Phase 1 (Critical/High)",
+    "week": 1,
+    "planned": 61,
+    "completed": 7
+  },
+  {
+    "phase": "Phase 1 (Critical/High)",
+    "week": 2,
+    "planned": 61,
+    "completed": 15
+  },
+  {
+    "phase": "Phase 1 (Critical/High)",
+    "week": 3,
+    "planned": 61,
+    "completed": 22
+  },
+  {
+    "phase": "Phase 1 (Critical/High)",
+    "week": 4,
+    "planned": 61,
+    "completed": 30
+  },
+  {
+    "phase": "Phase 1 (Critical/High)",
+    "week": 5,
+    "planned": 61,
+    "completed": 38
+  },
+  {
+    "phase": "Phase 1 (Critical/High)",
+    "week": 6,
+    "planned": 61,
+    "completed": 45
+  },
+  {
+    "phase": "Phase 1 (Critical/High)",
+    "week": 7,
+    "planned": 61,
+    "completed": 53
+  },
+  {
+    "phase": "Phase 1 (Critical/High)",
+    "week": 8,
+    "planned": 61,
+    "completed": 61
+  },
+  {
+    "phase": "Phase 2 (Medium)",
+    "week": 9,
+    "planned": 39,
+    "completed": 4
+  },
+  {
+    "phase": "Phase 2 (Medium)",
+    "week": 10,
+    "planned": 39,
+    "completed": 9
+  },
+  {
+    "phase": "Phase 2 (Medium)",
+    "week": 11,
+    "planned": 39,
+    "completed": 14
+  },
+  {
+    "phase": "Phase 2 (Medium)",
+    "week": 12,
+    "planned": 39,
+    "completed": 19
+  },
+  {
+    "phase": "Phase 2 (Medium)",
+    "week": 13,
+    "planned": 39,
+    "completed": 24
+  },
+  {
+    "phase": "Phase 2 (Medium)",
+    "week": 14,
+    "planned": 39,
+    "completed": 29
+  },
+  {
+    "phase": "Phase 2 (Medium)",
+    "week": 15,
+    "planned": 39,
+    "completed": 34
+  },
+  {
+    "phase": "Phase 2 (Medium)",
+    "week": 16,
+    "planned": 39,
+    "completed": 39
+  }
+]

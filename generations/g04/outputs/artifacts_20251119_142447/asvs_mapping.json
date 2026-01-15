@@ -1,0 +1,794 @@
+[
+  {
+    "control_id": "AC-2",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization manages information system accounts, including establishing, activating, modifying,"
+  },
+  {
+    "control_id": "AC-3",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The information system enforces approved authorizations for logical access to information and system"
+  },
+  {
+    "control_id": "A.9.2.1",
+    "standard": "ISO27001",
+    "v_category": "Access control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "A formal user registration and de-registration process should be implemented to enable assignment of"
+  },
+  {
+    "control_id": "A.9.1.2",
+    "standard": "ISO27001",
+    "v_category": "Access control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Users should only be provided with access to the network and network services that they have been sp"
+  },
+  {
+    "control_id": "V5.2",
+    "standard": "OWASP",
+    "v_category": "Access Control Verification Requirements",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "The application implements role-based access control and enforces authorization checks on all server"
+  },
+  {
+    "control_id": "AC-6",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization employs the principle of least privilege, ensuring users and processes are granted "
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization determines auditable events and configures auditing to capture them to support afte"
+  },
+  {
+    "control_id": "A.9.4.1",
+    "standard": "ISO27001",
+    "v_category": "Access control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Access to information and application system functions should be restricted in accordance with the a"
+  },
+  {
+    "control_id": "V5.3",
+    "standard": "OWASP",
+    "v_category": "Access Control Verification Requirements",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Access control policies are integrated into the architecture and consistently enforced across all co"
+  },
+  {
+    "control_id": "SC-7",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The information system monitors and controls communications at the external boundary and key interna"
+  },
+  {
+    "control_id": "A.13.1.1",
+    "standard": "ISO27001",
+    "v_category": "Communications security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Networks should be managed and controlled to protect information in systems and applications."
+  },
+  {
+    "control_id": "CM-6",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization establishes and documents configuration settings for information system components "
+  },
+  {
+    "control_id": "V14.1",
+    "standard": "OWASP",
+    "v_category": "Network and Infrastructure",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Network boundaries must be enforced and services should only be exposed on necessary ports with docu"
+  },
+  {
+    "control_id": "AU-6",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization reviews and analyzes information system audit records for indications of inappropri"
+  },
+  {
+    "control_id": "CM-8",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization establishes and maintains an inventory of information system components."
+  },
+  {
+    "control_id": "A.12.4.1",
+    "standard": "ISO27001",
+    "v_category": "Operations security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Event logs recording user activities, exceptions, and other security-relevant events should be produ"
+  },
+  {
+    "control_id": "V10.3",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Applications and infrastructure should record network-relevant events sufficient to investigate inci"
+  },
+  {
+    "control_id": "A.6.1.5",
+    "standard": "ISO27001",
+    "v_category": "Organization of information security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Information security should be addressed in project management, including during project initiation,"
+  },
+  {
+    "control_id": "PL-2",
+    "standard": "NIST",
+    "v_category": "Planning",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Develop, document, and disseminate policies and procedures for system and communications resource pr"
+  },
+  {
+    "control_id": "V14.2",
+    "standard": "OWASP",
+    "v_category": "Network and Infrastructure",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Applications and systems should be designed with layered defenses and segmentation to reduce attack "
+  },
+  {
+    "control_id": "A.6.1.1",
+    "standard": "ISO27001",
+    "v_category": "Organization of information security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Responsibilities for information security should be defined and allocated."
+  },
+  {
+    "control_id": "PM-13",
+    "standard": "NIST",
+    "v_category": "Program Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization defines and communicates roles and responsibilities for managing the organization's"
+  },
+  {
+    "control_id": "V12.1",
+    "standard": "OWASP",
+    "v_category": "Operational Security",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Operational roles and responsibilities should be clearly documented and enforced; accountability mec"
+  },
+  {
+    "control_id": "A.14.2.5",
+    "standard": "ISO27001",
+    "v_category": "Supplier relationships",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Organisations should monitor and review services, including ensuring prerequisites and dependencies "
+  },
+  {
+    "control_id": "CM-3",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization reviews, approves, and documents changes to the information system prior to impleme"
+  },
+  {
+    "control_id": "V12.2",
+    "standard": "OWASP",
+    "v_category": "Operational Security",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Changes and releases must be controlled, approved, and documented to prevent unauthorized or prematu"
+  },
+  {
+    "control_id": "A.6.1.5",
+    "standard": "ISO27001",
+    "v_category": "Organization of information security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information security should be addressed in project management, including during project initiation,"
+  },
+  {
+    "control_id": "PM-9",
+    "standard": "NIST",
+    "v_category": "Program Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization develops a risk management strategy including roles, responsibilities, and escalati"
+  },
+  {
+    "control_id": "V12.1",
+    "standard": "OWASP",
+    "v_category": "Operational Security",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Operational roles and responsibilities should be clearly documented and enforced; accountability mec"
+  },
+  {
+    "control_id": "V11.2",
+    "standard": "OWASP",
+    "v_category": "User Interface and UX Security",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "User dashboards must display authorized information only and protect personal and project data from "
+  },
+  {
+    "control_id": "AC-17",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization restricts and monitors remote access mechanisms to information systems."
+  },
+  {
+    "control_id": "A.9.2.3",
+    "standard": "ISO27001",
+    "v_category": "Access control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The allocation and use of privileged access rights should be restricted and controlled."
+  },
+  {
+    "control_id": "CM-7",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization documents configuration and implementation decisions and maintains records to suppo"
+  },
+  {
+    "control_id": "A.14.1.3",
+    "standard": "ISO27001",
+    "v_category": "System acquisition, development and maintenance",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Security should be built into systems and documented during development and maintenance."
+  },
+  {
+    "control_id": "V12.2",
+    "standard": "OWASP",
+    "v_category": "Operational Security",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Changes and releases must be controlled, approved, and documented to prevent unauthorized or prematu"
+  },
+  {
+    "control_id": "CM-3",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization reviews, approves, and documents changes to the information system prior to impleme"
+  },
+  {
+    "control_id": "AU-9",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Audit records are protected from unauthorized access, modification, and deletion."
+  },
+  {
+    "control_id": "A.12.4.3",
+    "standard": "ISO27001",
+    "v_category": "Operations security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Records of administrator and operator activities should be produced and kept to support investigatio"
+  },
+  {
+    "control_id": "V10.1",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Logs must be protected from unauthorized modification and should be sufficient to support forensics "
+  },
+  {
+    "control_id": "A.6.1.5",
+    "standard": "ISO27001",
+    "v_category": "Organization of information security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information security should be addressed in project management, including during project initiation,"
+  },
+  {
+    "control_id": "CP-2",
+    "standard": "NIST",
+    "v_category": "Contingency Planning",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization develops and implements contingency plans for critical systems and processes."
+  },
+  {
+    "control_id": "V12.1",
+    "standard": "OWASP",
+    "v_category": "Operational Security",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "Medium",
+    "requirement": "Operational roles and responsibilities should be clearly documented and enforced; accountability mec"
+  },
+  {
+    "control_id": "A.13.1.1",
+    "standard": "ISO27001",
+    "v_category": "Communications security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Networks should be managed and controlled to protect information in systems and applications."
+  },
+  {
+    "control_id": "SC-5",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The information system protects against and limits the effects of unauthorized connections and commu"
+  },
+  {
+    "control_id": "V14.3",
+    "standard": "OWASP",
+    "v_category": "Network and Infrastructure",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Systems should provide mechanisms to operate in air-gapped or disconnected environments, including s"
+  },
+  {
+    "control_id": "CM-8",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization establishes and maintains an inventory of information system components."
+  },
+  {
+    "control_id": "CM-6",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization establishes and documents configuration settings for information system components "
+  },
+  {
+    "control_id": "A.12.3.1",
+    "standard": "ISO27001",
+    "v_category": "Operations security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information processing facilities should be monitored to ensure adequate capacity to deliver service"
+  },
+  {
+    "control_id": "V14.3",
+    "standard": "OWASP",
+    "v_category": "Network and Infrastructure",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Systems should provide mechanisms to operate in air-gapped or disconnected environments, including s"
+  },
+  {
+    "control_id": "CP-9",
+    "standard": "NIST",
+    "v_category": "Contingency Planning",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization restores information systems and assets to a known secure state following a disrupt"
+  },
+  {
+    "control_id": "A.17.1.1",
+    "standard": "ISO27001",
+    "v_category": "Information security aspects of business continuity management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization should determine requirements for information security continuity and implement con"
+  },
+  {
+    "control_id": "V14.3",
+    "standard": "OWASP",
+    "v_category": "Network and Infrastructure",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Systems should provide mechanisms to operate in air-gapped or disconnected environments, including s"
+  },
+  {
+    "control_id": "IR-6",
+    "standard": "NIST",
+    "v_category": "Incident Response",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization requires personnel to report incidents to appropriate internal organizations within"
+  },
+  {
+    "control_id": "A.16.1.4",
+    "standard": "ISO27001",
+    "v_category": "Information security incident management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Low",
+    "requirement": "Information security events should be assessed and decisions on response actions should be taken."
+  },
+  {
+    "control_id": "V11.3",
+    "standard": "OWASP",
+    "v_category": "User Interface and UX Security",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "Medium",
+    "requirement": "Notifications should not leak sensitive information and should be delivered securely while preservin"
+  },
+  {
+    "control_id": "A.16.1.4",
+    "standard": "ISO27001",
+    "v_category": "Information security incident management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information security events should be assessed and decisions on response actions should be taken."
+  },
+  {
+    "control_id": "V11.3",
+    "standard": "OWASP",
+    "v_category": "User Interface and UX Security",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Notifications should not leak sensitive information and should be delivered securely while preservin"
+  },
+  {
+    "control_id": "IR-5",
+    "standard": "NIST",
+    "v_category": "Incident Response",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization tracks and documents information system events to ensure proper response and commun"
+  },
+  {
+    "control_id": "PM-9",
+    "standard": "NIST",
+    "v_category": "Program Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Low",
+    "requirement": "The organization develops a risk management strategy including roles, responsibilities, and escalati"
+  },
+  {
+    "control_id": "A.7.2.2",
+    "standard": "ISO27001",
+    "v_category": "Human resource security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Low",
+    "requirement": "All employees should receive appropriate awareness and training regarding information security respo"
+  },
+  {
+    "control_id": "V11.3",
+    "standard": "OWASP",
+    "v_category": "User Interface and UX Security",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "Medium",
+    "requirement": "Notifications should not leak sensitive information and should be delivered securely while preservin"
+  },
+  {
+    "control_id": "SI-4",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization monitors the information system to detect attacks and indicators of potential incid"
+  },
+  {
+    "control_id": "A.12.4.1",
+    "standard": "ISO27001",
+    "v_category": "Operations security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Event logs recording user activities, exceptions, and other security-relevant events should be produ"
+  },
+  {
+    "control_id": "V10.2",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Systems must implement monitoring and alerting for security-relevant events to support timely detect"
+  },
+  {
+    "control_id": "AU-6",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization reviews and analyzes information system audit records for indications of inappropri"
+  },
+  {
+    "control_id": "A.12.4.1",
+    "standard": "ISO27001",
+    "v_category": "Operations security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Event logs recording user activities, exceptions, and other security-relevant events should be produ"
+  },
+  {
+    "control_id": "V10.2",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Systems must implement monitoring and alerting for security-relevant events to support timely detect"
+  },
+  {
+    "control_id": "A.6.1.1",
+    "standard": "ISO27001",
+    "v_category": "Organization of information security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Responsibilities for information security should be defined and allocated."
+  },
+  {
+    "control_id": "PM-13",
+    "standard": "NIST",
+    "v_category": "Program Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization defines and communicates roles and responsibilities for managing the organization's"
+  },
+  {
+    "control_id": "V11.1",
+    "standard": "OWASP",
+    "v_category": "User Interface and UX Security",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Applications should present role-appropriate views and reporting to users while protecting other use"
+  },
+  {
+    "control_id": "V11.2",
+    "standard": "OWASP",
+    "v_category": "User Interface and UX Security",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "User dashboards must display authorized information only and protect personal and project data from "
+  },
+  {
+    "control_id": "AC-6",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization employs the principle of least privilege, ensuring users and processes are granted "
+  },
+  {
+    "control_id": "A.9.1.2",
+    "standard": "ISO27001",
+    "v_category": "Access control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Users should only be provided with access to the network and network services that they have been sp"
+  },
+  {
+    "control_id": "CM-8",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization establishes and maintains an inventory of information system components."
+  },
+  {
+    "control_id": "A.12.1.1",
+    "standard": "ISO27001",
+    "v_category": "Operations security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Operating procedures should be documented and made available to all users who need them."
+  },
+  {
+    "control_id": "V10.2",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Systems must implement monitoring and alerting for security-relevant events to support timely detect"
+  },
+  {
+    "control_id": "CM-7",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization documents configuration and implementation decisions and maintains records to suppo"
+  },
+  {
+    "control_id": "A.14.2.7",
+    "standard": "ISO27001",
+    "v_category": "System acquisition, development and maintenance",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Where development is outsourced, agreements should address security requirements including deliverab"
+  },
+  {
+    "control_id": "V12.2",
+    "standard": "OWASP",
+    "v_category": "Operational Security",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Changes and releases must be controlled, approved, and documented to prevent unauthorized or prematu"
+  },
+  {
+    "control_id": "A.6.1.3",
+    "standard": "ISO27001",
+    "v_category": "Organization of information security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization should maintain contact with relevant external parties and manage communications ap"
+  },
+  {
+    "control_id": "PL-2",
+    "standard": "NIST",
+    "v_category": "Planning",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Develop, document, and disseminate policies and procedures for system and communications resource pr"
+  },
+  {
+    "control_id": "V11.3",
+    "standard": "OWASP",
+    "v_category": "User Interface and UX Security",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "Medium",
+    "requirement": "Notifications should not leak sensitive information and should be delivered securely while preservin"
+  },
+  {
+    "control_id": "AC-17",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization restricts and monitors remote access mechanisms to information systems."
+  },
+  {
+    "control_id": "IA-5",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization manages authentication methods and enforces multi-factor authentication where requi"
+  },
+  {
+    "control_id": "V2.5",
+    "standard": "OWASP",
+    "v_category": "Authentication Verification Requirements",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Remote access mechanisms and authentication for web and management interfaces should be hardened and"
+  },
+  {
+    "control_id": "SC-8",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization protects the confidentiality and integrity of transmitted information."
+  },
+  {
+    "control_id": "V14.3",
+    "standard": "OWASP",
+    "v_category": "Network and Infrastructure",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Systems should provide mechanisms to operate in air-gapped or disconnected environments, including s"
+  },
+  {
+    "control_id": "A.12.5.1",
+    "standard": "ISO27001",
+    "v_category": "Operations security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Procedures should be implemented to control the installation of software on operational systems."
+  }
+]

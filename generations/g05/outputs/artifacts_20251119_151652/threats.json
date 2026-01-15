@@ -1,0 +1,254 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Edge Layer",
+    "risk_level": "Medium",
+    "category": "Spoofing",
+    "description": "Attacker spoofs client IPs or request headers to bypass IP-based ACLs or geofencing at the edge, gaining access to APIs or bypassing rate limits."
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer -> Internal Service Links",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Man-in-the-middle (MITM) or tampering between edge TLS termination and internal services (if internal traffic is unprotected), allowing request modification or credential exposure."
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Frontend Layer",
+    "risk_level": "Critical",
+    "category": "Information Disclosure",
+    "description": "Persistent or reflected XSS in the web SPA allows attackers to steal UI session tokens, perform actions as victims, or exfiltrate data from the portal."
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer / Application Services (SSO)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Misconfigured OAuth2/OIDC SSO or insecure token validation allows an attacker to forge identity tokens and impersonate users (including admin), or replay tokens from other tenants."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Cross-Site Request Forgery (CSRF) attacks cause authenticated users to perform unauthorized actions (e.g., create/destroy resources, change policies) via browser-based requests."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Application Services (Auth / Platform Admin)",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Credential theft (phishing, credential stuffing) or weak password policies allow attacker to gain admin or cross-project access, impersonating privileged users for destructive actions."
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (RBAC / Policy Management)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Broken or mis-implemented RBAC allows lower-privilege users to escalate to project admin or platform admin roles (e.g., via vulnerable role assignment APIs or insufficient role checks)."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (Policy & Provisioning APIs)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Unauthorized modification of project policies, quotas or provisioning requests through API abuse, IDOR, or insecure direct object references, allowing attackers to change resource allocations or bypas"
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Data Layer (Audit Logs)",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Insufficient or tamperable audit logs allow malicious actors to repudiate actions (deny having done them) or hide activity; lack of immutable logging prevents incident investigations."
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Frontend (Multi-Tenancy Requirement)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Cross-tenant data leakage through application bugs, caching misconfigurations, templating errors, or improper filtering of tenant IDs, leading to exposure of tenant metadata or user data across projec"
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer (Secrets/KMS/DB Backups)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Compromise or misconfiguration of the datastore/backups or KMS leading to disclosure of encrypted secrets, credentials, or tenant data (e.g., stolen DB backups or compromised KMS keys)."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer (Metadata & Audit Stores)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Unauthorized alteration of tenant metadata, quota state, or audit logs in the database allowing attackers to change historical records, quotas, or hide activities."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer (Audit Logs)",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "A compromised service account or admin deletes or forges audit entries, preventing reliable incident reconstruction and enabling attackers to hide actions."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Integration & Connectors",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromise of integration/connector credentials (API keys, service accounts) permits attackers to impersonate platform connectors to underlying infrastructure (K8s/OpenStack/VMware) and create/destroy"
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Integration & Connectors",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Malicious or misrouted orchestration commands from connectors or compromised orchestration service modify network segmentation or firewall rules, causing lateral movement or external exposure of tenan"
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Integration & Connectors",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Misconfigured connectors or overly permissive API calls expose inventory, topology or sensitive configuration data from customer infrastructure to unauthorized parties."
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Observability & AI",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Telemetry, logs or metrics inadvertently contain sensitive information (credentials, tokens, PII) that is stored in the metrics/logging backend and accessible to unauthorized users or external ML serv"
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Observability & AI",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Adversarial input or poisoning of metrics/telemetry to confuse the AI anomaly engine, causing missed detection or false positives leading to disruptive automated remediation or ignored incidents."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Observability & AI (Metrics ingestion)",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Flooding of the metrics/log ingestion pipeline or synthetic telemetry spikes that overwhelm storage/processing causing monitoring and alerting outages and blind spots."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "External Services (Email/SMS/Webhooks)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Notification payloads (email/SMS/webhook) leak sensitive information or PII to third parties, or are sent to compromised endpoints causing data exfiltration."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "External Services / Ticketing Integrations",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Third-party ticketing integrations or webhooks are compromised or misconfigured and are used to inject malicious content, alter ticket states or gain privileged platform information."
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Edge Layer",
+    "risk_level": "Critical",
+    "category": "Denial of Service",
+    "description": "Large-scale DDoS attack saturates the edge WAF/load balancer or upstream resources, causing platform-wide outage or degraded provisioning/management capability."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (Provisioning APIs)",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "API abuse, unthrottled provisioning requests or scripted attacks exhaust orchestration resources, DB connections or backend quotas, preventing legitimate operations and causing cascade failures."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend / CLI / Application Services",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "API keys or long-lived tokens exposed in frontend code, browser storage, or CLI configuration allow attackers to impersonate service accounts or users to perform privileged actions."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (APIs / Project Definitions)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "SQL injection or other code injection vulnerabilities in APIs allow attackers to manipulate database contents, execute arbitrary queries, or run code on backend services."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer / KMS",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Misconfigured KMS or improper key usage (e.g., reuse of keys across tenants, improper access policies) leads to possible secret exfiltration or ability to decrypt sensitive data across tenants."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Network / Project Isolation (Integration & Connectors)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Incorrect network segmentation or misapplied firewall/SDN rules allow an attacker to move laterally from one tenant/project environment to another, escalating privileges or accessing other tenants' wo"
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Project Creation Requirement",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Business-logic abuse or race conditions allow attackers to bypass quota/resource checks during project creation (e.g., rapid create requests or manipulated parameters), leading to resource exhaustion "
+  }
+]

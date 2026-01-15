@@ -1,0 +1,1091 @@
+{
+  "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"Edge & Auth (AD SSO, session management)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Compromise or theft of AD credentials or SSO tokens (phishing, token theft, replay) allowing an attacker to impersonate a legitimate user and access the web application and APIs.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce MFA for AD, use conditional access policies, short-lived SSO tokens, certificate-based authentication where possible, monitor anomalous sign-ins, implement session revocation and token revocation workflows, restrict admin logins via bastions and IP whitelisting.\",\n      \"applicable_controls\": [\n        \"Active Directory/IdP policies\",\n        \"MFA\",\n        \"Short-lived tokens and revocation\",\n        \"Conditional Access / IP restrictions\",\n        \"TLS for all auth flows\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Edge & Auth (GitHub OAuth & Webhooks)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Theft or misuse of GitHub OAuth tokens or forging of webhook requests to trigger unauthorized builds or access repository metadata.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use minimal OAuth scopes, implement webhook signature verification (HMAC), rotate and store OAuth tokens in Vault, restrict webhook sources by IP where possible, log and alert on unusual webhook activity.\",\n      \"applicable_controls\": [\n        \"GitHub OAuth with limited scopes\",\n        \"Webhook HMAC signature verification\",\n        \"Secrets Manager (Vault) for token storage\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"Frontend Layer (session & cookies)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Session hijacking via stolen session cookies (e.g., through XSS or network interception) allowing impersonation of authenticated users.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Set cookies as HttpOnly, Secure, SameSite=strict where applicable; use TLS everywhere; avoid storing tokens in localStorage; implement token binding, rotate session tokens, reduce session lifetime, detect concurrent sessions and anomalous usage.\",\n      \"applicable_controls\": [\n        \"HttpOnly/Secure/SameSite cookies\",\n        \"TLS everywhere\",\n        \"Session management policies\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Frontend Layer (log viewer and file previews)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Cross-site scripting (XSS) in log viewer or file preview that exposes session tokens, PII, or internal data, or executes actions on behalf of the user.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Sanitize and encode all displayed log and file content, enforce Content Security Policy (CSP), use safe libraries for rendering, restrict HTML rendering, remove sensitive data before view, apply output encoding.\",\n      \"applicable_controls\": [\n        \"Output encoding & sanitization\",\n        \"CSP\",\n        \"Input validation for file names and metadata\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Application Services (DB access)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"SQL injection or other injection vulnerabilities in APIs that handle task parameters, file metadata or search queries allowing data modification or disclosure.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries/ORMs, validate and constrain inputs, use least-privilege DB accounts, implement prepared statements and stored procedures, run RAST/DAST, review DB permissions and apply schema-level constraints.\",\n      \"applicable_controls\": [\n        \"Parameterized queries/ORM\",\n        \"DB least-privilege accounts\",\n        \"Input validation and allow-lists\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Application Services (audit logging)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient or tamperable audit logs make it impossible to track who performed build submissions, approvals, or FPGA programming actions.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement immutable, append-only audit logs with hashing, forward logs to a central SIEM, record actor identity and request context, protect logs from modification and ensure time synchronization, retain logs per policy.\",\n      \"applicable_controls\": [\n        \"Append-only audit logs\",\n        \"Centralized SIEM/ELK with write-once policies\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Background Workers & Orchestrator (SLURM jobs)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Attackers manipulate job submission payloads or job scripts (e.g., inject malicious commands or change job resources/priorities) to escalate impact or run unintended workloads on HPC.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Validate and sanitize job scripts and parameters, sign or nonce job requests, restrict worker privileges for SLURM submission, run jobs under isolated service accounts, implement job template enforcement and whitelists for allowed commands.\",\n      \"applicable_controls\": [\n        \"Job request validation & signing\",\n        \"Least-privilege SLURM accounts\",\n        \"Job template enforcement\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"HPC & FPGA Hardware Zone (artifacts, bitfiles)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Unauthorized access to bitfiles, build artifacts, or EDA outputs that contain proprietary IP, via insufficient access controls on object storage or stale signed URLs.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt artifacts at rest and in transit, enforce strict RBAC on object store, require authenticated access to downloads, use short-lived pre-signed URLs, audit access to artifacts, watermark sensitive outputs where possible.\",\n      \"applicable_controls\": [\n        \"Object storage encryption\",\n        \"RBAC and signed URLs\",\n        \"Audit logs for artifact access\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"Data Storage & Analytics (backups)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Exposed or unencrypted DB or artifact backups (e.g., stored on shared file systems or cloud buckets) leading to disclosure of source, IP, or credentials.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt backups with customer-managed keys, restrict access to backup storage, enforce secure transfer, rotate keys, log and monitor backup access, and test restore procedures securely.\",\n      \"applicable_controls\": [\n        \"Backup encryption\",\n        \"Restricted access and audit\",\n        \"Secure backup lifecycle management\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"Frontend Layer (forms & state changes)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Cross-Site Request Forgery (CSRF) attacks cause authenticated users to unknowingly create, cancel, or alter build tasks.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement anti-CSRF tokens for state-changing endpoints, enforce SameSite cookies, verify Origin/Referer headers for sensitive endpoints, and require re-authentication for critical actions.\",\n      \"applicable_controls\": [\n        \"CSRF tokens\",\n        \"SameSite cookie flags\",\n        \"Origin/Referer checks\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Application Services (RBAC/authorization)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken or missing server-side RBAC allows normal users to perform admin actions (e.g., delete artifacts, change RBAC policies, program FPGAs).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce server-side RBAC checks for all sensitive operations, implement fine-grained roles, perform regular policy audits, apply separation of duties and approval workflows for admin tasks, use automated tests for authorization.\",\n      \"applicable_controls\": [\n        \"Server-side RBAC enforcement\",\n        \"Separation of duties and approval workflows\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"External Integrations (Vault / Secrets Manager)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Compromise or misconfiguration of the secrets manager exposes credentials for HPC, GitHub, EDA licensing, or other systems enabling further compromise.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use Vault with strong ACLs and audit logging, enable dynamic secrets and short leases, require hardware-backed keys (HSM) where possible, rotate and rotate on deployment, restrict access by identity and role, enable MFAs and monitor access.\",\n      \"applicable_controls\": [\n        \"Secrets Manager (Vault) with dynamic secrets\",\n        \"HSM-backed keys\",\n        \"Strict ACLs and audit logging\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"GitHub Integration (automated builds)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Malicious code in a repository or PR triggers automated builds which execute in the CI environment, potentially exfiltrating data or attacking other systems (supply-chain/code execution).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Run builds in isolated ephemeral containers/namespaces, use dedicated read-only runners, enforce signed commits or protected branches, require PR approvals for build triggers, scan code for secrets and malware before build, restrict network egress from build runners.\",\n      \"applicable_controls\": [\n        \"Ephemeral sandboxed build runners\",\n        \"Protected branches and required reviews\",\n        \"Static analysis & secret scanning\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"Notifications (Email)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Inclusion of sensitive build outputs, artifact links or secrets in email notifications leads to information leakage, especially if email recipients include external addresses.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Redact or avoid including sensitive data in emails, include only authenticated links that require login, restrict external recipients, enable TLS and DMARC, and provide user notification preferences.\",\n      \"applicable_controls\": [\n        \"SMTP TLS\",\n        \"Email content redaction\",\n        \"Notification preferences\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"Deployment & Ops (Docker/containers)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Misconfigured container runtime (privileged containers, host mounts) or malicious containers cause container escapes or resource exhaustion leading to DoS of control plane or other services.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Run containers unprivileged, disable unnecessary capabilities, enforce seccomp/AppArmor profiles, restrict host mounts and Docker socket access, image scanning, use runtime isolation (gVisor, Kata), monitor resource usage and enforce quotas.\",\n      \"applicable_controls\": [\n        \"Container hardening (seccomp/AppArmor)\",\n        \"Image signing & scanning\",\n        \"Unprivileged containers\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"Edge & Auth (WebSockets / SSE)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Abuse of real-time channels (WebSockets/SSE) to open many connections or send large messages, exhausting server resources and denying service to legitimate users.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce per-client connection limits, authentication for real-time channels, rate limits for messages, connection timeouts, load balancer protections and backpressure mechanisms, use autoscaling and circuit breakers.\",\n      \"applicable_controls\": [\n        \"Connection quotas\",\n        \"Rate limiting\",\n        \"Authentication for real-time channels\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"Task Management & APIs (bulk operations)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Intentional or accidental bulk task creation/cancellation (e.g., via API abuse) floods the job queue and exhausts HPC or application resources.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement API rate limiting, per-user and per-team quotas, approval workflow for large/batch operations, queue prioritization and resource reservations, and alerting on abnormal activity.\",\n      \"applicable_controls\": [\n        \"Rate limiting and quotas\",\n        \"Approval workflows for large jobs\",\n        \"Queue prioritization\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"Data Storage & Analytics (DB integrity)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Unauthorized modification of DB records (task history, audit trails) either via compromised credentials or application bug, undermining forensicability and integrity of results.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use DB-level access controls, immutable audit trails exported to secure storage, cryptographic integrity checks, restrict DB admin operations, use multi-person approval for destructive operations, and monitor for anomalous DB writes.\",\n      \"applicable_controls\": [\n        \"DB role separation\",\n        \"Immutable audit exports\",\n        \"DB activity monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Frontend Layer (browser storage & caching)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive tokens, PII or internal URLs stored in browser localStorage, indexed DB, or caches are recovered from a compromised client or shared device.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Avoid storing tokens in localStorage; use HttpOnly cookies; prevent caching of sensitive pages (cache-control: no-store), clear temporary data on logout, warn about shared devices, and provide secure mobile app guidance.\",\n      \"applicable_controls\": [\n        \"HttpOnly cookies\",\n        \"Cache-control headers (no-store)\",\n        \"Client-side guidance\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"HPC & FPGA Hardware Zone (FPGA programming)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Bypassing approval workflow or exploiting API flaws to program FPGA devices with unauthorized bitfiles, potentially damaging hardware or enabling persistent hardware-level backdoors.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Require multi-person approvals for hardware programming, cryptographic signing of bitfiles, strict RBAC for programming APIs, hardware-level authentication and logging, and implement failsafe controls on FPGA programming endpoints.\",\n      \"applicable_controls\": [\n        \"Multi-person approval workflows\",\n        \"Bitfile signing and verification\",\n        \"RBAC for programming APIs\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"External Integrations (GitHub webhooks)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Replay of webhook events or forging webhook payloads to trigger builds or inject falsified commit/PR metadata.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Verify webhook signatures and timestamps, reject replayed events, enforce short TTLs for nonces, restrict incoming webhook IP ranges, and log webhook sources for audit.\",\n      \"applicable_controls\": [\n        \"Webhook HMAC verification\",\n        \"Timestamp/nonce checks\",\n        \"Source IP restrictions\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Application Services & Object Store (logs/artifacts)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Storage of logs and artifacts with public or overly permissive ACLs or long-lived pre-signed URLs leads to unintended public access of sensitive outputs.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use least-privilege ACLs, default private buckets, short-lived pre-signed URLs, encrypt at rest, audit and alert on public ACLs, and periodically scan storage for exposed objects.\",\n      \"applicable_controls\": [\n        \"Private by default object store\",\n        \"Short-lived signed URLs\",\n        \"Storage ACL audits\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"File Management (uploads)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Malicious or malformed file uploads (including bitfiles) that contain malware or specially crafted data causing downstream EDA tools or workers to behave unexpectedly or execute arbitrary code.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Scan uploads for malware, validate file formats and signatures, store uploads as non-executable, process files in sandboxed/ephemeral environments, block known bad file types, and apply content-disarm-and-reconstruct where possible.\",\n      \"applicable_controls\": [\n        \"Malware scanning\",\n        \"File type validation\",\n        \"Sandboxed processing\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"Data Storage & Analytics (object store capacity)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Exhaustion of storage capacity by deliberate or accidental upload of very large artifacts, causing new builds to fail or system to degrade.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce per-user and per-project storage quotas, lifecycle policies to expire old artifacts, alerts on capacity thresholds, deduplication, and pre-upload size checks.\",\n      \"applicable_controls\": [\n        \"Storage quotas and lifecycle policies\",\n        \"Capacity monitoring and alerts\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Deployment & Ops (Ansible / images)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Compromise of Ansible playbooks, container images, or CI artifacts leads to deployment of backdoored containers or malicious configuration changes across environment.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use signed playbooks and signed container images, restrict access to artifact repositories, use reproducible builds, scan images for vulnerabilities, and require approvals for production changes.\",\n      \"applicable_controls\": [\n        \"Artifact signing\",\n        \"Image scanning\",\n        \"Restricted artifact repo access\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Notifications (SMTP)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Emails sent without enforced TLS or to external recipients might be intercepted, exposing commit details, logs, or artifact links.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce STARTTLS/TLS for SMTP, prefer encrypted internal channels for sensitive content, avoid sending secrets in email bodies, apply DMARC/DKIM/SPF, and restrict auto-notifications to internal addresses.\",\n      \"applicable_controls\": [\n        \"Enforced SMTP TLS\",\n        \"Email policies (DMARC/DKIM/SPF)\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"Application Services (webhooks & triggers)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient logging of webhook events and build triggers makes it difficult to prove who triggered a build or when an automated action occurred.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Log full webhook metadata with signature verification results, persist event payloads securely, correlate with user accounts, and forward to SIEM; ensure log integrity and retention policies.\",\n      \"applicable_controls\": [\n        \"Webhook event logging\",\n        \"Centralized SIEM correlation\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Background Workers & Orchestrator (service identity)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"A compromised worker node impersonates the orchestrator or other services to SLURM or storage systems to access or modify jobs/artifacts.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use mTLS for service-to-service communication, mutual authentication and authorization (service identity), service mesh or short-lived service credentials, host attestation, and restrict worker network segmentation.\",\n      \"applicable_controls\": [\n        \"mTLS for internal services\",\n        \"Service identity & attestation\",\n        \"Network segmentation\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-029\",\n      \"component\": \"Application Services (API serialization)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Insecure deserialization or unsafe object handling in API endpoints leading to remote code execution or privilege escalation for attackers sending crafted payloads.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Avoid unsafe deserialization, use allow-lists for serialized data, validate all input, apply runtime integrity checks, run services with minimal privileges, and conduct code reviews and automated scanning for deserialization issues.\",\n      \"applicable_controls\": [\n        \"Input validation and allow-lists\",\n        \"Runtime privilege restriction\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-030\",\n      \"component\": \"Frontend + Log Viewer (client-side rendering)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Improper handling of log content or binary preview causes client-side injection or misuse (reflected/stored XSS) affecting other users viewing logs or dashboards.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Sanitize and escape any log content and file previews before rendering, use text-only safe viewers for logs, restrict rendering of HTML in logs, and enforce CSP.\",\n      \"applicable_controls\": [\n        \"Log sanitization\",\n        \"CSP and safe rendering libraries\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    }\n  ],\n  \"risk_summary\": \"Critical threats center on identity (AD SSO and OAuth token compromise), backend orchestration (manipulation of job submissions and compromised workers), and exposure of proprietary artifacts (bitfiles, backups, and storage ACL misconfigurations). Attack vectors with highest business impact include credential theft and session hijacking, malicious repository/code triggers executing in CI, and tampering with SLURM job payloads or FPGA programming flows. The overall risk posture is medium-high: multiple High and Critical-rated risks exist, but many are mitigable with standard controls (MFA, token management, mTLS, signed artifacts, RBAC, sandboxing). Priority areas for immediate controls: 1) Strengthen identity and session protections (MFA, token rotation, conditional access); 2) Harden integration points (webhook signature verification, Vault for secrets, short-lived credentials); 3) Isolate and sandbox build execution and background workers (ephemeral runners, mTLS, network segmentation); 4) Enforce strict storage and artifact controls (encryption, short-lived URLs, ACL audits); and 5) Implement comprehensive logging, immutable audit trails and automated authorization testing. Addressing these will reduce the highest residual risks; remaining medium risks require continuous monitoring, regular review of RBAC and approval workflows, and secure deployment supply-chain practices.\"\n}",
+  "pydantic": {
+    "methodology": "STRIDE",
+    "threats": [
+      {
+        "threat_id": "THR-001",
+        "component": "Edge & Auth (AD SSO, session management)",
+        "threat_category": "Spoofing",
+        "description": "Compromise or theft of AD credentials or SSO tokens (phishing, token theft, replay) allowing an attacker to impersonate a legitimate user and access the web application and APIs.",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Enforce MFA for AD, use conditional access policies, short-lived SSO tokens, certificate-based authentication where possible, monitor anomalous sign-ins, implement session revocation and token revocation workflows, restrict admin logins via bastions and IP whitelisting.",
+        "applicable_controls": [
+          "Active Directory/IdP policies",
+          "MFA",
+          "Short-lived tokens and revocation",
+          "Conditional Access / IP restrictions",
+          "TLS for all auth flows"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-002",
+        "component": "Edge & Auth (GitHub OAuth & Webhooks)",
+        "threat_category": "Spoofing",
+        "description": "Theft or misuse of GitHub OAuth tokens or forging of webhook requests to trigger unauthorized builds or access repository metadata.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use minimal OAuth scopes, implement webhook signature verification (HMAC), rotate and store OAuth tokens in Vault, restrict webhook sources by IP where possible, log and alert on unusual webhook activity.",
+        "applicable_controls": [
+          "GitHub OAuth with limited scopes",
+          "Webhook HMAC signature verification",
+          "Secrets Manager (Vault) for token storage"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-003",
+        "component": "Frontend Layer (session & cookies)",
+        "threat_category": "Spoofing",
+        "description": "Session hijacking via stolen session cookies (e.g., through XSS or network interception) allowing impersonation of authenticated users.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Set cookies as HttpOnly, Secure, SameSite=strict where applicable; use TLS everywhere; avoid storing tokens in localStorage; implement token binding, rotate session tokens, reduce session lifetime, detect concurrent sessions and anomalous usage.",
+        "applicable_controls": [
+          "HttpOnly/Secure/SameSite cookies",
+          "TLS everywhere",
+          "Session management policies"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-004",
+        "component": "Frontend Layer (log viewer and file previews)",
+        "threat_category": "Information Disclosure",
+        "description": "Cross-site scripting (XSS) in log viewer or file preview that exposes session tokens, PII, or internal data, or executes actions on behalf of the user.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Sanitize and encode all displayed log and file content, enforce Content Security Policy (CSP), use safe libraries for rendering, restrict HTML rendering, remove sensitive data before view, apply output encoding.",
+        "applicable_controls": [
+          "Output encoding & sanitization",
+          "CSP",
+          "Input validation for file names and metadata"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-005",
+        "component": "Application Services (DB access)",
+        "threat_category": "Tampering",
+        "description": "SQL injection or other injection vulnerabilities in APIs that handle task parameters, file metadata or search queries allowing data modification or disclosure.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use parameterized queries/ORMs, validate and constrain inputs, use least-privilege DB accounts, implement prepared statements and stored procedures, run RAST/DAST, review DB permissions and apply schema-level constraints.",
+        "applicable_controls": [
+          "Parameterized queries/ORM",
+          "DB least-privilege accounts",
+          "Input validation and allow-lists"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-006",
+        "component": "Application Services (audit logging)",
+        "threat_category": "Repudiation",
+        "description": "Insufficient or tamperable audit logs make it impossible to track who performed build submissions, approvals, or FPGA programming actions.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Implement immutable, append-only audit logs with hashing, forward logs to a central SIEM, record actor identity and request context, protect logs from modification and ensure time synchronization, retain logs per policy.",
+        "applicable_controls": [
+          "Append-only audit logs",
+          "Centralized SIEM/ELK with write-once policies"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-007",
+        "component": "Background Workers & Orchestrator (SLURM jobs)",
+        "threat_category": "Tampering",
+        "description": "Attackers manipulate job submission payloads or job scripts (e.g., inject malicious commands or change job resources/priorities) to escalate impact or run unintended workloads on HPC.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Validate and sanitize job scripts and parameters, sign or nonce job requests, restrict worker privileges for SLURM submission, run jobs under isolated service accounts, implement job template enforcement and whitelists for allowed commands.",
+        "applicable_controls": [
+          "Job request validation & signing",
+          "Least-privilege SLURM accounts",
+          "Job template enforcement"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-008",
+        "component": "HPC & FPGA Hardware Zone (artifacts, bitfiles)",
+        "threat_category": "Information Disclosure",
+        "description": "Unauthorized access to bitfiles, build artifacts, or EDA outputs that contain proprietary IP, via insufficient access controls on object storage or stale signed URLs.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Encrypt artifacts at rest and in transit, enforce strict RBAC on object store, require authenticated access to downloads, use short-lived pre-signed URLs, audit access to artifacts, watermark sensitive outputs where possible.",
+        "applicable_controls": [
+          "Object storage encryption",
+          "RBAC and signed URLs",
+          "Audit logs for artifact access"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-009",
+        "component": "Data Storage & Analytics (backups)",
+        "threat_category": "Information Disclosure",
+        "description": "Exposed or unencrypted DB or artifact backups (e.g., stored on shared file systems or cloud buckets) leading to disclosure of source, IP, or credentials.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Encrypt backups with customer-managed keys, restrict access to backup storage, enforce secure transfer, rotate keys, log and monitor backup access, and test restore procedures securely.",
+        "applicable_controls": [
+          "Backup encryption",
+          "Restricted access and audit",
+          "Secure backup lifecycle management"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-010",
+        "component": "Frontend Layer (forms & state changes)",
+        "threat_category": "Tampering",
+        "description": "Cross-Site Request Forgery (CSRF) attacks cause authenticated users to unknowingly create, cancel, or alter build tasks.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Implement anti-CSRF tokens for state-changing endpoints, enforce SameSite cookies, verify Origin/Referer headers for sensitive endpoints, and require re-authentication for critical actions.",
+        "applicable_controls": [
+          "CSRF tokens",
+          "SameSite cookie flags",
+          "Origin/Referer checks"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-011",
+        "component": "Application Services (RBAC/authorization)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Broken or missing server-side RBAC allows normal users to perform admin actions (e.g., delete artifacts, change RBAC policies, program FPGAs).",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce server-side RBAC checks for all sensitive operations, implement fine-grained roles, perform regular policy audits, apply separation of duties and approval workflows for admin tasks, use automated tests for authorization.",
+        "applicable_controls": [
+          "Server-side RBAC enforcement",
+          "Separation of duties and approval workflows"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-012",
+        "component": "External Integrations (Vault / Secrets Manager)",
+        "threat_category": "Information Disclosure",
+        "description": "Compromise or misconfiguration of the secrets manager exposes credentials for HPC, GitHub, EDA licensing, or other systems enabling further compromise.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use Vault with strong ACLs and audit logging, enable dynamic secrets and short leases, require hardware-backed keys (HSM) where possible, rotate and rotate on deployment, restrict access by identity and role, enable MFAs and monitor access.",
+        "applicable_controls": [
+          "Secrets Manager (Vault) with dynamic secrets",
+          "HSM-backed keys",
+          "Strict ACLs and audit logging"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-013",
+        "component": "GitHub Integration (automated builds)",
+        "threat_category": "Tampering",
+        "description": "Malicious code in a repository or PR triggers automated builds which execute in the CI environment, potentially exfiltrating data or attacking other systems (supply-chain/code execution).",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Run builds in isolated ephemeral containers/namespaces, use dedicated read-only runners, enforce signed commits or protected branches, require PR approvals for build triggers, scan code for secrets and malware before build, restrict network egress from build runners.",
+        "applicable_controls": [
+          "Ephemeral sandboxed build runners",
+          "Protected branches and required reviews",
+          "Static analysis & secret scanning"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-014",
+        "component": "Notifications (Email)",
+        "threat_category": "Information Disclosure",
+        "description": "Inclusion of sensitive build outputs, artifact links or secrets in email notifications leads to information leakage, especially if email recipients include external addresses.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Redact or avoid including sensitive data in emails, include only authenticated links that require login, restrict external recipients, enable TLS and DMARC, and provide user notification preferences.",
+        "applicable_controls": [
+          "SMTP TLS",
+          "Email content redaction",
+          "Notification preferences"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-015",
+        "component": "Deployment & Ops (Docker/containers)",
+        "threat_category": "Denial of Service",
+        "description": "Misconfigured container runtime (privileged containers, host mounts) or malicious containers cause container escapes or resource exhaustion leading to DoS of control plane or other services.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Run containers unprivileged, disable unnecessary capabilities, enforce seccomp/AppArmor profiles, restrict host mounts and Docker socket access, image scanning, use runtime isolation (gVisor, Kata), monitor resource usage and enforce quotas.",
+        "applicable_controls": [
+          "Container hardening (seccomp/AppArmor)",
+          "Image signing & scanning",
+          "Unprivileged containers"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-016",
+        "component": "Edge & Auth (WebSockets / SSE)",
+        "threat_category": "Denial of Service",
+        "description": "Abuse of real-time channels (WebSockets/SSE) to open many connections or send large messages, exhausting server resources and denying service to legitimate users.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Enforce per-client connection limits, authentication for real-time channels, rate limits for messages, connection timeouts, load balancer protections and backpressure mechanisms, use autoscaling and circuit breakers.",
+        "applicable_controls": [
+          "Connection quotas",
+          "Rate limiting",
+          "Authentication for real-time channels"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-017",
+        "component": "Task Management & APIs (bulk operations)",
+        "threat_category": "Denial of Service",
+        "description": "Intentional or accidental bulk task creation/cancellation (e.g., via API abuse) floods the job queue and exhausts HPC or application resources.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Implement API rate limiting, per-user and per-team quotas, approval workflow for large/batch operations, queue prioritization and resource reservations, and alerting on abnormal activity.",
+        "applicable_controls": [
+          "Rate limiting and quotas",
+          "Approval workflows for large jobs",
+          "Queue prioritization"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-018",
+        "component": "Data Storage & Analytics (DB integrity)",
+        "threat_category": "Tampering",
+        "description": "Unauthorized modification of DB records (task history, audit trails) either via compromised credentials or application bug, undermining forensicability and integrity of results.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use DB-level access controls, immutable audit trails exported to secure storage, cryptographic integrity checks, restrict DB admin operations, use multi-person approval for destructive operations, and monitor for anomalous DB writes.",
+        "applicable_controls": [
+          "DB role separation",
+          "Immutable audit exports",
+          "DB activity monitoring"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-019",
+        "component": "Frontend Layer (browser storage & caching)",
+        "threat_category": "Information Disclosure",
+        "description": "Sensitive tokens, PII or internal URLs stored in browser localStorage, indexed DB, or caches are recovered from a compromised client or shared device.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Avoid storing tokens in localStorage; use HttpOnly cookies; prevent caching of sensitive pages (cache-control: no-store), clear temporary data on logout, warn about shared devices, and provide secure mobile app guidance.",
+        "applicable_controls": [
+          "HttpOnly cookies",
+          "Cache-control headers (no-store)",
+          "Client-side guidance"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-020",
+        "component": "HPC & FPGA Hardware Zone (FPGA programming)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Bypassing approval workflow or exploiting API flaws to program FPGA devices with unauthorized bitfiles, potentially damaging hardware or enabling persistent hardware-level backdoors.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Require multi-person approvals for hardware programming, cryptographic signing of bitfiles, strict RBAC for programming APIs, hardware-level authentication and logging, and implement failsafe controls on FPGA programming endpoints.",
+        "applicable_controls": [
+          "Multi-person approval workflows",
+          "Bitfile signing and verification",
+          "RBAC for programming APIs"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-021",
+        "component": "External Integrations (GitHub webhooks)",
+        "threat_category": "Spoofing",
+        "description": "Replay of webhook events or forging webhook payloads to trigger builds or inject falsified commit/PR metadata.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Verify webhook signatures and timestamps, reject replayed events, enforce short TTLs for nonces, restrict incoming webhook IP ranges, and log webhook sources for audit.",
+        "applicable_controls": [
+          "Webhook HMAC verification",
+          "Timestamp/nonce checks",
+          "Source IP restrictions"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-022",
+        "component": "Application Services & Object Store (logs/artifacts)",
+        "threat_category": "Information Disclosure",
+        "description": "Storage of logs and artifacts with public or overly permissive ACLs or long-lived pre-signed URLs leads to unintended public access of sensitive outputs.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use least-privilege ACLs, default private buckets, short-lived pre-signed URLs, encrypt at rest, audit and alert on public ACLs, and periodically scan storage for exposed objects.",
+        "applicable_controls": [
+          "Private by default object store",
+          "Short-lived signed URLs",
+          "Storage ACL audits"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-023",
+        "component": "File Management (uploads)",
+        "threat_category": "Tampering",
+        "description": "Malicious or malformed file uploads (including bitfiles) that contain malware or specially crafted data causing downstream EDA tools or workers to behave unexpectedly or execute arbitrary code.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Scan uploads for malware, validate file formats and signatures, store uploads as non-executable, process files in sandboxed/ephemeral environments, block known bad file types, and apply content-disarm-and-reconstruct where possible.",
+        "applicable_controls": [
+          "Malware scanning",
+          "File type validation",
+          "Sandboxed processing"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-024",
+        "component": "Data Storage & Analytics (object store capacity)",
+        "threat_category": "Denial of Service",
+        "description": "Exhaustion of storage capacity by deliberate or accidental upload of very large artifacts, causing new builds to fail or system to degrade.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Enforce per-user and per-project storage quotas, lifecycle policies to expire old artifacts, alerts on capacity thresholds, deduplication, and pre-upload size checks.",
+        "applicable_controls": [
+          "Storage quotas and lifecycle policies",
+          "Capacity monitoring and alerts"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-025",
+        "component": "Deployment & Ops (Ansible / images)",
+        "threat_category": "Tampering",
+        "description": "Compromise of Ansible playbooks, container images, or CI artifacts leads to deployment of backdoored containers or malicious configuration changes across environment.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use signed playbooks and signed container images, restrict access to artifact repositories, use reproducible builds, scan images for vulnerabilities, and require approvals for production changes.",
+        "applicable_controls": [
+          "Artifact signing",
+          "Image scanning",
+          "Restricted artifact repo access"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-026",
+        "component": "Notifications (SMTP)",
+        "threat_category": "Information Disclosure",
+        "description": "Emails sent without enforced TLS or to external recipients might be intercepted, exposing commit details, logs, or artifact links.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Enforce STARTTLS/TLS for SMTP, prefer encrypted internal channels for sensitive content, avoid sending secrets in email bodies, apply DMARC/DKIM/SPF, and restrict auto-notifications to internal addresses.",
+        "applicable_controls": [
+          "Enforced SMTP TLS",
+          "Email policies (DMARC/DKIM/SPF)"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-027",
+        "component": "Application Services (webhooks & triggers)",
+        "threat_category": "Repudiation",
+        "description": "Insufficient logging of webhook events and build triggers makes it difficult to prove who triggered a build or when an automated action occurred.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Log full webhook metadata with signature verification results, persist event payloads securely, correlate with user accounts, and forward to SIEM; ensure log integrity and retention policies.",
+        "applicable_controls": [
+          "Webhook event logging",
+          "Centralized SIEM correlation"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-028",
+        "component": "Background Workers & Orchestrator (service identity)",
+        "threat_category": "Spoofing",
+        "description": "A compromised worker node impersonates the orchestrator or other services to SLURM or storage systems to access or modify jobs/artifacts.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use mTLS for service-to-service communication, mutual authentication and authorization (service identity), service mesh or short-lived service credentials, host attestation, and restrict worker network segmentation.",
+        "applicable_controls": [
+          "mTLS for internal services",
+          "Service identity & attestation",
+          "Network segmentation"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-029",
+        "component": "Application Services (API serialization)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Insecure deserialization or unsafe object handling in API endpoints leading to remote code execution or privilege escalation for attackers sending crafted payloads.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Avoid unsafe deserialization, use allow-lists for serialized data, validate all input, apply runtime integrity checks, run services with minimal privileges, and conduct code reviews and automated scanning for deserialization issues.",
+        "applicable_controls": [
+          "Input validation and allow-lists",
+          "Runtime privilege restriction"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-030",
+        "component": "Frontend + Log Viewer (client-side rendering)",
+        "threat_category": "Tampering",
+        "description": "Improper handling of log content or binary preview causes client-side injection or misuse (reflected/stored XSS) affecting other users viewing logs or dashboards.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Sanitize and escape any log content and file previews before rendering, use text-only safe viewers for logs, restrict rendering of HTML in logs, and enforce CSP.",
+        "applicable_controls": [
+          "Log sanitization",
+          "CSP and safe rendering libraries"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      }
+    ],
+    "risk_summary": "Critical threats center on identity (AD SSO and OAuth token compromise), backend orchestration (manipulation of job submissions and compromised workers), and exposure of proprietary artifacts (bitfiles, backups, and storage ACL misconfigurations). Attack vectors with highest business impact include credential theft and session hijacking, malicious repository/code triggers executing in CI, and tampering with SLURM job payloads or FPGA programming flows. The overall risk posture is medium-high: multiple High and Critical-rated risks exist, but many are mitigable with standard controls (MFA, token management, mTLS, signed artifacts, RBAC, sandboxing). Priority areas for immediate controls: 1) Strengthen identity and session protections (MFA, token rotation, conditional access); 2) Harden integration points (webhook signature verification, Vault for secrets, short-lived credentials); 3) Isolate and sandbox build execution and background workers (ephemeral runners, mTLS, network segmentation); 4) Enforce strict storage and artifact controls (encryption, short-lived URLs, ACL audits); and 5) Implement comprehensive logging, immutable audit trails and automated authorization testing. Addressing these will reduce the highest residual risks; remaining medium risks require continuous monitoring, regular review of RBAC and approval workflows, and secure deployment supply-chain practices."
+  },
+  "tasks": [
+    {
+      "name": "perform_threat_modeling",
+      "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"Edge & Auth (AD SSO, session management)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Compromise or theft of AD credentials or SSO tokens (phishing, token theft, replay) allowing an attacker to impersonate a legitimate user and access the web application and APIs.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce MFA for AD, use conditional access policies, short-lived SSO tokens, certificate-based authentication where possible, monitor anomalous sign-ins, implement session revocation and token revocation workflows, restrict admin logins via bastions and IP whitelisting.\",\n      \"applicable_controls\": [\n        \"Active Directory/IdP policies\",\n        \"MFA\",\n        \"Short-lived tokens and revocation\",\n        \"Conditional Access / IP restrictions\",\n        \"TLS for all auth flows\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Edge & Auth (GitHub OAuth & Webhooks)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Theft or misuse of GitHub OAuth tokens or forging of webhook requests to trigger unauthorized builds or access repository metadata.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use minimal OAuth scopes, implement webhook signature verification (HMAC), rotate and store OAuth tokens in Vault, restrict webhook sources by IP where possible, log and alert on unusual webhook activity.\",\n      \"applicable_controls\": [\n        \"GitHub OAuth with limited scopes\",\n        \"Webhook HMAC signature verification\",\n        \"Secrets Manager (Vault) for token storage\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"Frontend Layer (session & cookies)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Session hijacking via stolen session cookies (e.g., through XSS or network interception) allowing impersonation of authenticated users.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Set cookies as HttpOnly, Secure, SameSite=strict where applicable; use TLS everywhere; avoid storing tokens in localStorage; implement token binding, rotate session tokens, reduce session lifetime, detect concurrent sessions and anomalous usage.\",\n      \"applicable_controls\": [\n        \"HttpOnly/Secure/SameSite cookies\",\n        \"TLS everywhere\",\n        \"Session management policies\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Frontend Layer (log viewer and file previews)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Cross-site scripting (XSS) in log viewer or file preview that exposes session tokens, PII, or internal data, or executes actions on behalf of the user.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Sanitize and encode all displayed log and file content, enforce Content Security Policy (CSP), use safe libraries for rendering, restrict HTML rendering, remove sensitive data before view, apply output encoding.\",\n      \"applicable_controls\": [\n        \"Output encoding & sanitization\",\n        \"CSP\",\n        \"Input validation for file names and metadata\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Application Services (DB access)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"SQL injection or other injection vulnerabilities in APIs that handle task parameters, file metadata or search queries allowing data modification or disclosure.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries/ORMs, validate and constrain inputs, use least-privilege DB accounts, implement prepared statements and stored procedures, run RAST/DAST, review DB permissions and apply schema-level constraints.\",\n      \"applicable_controls\": [\n        \"Parameterized queries/ORM\",\n        \"DB least-privilege accounts\",\n        \"Input validation and allow-lists\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Application Services (audit logging)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient or tamperable audit logs make it impossible to track who performed build submissions, approvals, or FPGA programming actions.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement immutable, append-only audit logs with hashing, forward logs to a central SIEM, record actor identity and request context, protect logs from modification and ensure time synchronization, retain logs per policy.\",\n      \"applicable_controls\": [\n        \"Append-only audit logs\",\n        \"Centralized SIEM/ELK with write-once policies\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Background Workers & Orchestrator (SLURM jobs)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Attackers manipulate job submission payloads or job scripts (e.g., inject malicious commands or change job resources/priorities) to escalate impact or run unintended workloads on HPC.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Validate and sanitize job scripts and parameters, sign or nonce job requests, restrict worker privileges for SLURM submission, run jobs under isolated service accounts, implement job template enforcement and whitelists for allowed commands.\",\n      \"applicable_controls\": [\n        \"Job request validation & signing\",\n        \"Least-privilege SLURM accounts\",\n        \"Job template enforcement\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"HPC & FPGA Hardware Zone (artifacts, bitfiles)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Unauthorized access to bitfiles, build artifacts, or EDA outputs that contain proprietary IP, via insufficient access controls on object storage or stale signed URLs.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt artifacts at rest and in transit, enforce strict RBAC on object store, require authenticated access to downloads, use short-lived pre-signed URLs, audit access to artifacts, watermark sensitive outputs where possible.\",\n      \"applicable_controls\": [\n        \"Object storage encryption\",\n        \"RBAC and signed URLs\",\n        \"Audit logs for artifact access\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"Data Storage & Analytics (backups)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Exposed or unencrypted DB or artifact backups (e.g., stored on shared file systems or cloud buckets) leading to disclosure of source, IP, or credentials.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt backups with customer-managed keys, restrict access to backup storage, enforce secure transfer, rotate keys, log and monitor backup access, and test restore procedures securely.\",\n      \"applicable_controls\": [\n        \"Backup encryption\",\n        \"Restricted access and audit\",\n        \"Secure backup lifecycle management\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"Frontend Layer (forms & state changes)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Cross-Site Request Forgery (CSRF) attacks cause authenticated users to unknowingly create, cancel, or alter build tasks.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement anti-CSRF tokens for state-changing endpoints, enforce SameSite cookies, verify Origin/Referer headers for sensitive endpoints, and require re-authentication for critical actions.\",\n      \"applicable_controls\": [\n        \"CSRF tokens\",\n        \"SameSite cookie flags\",\n        \"Origin/Referer checks\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Application Services (RBAC/authorization)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken or missing server-side RBAC allows normal users to perform admin actions (e.g., delete artifacts, change RBAC policies, program FPGAs).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce server-side RBAC checks for all sensitive operations, implement fine-grained roles, perform regular policy audits, apply separation of duties and approval workflows for admin tasks, use automated tests for authorization.\",\n      \"applicable_controls\": [\n        \"Server-side RBAC enforcement\",\n        \"Separation of duties and approval workflows\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"External Integrations (Vault / Secrets Manager)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Compromise or misconfiguration of the secrets manager exposes credentials for HPC, GitHub, EDA licensing, or other systems enabling further compromise.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use Vault with strong ACLs and audit logging, enable dynamic secrets and short leases, require hardware-backed keys (HSM) where possible, rotate and rotate on deployment, restrict access by identity and role, enable MFAs and monitor access.\",\n      \"applicable_controls\": [\n        \"Secrets Manager (Vault) with dynamic secrets\",\n        \"HSM-backed keys\",\n        \"Strict ACLs and audit logging\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"GitHub Integration (automated builds)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Malicious code in a repository or PR triggers automated builds which execute in the CI environment, potentially exfiltrating data or attacking other systems (supply-chain/code execution).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Run builds in isolated ephemeral containers/namespaces, use dedicated read-only runners, enforce signed commits or protected branches, require PR approvals for build triggers, scan code for secrets and malware before build, restrict network egress from build runners.\",\n      \"applicable_controls\": [\n        \"Ephemeral sandboxed build runners\",\n        \"Protected branches and required reviews\",\n        \"Static analysis & secret scanning\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"Notifications (Email)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Inclusion of sensitive build outputs, artifact links or secrets in email notifications leads to information leakage, especially if email recipients include external addresses.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Redact or avoid including sensitive data in emails, include only authenticated links that require login, restrict external recipients, enable TLS and DMARC, and provide user notification preferences.\",\n      \"applicable_controls\": [\n        \"SMTP TLS\",\n        \"Email content redaction\",\n        \"Notification preferences\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"Deployment & Ops (Docker/containers)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Misconfigured container runtime (privileged containers, host mounts) or malicious containers cause container escapes or resource exhaustion leading to DoS of control plane or other services.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Run containers unprivileged, disable unnecessary capabilities, enforce seccomp/AppArmor profiles, restrict host mounts and Docker socket access, image scanning, use runtime isolation (gVisor, Kata), monitor resource usage and enforce quotas.\",\n      \"applicable_controls\": [\n        \"Container hardening (seccomp/AppArmor)\",\n        \"Image signing & scanning\",\n        \"Unprivileged containers\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"Edge & Auth (WebSockets / SSE)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Abuse of real-time channels (WebSockets/SSE) to open many connections or send large messages, exhausting server resources and denying service to legitimate users.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce per-client connection limits, authentication for real-time channels, rate limits for messages, connection timeouts, load balancer protections and backpressure mechanisms, use autoscaling and circuit breakers.\",\n      \"applicable_controls\": [\n        \"Connection quotas\",\n        \"Rate limiting\",\n        \"Authentication for real-time channels\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"Task Management & APIs (bulk operations)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Intentional or accidental bulk task creation/cancellation (e.g., via API abuse) floods the job queue and exhausts HPC or application resources.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement API rate limiting, per-user and per-team quotas, approval workflow for large/batch operations, queue prioritization and resource reservations, and alerting on abnormal activity.\",\n      \"applicable_controls\": [\n        \"Rate limiting and quotas\",\n        \"Approval workflows for large jobs\",\n        \"Queue prioritization\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"Data Storage & Analytics (DB integrity)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Unauthorized modification of DB records (task history, audit trails) either via compromised credentials or application bug, undermining forensicability and integrity of results.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use DB-level access controls, immutable audit trails exported to secure storage, cryptographic integrity checks, restrict DB admin operations, use multi-person approval for destructive operations, and monitor for anomalous DB writes.\",\n      \"applicable_controls\": [\n        \"DB role separation\",\n        \"Immutable audit exports\",\n        \"DB activity monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Frontend Layer (browser storage & caching)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive tokens, PII or internal URLs stored in browser localStorage, indexed DB, or caches are recovered from a compromised client or shared device.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Avoid storing tokens in localStorage; use HttpOnly cookies; prevent caching of sensitive pages (cache-control: no-store), clear temporary data on logout, warn about shared devices, and provide secure mobile app guidance.\",\n      \"applicable_controls\": [\n        \"HttpOnly cookies\",\n        \"Cache-control headers (no-store)\",\n        \"Client-side guidance\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"HPC & FPGA Hardware Zone (FPGA programming)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Bypassing approval workflow or exploiting API flaws to program FPGA devices with unauthorized bitfiles, potentially damaging hardware or enabling persistent hardware-level backdoors.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Require multi-person approvals for hardware programming, cryptographic signing of bitfiles, strict RBAC for programming APIs, hardware-level authentication and logging, and implement failsafe controls on FPGA programming endpoints.\",\n      \"applicable_controls\": [\n        \"Multi-person approval workflows\",\n        \"Bitfile signing and verification\",\n        \"RBAC for programming APIs\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"External Integrations (GitHub webhooks)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Replay of webhook events or forging webhook payloads to trigger builds or inject falsified commit/PR metadata.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Verify webhook signatures and timestamps, reject replayed events, enforce short TTLs for nonces, restrict incoming webhook IP ranges, and log webhook sources for audit.\",\n      \"applicable_controls\": [\n        \"Webhook HMAC verification\",\n        \"Timestamp/nonce checks\",\n        \"Source IP restrictions\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Application Services & Object Store (logs/artifacts)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Storage of logs and artifacts with public or overly permissive ACLs or long-lived pre-signed URLs leads to unintended public access of sensitive outputs.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use least-privilege ACLs, default private buckets, short-lived pre-signed URLs, encrypt at rest, audit and alert on public ACLs, and periodically scan storage for exposed objects.\",\n      \"applicable_controls\": [\n        \"Private by default object store\",\n        \"Short-lived signed URLs\",\n        \"Storage ACL audits\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"File Management (uploads)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Malicious or malformed file uploads (including bitfiles) that contain malware or specially crafted data causing downstream EDA tools or workers to behave unexpectedly or execute arbitrary code.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Scan uploads for malware, validate file formats and signatures, store uploads as non-executable, process files in sandboxed/ephemeral environments, block known bad file types, and apply content-disarm-and-reconstruct where possible.\",\n      \"applicable_controls\": [\n        \"Malware scanning\",\n        \"File type validation\",\n        \"Sandboxed processing\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"Data Storage & Analytics (object store capacity)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Exhaustion of storage capacity by deliberate or accidental upload of very large artifacts, causing new builds to fail or system to degrade.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce per-user and per-project storage quotas, lifecycle policies to expire old artifacts, alerts on capacity thresholds, deduplication, and pre-upload size checks.\",\n      \"applicable_controls\": [\n        \"Storage quotas and lifecycle policies\",\n        \"Capacity monitoring and alerts\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Deployment & Ops (Ansible / images)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Compromise of Ansible playbooks, container images, or CI artifacts leads to deployment of backdoored containers or malicious configuration changes across environment.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use signed playbooks and signed container images, restrict access to artifact repositories, use reproducible builds, scan images for vulnerabilities, and require approvals for production changes.\",\n      \"applicable_controls\": [\n        \"Artifact signing\",\n        \"Image scanning\",\n        \"Restricted artifact repo access\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Notifications (SMTP)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Emails sent without enforced TLS or to external recipients might be intercepted, exposing commit details, logs, or artifact links.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce STARTTLS/TLS for SMTP, prefer encrypted internal channels for sensitive content, avoid sending secrets in email bodies, apply DMARC/DKIM/SPF, and restrict auto-notifications to internal addresses.\",\n      \"applicable_controls\": [\n        \"Enforced SMTP TLS\",\n        \"Email policies (DMARC/DKIM/SPF)\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"Application Services (webhooks & triggers)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient logging of webhook events and build triggers makes it difficult to prove who triggered a build or when an automated action occurred.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Log full webhook metadata with signature verification results, persist event payloads securely, correlate with user accounts, and forward to SIEM; ensure log integrity and retention policies.\",\n      \"applicable_controls\": [\n        \"Webhook event logging\",\n        \"Centralized SIEM correlation\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Background Workers & Orchestrator (service identity)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"A compromised worker node impersonates the orchestrator or other services to SLURM or storage systems to access or modify jobs/artifacts.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use mTLS for service-to-service communication, mutual authentication and authorization (service identity), service mesh or short-lived service credentials, host attestation, and restrict worker network segmentation.\",\n      \"applicable_controls\": [\n        \"mTLS for internal services\",\n        \"Service identity & attestation\",\n        \"Network segmentation\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-029\",\n      \"component\": \"Application Services (API serialization)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Insecure deserialization or unsafe object handling in API endpoints leading to remote code execution or privilege escalation for attackers sending crafted payloads.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Avoid unsafe deserialization, use allow-lists for serialized data, validate all input, apply runtime integrity checks, run services with minimal privileges, and conduct code reviews and automated scanning for deserialization issues.\",\n      \"applicable_controls\": [\n        \"Input validation and allow-lists\",\n        \"Runtime privilege restriction\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-030\",\n      \"component\": \"Frontend + Log Viewer (client-side rendering)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Improper handling of log content or binary preview causes client-side injection or misuse (reflected/stored XSS) affecting other users viewing logs or dashboards.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Sanitize and escape any log content and file previews before rendering, use text-only safe viewers for logs, restrict rendering of HTML in logs, and enforce CSP.\",\n      \"applicable_controls\": [\n        \"Log sanitization\",\n        \"CSP and safe rendering libraries\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    }\n  ],\n  \"risk_summary\": \"Critical threats center on identity (AD SSO and OAuth token compromise), backend orchestration (manipulation of job submissions and compromised workers), and exposure of proprietary artifacts (bitfiles, backups, and storage ACL misconfigurations). Attack vectors with highest business impact include credential theft and session hijacking, malicious repository/code triggers executing in CI, and tampering with SLURM job payloads or FPGA programming flows. The overall risk posture is medium-high: multiple High and Critical-rated risks exist, but many are mitigable with standard controls (MFA, token management, mTLS, signed artifacts, RBAC, sandboxing). Priority areas for immediate controls: 1) Strengthen identity and session protections (MFA, token rotation, conditional access); 2) Harden integration points (webhook signature verification, Vault for secrets, short-lived credentials); 3) Isolate and sandbox build execution and background workers (ephemeral runners, mTLS, network segmentation); 4) Enforce strict storage and artifact controls (encryption, short-lived URLs, ACL audits); and 5) Implement comprehensive logging, immutable audit trails and automated authorization testing. Addressing these will reduce the highest residual risks; remaining medium risks require continuous monitoring, regular review of RBAC and approval workflows, and secure deployment supply-chain practices.\"\n}",
+      "pydantic": {
+        "methodology": "STRIDE",
+        "threats": [
+          {
+            "threat_id": "THR-001",
+            "component": "Edge & Auth (AD SSO, session management)",
+            "threat_category": "Spoofing",
+            "description": "Compromise or theft of AD credentials or SSO tokens (phishing, token theft, replay) allowing an attacker to impersonate a legitimate user and access the web application and APIs.",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Enforce MFA for AD, use conditional access policies, short-lived SSO tokens, certificate-based authentication where possible, monitor anomalous sign-ins, implement session revocation and token revocation workflows, restrict admin logins via bastions and IP whitelisting.",
+            "applicable_controls": [
+              "Active Directory/IdP policies",
+              "MFA",
+              "Short-lived tokens and revocation",
+              "Conditional Access / IP restrictions",
+              "TLS for all auth flows"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-002",
+            "component": "Edge & Auth (GitHub OAuth & Webhooks)",
+            "threat_category": "Spoofing",
+            "description": "Theft or misuse of GitHub OAuth tokens or forging of webhook requests to trigger unauthorized builds or access repository metadata.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use minimal OAuth scopes, implement webhook signature verification (HMAC), rotate and store OAuth tokens in Vault, restrict webhook sources by IP where possible, log and alert on unusual webhook activity.",
+            "applicable_controls": [
+              "GitHub OAuth with limited scopes",
+              "Webhook HMAC signature verification",
+              "Secrets Manager (Vault) for token storage"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-003",
+            "component": "Frontend Layer (session & cookies)",
+            "threat_category": "Spoofing",
+            "description": "Session hijacking via stolen session cookies (e.g., through XSS or network interception) allowing impersonation of authenticated users.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Set cookies as HttpOnly, Secure, SameSite=strict where applicable; use TLS everywhere; avoid storing tokens in localStorage; implement token binding, rotate session tokens, reduce session lifetime, detect concurrent sessions and anomalous usage.",
+            "applicable_controls": [
+              "HttpOnly/Secure/SameSite cookies",
+              "TLS everywhere",
+              "Session management policies"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-004",
+            "component": "Frontend Layer (log viewer and file previews)",
+            "threat_category": "Information Disclosure",
+            "description": "Cross-site scripting (XSS) in log viewer or file preview that exposes session tokens, PII, or internal data, or executes actions on behalf of the user.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Sanitize and encode all displayed log and file content, enforce Content Security Policy (CSP), use safe libraries for rendering, restrict HTML rendering, remove sensitive data before view, apply output encoding.",
+            "applicable_controls": [
+              "Output encoding & sanitization",
+              "CSP",
+              "Input validation for file names and metadata"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-005",
+            "component": "Application Services (DB access)",
+            "threat_category": "Tampering",
+            "description": "SQL injection or other injection vulnerabilities in APIs that handle task parameters, file metadata or search queries allowing data modification or disclosure.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use parameterized queries/ORMs, validate and constrain inputs, use least-privilege DB accounts, implement prepared statements and stored procedures, run RAST/DAST, review DB permissions and apply schema-level constraints.",
+            "applicable_controls": [
+              "Parameterized queries/ORM",
+              "DB least-privilege accounts",
+              "Input validation and allow-lists"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-006",
+            "component": "Application Services (audit logging)",
+            "threat_category": "Repudiation",
+            "description": "Insufficient or tamperable audit logs make it impossible to track who performed build submissions, approvals, or FPGA programming actions.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Implement immutable, append-only audit logs with hashing, forward logs to a central SIEM, record actor identity and request context, protect logs from modification and ensure time synchronization, retain logs per policy.",
+            "applicable_controls": [
+              "Append-only audit logs",
+              "Centralized SIEM/ELK with write-once policies"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-007",
+            "component": "Background Workers & Orchestrator (SLURM jobs)",
+            "threat_category": "Tampering",
+            "description": "Attackers manipulate job submission payloads or job scripts (e.g., inject malicious commands or change job resources/priorities) to escalate impact or run unintended workloads on HPC.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Validate and sanitize job scripts and parameters, sign or nonce job requests, restrict worker privileges for SLURM submission, run jobs under isolated service accounts, implement job template enforcement and whitelists for allowed commands.",
+            "applicable_controls": [
+              "Job request validation & signing",
+              "Least-privilege SLURM accounts",
+              "Job template enforcement"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-008",
+            "component": "HPC & FPGA Hardware Zone (artifacts, bitfiles)",
+            "threat_category": "Information Disclosure",
+            "description": "Unauthorized access to bitfiles, build artifacts, or EDA outputs that contain proprietary IP, via insufficient access controls on object storage or stale signed URLs.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Encrypt artifacts at rest and in transit, enforce strict RBAC on object store, require authenticated access to downloads, use short-lived pre-signed URLs, audit access to artifacts, watermark sensitive outputs where possible.",
+            "applicable_controls": [
+              "Object storage encryption",
+              "RBAC and signed URLs",
+              "Audit logs for artifact access"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-009",
+            "component": "Data Storage & Analytics (backups)",
+            "threat_category": "Information Disclosure",
+            "description": "Exposed or unencrypted DB or artifact backups (e.g., stored on shared file systems or cloud buckets) leading to disclosure of source, IP, or credentials.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Encrypt backups with customer-managed keys, restrict access to backup storage, enforce secure transfer, rotate keys, log and monitor backup access, and test restore procedures securely.",
+            "applicable_controls": [
+              "Backup encryption",
+              "Restricted access and audit",
+              "Secure backup lifecycle management"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-010",
+            "component": "Frontend Layer (forms & state changes)",
+            "threat_category": "Tampering",
+            "description": "Cross-Site Request Forgery (CSRF) attacks cause authenticated users to unknowingly create, cancel, or alter build tasks.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Implement anti-CSRF tokens for state-changing endpoints, enforce SameSite cookies, verify Origin/Referer headers for sensitive endpoints, and require re-authentication for critical actions.",
+            "applicable_controls": [
+              "CSRF tokens",
+              "SameSite cookie flags",
+              "Origin/Referer checks"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-011",
+            "component": "Application Services (RBAC/authorization)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Broken or missing server-side RBAC allows normal users to perform admin actions (e.g., delete artifacts, change RBAC policies, program FPGAs).",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce server-side RBAC checks for all sensitive operations, implement fine-grained roles, perform regular policy audits, apply separation of duties and approval workflows for admin tasks, use automated tests for authorization.",
+            "applicable_controls": [
+              "Server-side RBAC enforcement",
+              "Separation of duties and approval workflows"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-012",
+            "component": "External Integrations (Vault / Secrets Manager)",
+            "threat_category": "Information Disclosure",
+            "description": "Compromise or misconfiguration of the secrets manager exposes credentials for HPC, GitHub, EDA licensing, or other systems enabling further compromise.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use Vault with strong ACLs and audit logging, enable dynamic secrets and short leases, require hardware-backed keys (HSM) where possible, rotate and rotate on deployment, restrict access by identity and role, enable MFAs and monitor access.",
+            "applicable_controls": [
+              "Secrets Manager (Vault) with dynamic secrets",
+              "HSM-backed keys",
+              "Strict ACLs and audit logging"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-013",
+            "component": "GitHub Integration (automated builds)",
+            "threat_category": "Tampering",
+            "description": "Malicious code in a repository or PR triggers automated builds which execute in the CI environment, potentially exfiltrating data or attacking other systems (supply-chain/code execution).",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Run builds in isolated ephemeral containers/namespaces, use dedicated read-only runners, enforce signed commits or protected branches, require PR approvals for build triggers, scan code for secrets and malware before build, restrict network egress from build runners.",
+            "applicable_controls": [
+              "Ephemeral sandboxed build runners",
+              "Protected branches and required reviews",
+              "Static analysis & secret scanning"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-014",
+            "component": "Notifications (Email)",
+            "threat_category": "Information Disclosure",
+            "description": "Inclusion of sensitive build outputs, artifact links or secrets in email notifications leads to information leakage, especially if email recipients include external addresses.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Redact or avoid including sensitive data in emails, include only authenticated links that require login, restrict external recipients, enable TLS and DMARC, and provide user notification preferences.",
+            "applicable_controls": [
+              "SMTP TLS",
+              "Email content redaction",
+              "Notification preferences"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-015",
+            "component": "Deployment & Ops (Docker/containers)",
+            "threat_category": "Denial of Service",
+            "description": "Misconfigured container runtime (privileged containers, host mounts) or malicious containers cause container escapes or resource exhaustion leading to DoS of control plane or other services.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Run containers unprivileged, disable unnecessary capabilities, enforce seccomp/AppArmor profiles, restrict host mounts and Docker socket access, image scanning, use runtime isolation (gVisor, Kata), monitor resource usage and enforce quotas.",
+            "applicable_controls": [
+              "Container hardening (seccomp/AppArmor)",
+              "Image signing & scanning",
+              "Unprivileged containers"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-016",
+            "component": "Edge & Auth (WebSockets / SSE)",
+            "threat_category": "Denial of Service",
+            "description": "Abuse of real-time channels (WebSockets/SSE) to open many connections or send large messages, exhausting server resources and denying service to legitimate users.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Enforce per-client connection limits, authentication for real-time channels, rate limits for messages, connection timeouts, load balancer protections and backpressure mechanisms, use autoscaling and circuit breakers.",
+            "applicable_controls": [
+              "Connection quotas",
+              "Rate limiting",
+              "Authentication for real-time channels"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-017",
+            "component": "Task Management & APIs (bulk operations)",
+            "threat_category": "Denial of Service",
+            "description": "Intentional or accidental bulk task creation/cancellation (e.g., via API abuse) floods the job queue and exhausts HPC or application resources.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Implement API rate limiting, per-user and per-team quotas, approval workflow for large/batch operations, queue prioritization and resource reservations, and alerting on abnormal activity.",
+            "applicable_controls": [
+              "Rate limiting and quotas",
+              "Approval workflows for large jobs",
+              "Queue prioritization"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-018",
+            "component": "Data Storage & Analytics (DB integrity)",
+            "threat_category": "Tampering",
+            "description": "Unauthorized modification of DB records (task history, audit trails) either via compromised credentials or application bug, undermining forensicability and integrity of results.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use DB-level access controls, immutable audit trails exported to secure storage, cryptographic integrity checks, restrict DB admin operations, use multi-person approval for destructive operations, and monitor for anomalous DB writes.",
+            "applicable_controls": [
+              "DB role separation",
+              "Immutable audit exports",
+              "DB activity monitoring"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-019",
+            "component": "Frontend Layer (browser storage & caching)",
+            "threat_category": "Information Disclosure",
+            "description": "Sensitive tokens, PII or internal URLs stored in browser localStorage, indexed DB, or caches are recovered from a compromised client or shared device.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Avoid storing tokens in localStorage; use HttpOnly cookies; prevent caching of sensitive pages (cache-control: no-store), clear temporary data on logout, warn about shared devices, and provide secure mobile app guidance.",
+            "applicable_controls": [
+              "HttpOnly cookies",
+              "Cache-control headers (no-store)",
+              "Client-side guidance"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-020",
+            "component": "HPC & FPGA Hardware Zone (FPGA programming)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Bypassing approval workflow or exploiting API flaws to program FPGA devices with unauthorized bitfiles, potentially damaging hardware or enabling persistent hardware-level backdoors.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Require multi-person approvals for hardware programming, cryptographic signing of bitfiles, strict RBAC for programming APIs, hardware-level authentication and logging, and implement failsafe controls on FPGA programming endpoints.",
+            "applicable_controls": [
+              "Multi-person approval workflows",
+              "Bitfile signing and verification",
+              "RBAC for programming APIs"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-021",
+            "component": "External Integrations (GitHub webhooks)",
+            "threat_category": "Spoofing",
+            "description": "Replay of webhook events or forging webhook payloads to trigger builds or inject falsified commit/PR metadata.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Verify webhook signatures and timestamps, reject replayed events, enforce short TTLs for nonces, restrict incoming webhook IP ranges, and log webhook sources for audit.",
+            "applicable_controls": [
+              "Webhook HMAC verification",
+              "Timestamp/nonce checks",
+              "Source IP restrictions"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-022",
+            "component": "Application Services & Object Store (logs/artifacts)",
+            "threat_category": "Information Disclosure",
+            "description": "Storage of logs and artifacts with public or overly permissive ACLs or long-lived pre-signed URLs leads to unintended public access of sensitive outputs.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use least-privilege ACLs, default private buckets, short-lived pre-signed URLs, encrypt at rest, audit and alert on public ACLs, and periodically scan storage for exposed objects.",
+            "applicable_controls": [
+              "Private by default object store",
+              "Short-lived signed URLs",
+              "Storage ACL audits"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-023",
+            "component": "File Management (uploads)",
+            "threat_category": "Tampering",
+            "description": "Malicious or malformed file uploads (including bitfiles) that contain malware or specially crafted data causing downstream EDA tools or workers to behave unexpectedly or execute arbitrary code.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Scan uploads for malware, validate file formats and signatures, store uploads as non-executable, process files in sandboxed/ephemeral environments, block known bad file types, and apply content-disarm-and-reconstruct where possible.",
+            "applicable_controls": [
+              "Malware scanning",
+              "File type validation",
+              "Sandboxed processing"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-024",
+            "component": "Data Storage & Analytics (object store capacity)",
+            "threat_category": "Denial of Service",
+            "description": "Exhaustion of storage capacity by deliberate or accidental upload of very large artifacts, causing new builds to fail or system to degrade.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Enforce per-user and per-project storage quotas, lifecycle policies to expire old artifacts, alerts on capacity thresholds, deduplication, and pre-upload size checks.",
+            "applicable_controls": [
+              "Storage quotas and lifecycle policies",
+              "Capacity monitoring and alerts"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-025",
+            "component": "Deployment & Ops (Ansible / images)",
+            "threat_category": "Tampering",
+            "description": "Compromise of Ansible playbooks, container images, or CI artifacts leads to deployment of backdoored containers or malicious configuration changes across environment.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use signed playbooks and signed container images, restrict access to artifact repositories, use reproducible builds, scan images for vulnerabilities, and require approvals for production changes.",
+            "applicable_controls": [
+              "Artifact signing",
+              "Image scanning",
+              "Restricted artifact repo access"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-026",
+            "component": "Notifications (SMTP)",
+            "threat_category": "Information Disclosure",
+            "description": "Emails sent without enforced TLS or to external recipients might be intercepted, exposing commit details, logs, or artifact links.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Enforce STARTTLS/TLS for SMTP, prefer encrypted internal channels for sensitive content, avoid sending secrets in email bodies, apply DMARC/DKIM/SPF, and restrict auto-notifications to internal addresses.",
+            "applicable_controls": [
+              "Enforced SMTP TLS",
+              "Email policies (DMARC/DKIM/SPF)"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-027",
+            "component": "Application Services (webhooks & triggers)",
+            "threat_category": "Repudiation",
+            "description": "Insufficient logging of webhook events and build triggers makes it difficult to prove who triggered a build or when an automated action occurred.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Log full webhook metadata with signature verification results, persist event payloads securely, correlate with user accounts, and forward to SIEM; ensure log integrity and retention policies.",
+            "applicable_controls": [
+              "Webhook event logging",
+              "Centralized SIEM correlation"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-028",
+            "component": "Background Workers & Orchestrator (service identity)",
+            "threat_category": "Spoofing",
+            "description": "A compromised worker node impersonates the orchestrator or other services to SLURM or storage systems to access or modify jobs/artifacts.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use mTLS for service-to-service communication, mutual authentication and authorization (service identity), service mesh or short-lived service credentials, host attestation, and restrict worker network segmentation.",
+            "applicable_controls": [
+              "mTLS for internal services",
+              "Service identity & attestation",
+              "Network segmentation"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-029",
+            "component": "Application Services (API serialization)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Insecure deserialization or unsafe object handling in API endpoints leading to remote code execution or privilege escalation for attackers sending crafted payloads.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Avoid unsafe deserialization, use allow-lists for serialized data, validate all input, apply runtime integrity checks, run services with minimal privileges, and conduct code reviews and automated scanning for deserialization issues.",
+            "applicable_controls": [
+              "Input validation and allow-lists",
+              "Runtime privilege restriction"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-030",
+            "component": "Frontend + Log Viewer (client-side rendering)",
+            "threat_category": "Tampering",
+            "description": "Improper handling of log content or binary preview causes client-side injection or misuse (reflected/stored XSS) affecting other users viewing logs or dashboards.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Sanitize and escape any log content and file previews before rendering, use text-only safe viewers for logs, restrict rendering of HTML in logs, and enforce CSP.",
+            "applicable_controls": [
+              "Log sanitization",
+              "CSP and safe rendering libraries"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          }
+        ],
+        "risk_summary": "Critical threats center on identity (AD SSO and OAuth token compromise), backend orchestration (manipulation of job submissions and compromised workers), and exposure of proprietary artifacts (bitfiles, backups, and storage ACL misconfigurations). Attack vectors with highest business impact include credential theft and session hijacking, malicious repository/code triggers executing in CI, and tampering with SLURM job payloads or FPGA programming flows. The overall risk posture is medium-high: multiple High and Critical-rated risks exist, but many are mitigable with standard controls (MFA, token management, mTLS, signed artifacts, RBAC, sandboxing). Priority areas for immediate controls: 1) Strengthen identity and session protections (MFA, token rotation, conditional access); 2) Harden integration points (webhook signature verification, Vault for secrets, short-lived credentials); 3) Isolate and sandbox build execution and background workers (ephemeral runners, mTLS, network segmentation); 4) Enforce strict storage and artifact controls (encryption, short-lived URLs, ACL audits); and 5) Implement comprehensive logging, immutable audit trails and automated authorization testing. Addressing these will reduce the highest residual risks; remaining medium risks require continuous monitoring, regular review of RBAC and approval workflows, and secure deployment supply-chain practices."
+      }
+    }
+  ]
+}

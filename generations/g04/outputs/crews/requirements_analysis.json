@@ -1,0 +1,668 @@
+{
+  "raw": "Your final answer must be the great and the most complete as possible, it must be outcome described.\n{\n  \"architecture_summary\": \"A cloud-first, hybrid-capable web platform that orchestrates multi-layer infrastructure projects by combining a single-page frontend, API-driven backend services (workflow engine, RBAC/auth, notifications, monitoring integration), persistent data stores (relational DB for projects and assignments, immutable audit log store, and an artifact/bare-metal repository for air-gapped use), and an infrastructure access layer (SSH bastion, VM inventory, bare-metal hosts). Users interact via web UI or automated APIs; the backend enforces sequencing, handles per-VM policies and audit logging, triggers notifications and escalations, mirrors artifacts for disconnected environments, and integrates with external systems (SSO/MFA, email/chat, monitoring, IaC registries).\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Users and Edge\\\"\\n  U[Users Admins Infra Admins]\\n  U --> EG\\n  EG[Edge API Gateway & Web Proxy]\\nend\\n\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web App SPA & Admin UI]\\n  EG --> FE\\nend\\n\\nsubgraph \\\"Application Services\\\"\\n  API[Core API Users/Tasks/RBAC]\\n  WF[Workflow Engine Sequencing]\\n  AUTH[Auth Service SSO MFA & SSH Gateway]\\n  NOTIF[Notifications Scheduler & Alerts]\\n  MON[Monitoring Integration & Alert Router]\\n  FE --> API\\n  API --> WF\\n  API --> AUTH\\n  API --> NOTIF\\n  API --> MON\\nend\\n\\nsubgraph \\\"Data Layer\\\"\\n  DB[Relational DB Projects/Assignments]\\n  LOGS[Immutable Audit Log Store]\\n  ARTIFACT[Artifact Repo Bare-metal Mirror]\\n  API --> DB\\n  API --> LOGS\\n  ARTIFACT --> API\\nend\\n\\nsubgraph \\\"Infrastructure & Access\\\"\\n  VMS[Managed VMs Bare-metal Servers]\\n  SSH[SSH Bastion Key Mgmt]\\n  ARTIFACT --> VMS\\n  AUTH --> SSH\\n  SSH --> VMS\\n  WF --> VMS\\nend\\n\\nsubgraph \\\"External Services\\\"\\n  SSO[SSO/MFA Provider]\\n  EMAIL[Email & Chat Services]\\n  IAC[Package Registries & IaC Providers]\\n  SIEM[SIEM/Logging]\\n  NOTIF --> EMAIL\\n  AUTH --> SSO\\n  MON --> SIEM\\n  API --> IAC\\nend\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Provide web-based SPA and admin UI for project planning, dashboards, handovers, approvals, and per-user views; mediate user interactions and invoke backend APIs.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"Corporate SSO/MFA\",\n        \"Browser clients\"\n      ],\n      \"data_handled\": [\n        \"UI session tokens\",\n        \"Project metadata (view)\",\n        \"User preferences and notifications\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core backend: REST/gRPC API, workflow engine enforcing layer sequencing and deadlines, RBAC/authZ, notification scheduling, monitoring integration, and business logic for VM/port/policy management.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"SSO/MFA provider\",\n        \"Email/Chat providers\",\n        \"Monitoring/Alerting systems\"\n      ],\n      \"data_handled\": [\n        \"User identities and roles\",\n        \"Layer workflows and state\",\n        \"Per-VM policy metadata\",\n        \"Audit events\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Persistent storage for project data, assignments, deadlines, audit logs, issue trackers, and bare-metal artifact repository for air-gapped operations.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud-managed RDBMS (or on-prem DB)\",\n        \"Object storage / Artifact storage\"\n      ],\n      \"data_handled\": [\n        \"Project records\",\n        \"Audit logs\",\n        \"Handover documents and reports\",\n        \"Artifacts and images\"\n      ]\n    },\n    {\n      \"name\": \"Infrastructure & Access Layer\",\n      \"responsibility\": \"Manage SSH bastion/centralized key/session management, orchestrate access to VMs and bare-metal servers, and ensure artifact delivery to project servers in both connected and disconnected modes.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Key Management Service (KMS)\",\n        \"Target hypervisor/cloud provider APIs\"\n      ],\n      \"data_handled\": [\n        \"SSH keys and session metadata\",\n        \"Per-VM access mappings\",\n        \"Network/firewall rule deployments\"\n      ]\n    },\n    {\n      \"name\": \"Artifact & Air-gap Services\",\n      \"responsibility\": \"Mirror external registries, maintain bare-metal repositories, perform integrity checks and manage staging servers for disconnected deployments.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"External package registries (Docker Hub, apt/yum registries)\",\n        \"SLSA / Artifact signing services\"\n      ],\n      \"data_handled\": [\n        \"Container images\",\n        \"OS images\",\n        \"Hashes/signatures and provenance metadata\"\n      ]\n    },\n    {\n      \"name\": \"Integrations & External Services\",\n      \"responsibility\": \"Third-party integrations for SSO/MFA, email/chat notifications, IaC registries, monitoring/alerting, and SIEM/log aggregation.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Corporate SSO/MFA\",\n        \"Email/Chat providers (SMTP, Slack, MS Teams)\",\n        \"Monitoring services (Prometheus, Datadog)\",\n        \"SIEM solutions\"\n      ],\n      \"data_handled\": [\n        \"Authentication assertions\",\n        \"Notification payloads\",\n        \"Monitoring events\",\n        \"Log exports\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users authenticate via SSO/MFA and interact with the Web UI which calls the Core API. The Core API routes requests to the Workflow Engine, Auth service, and Notification Scheduler. Project definitions, assignments, deadlines, VM policies, and handover documents are persisted in the relational DB; immutable events and audit trails are written to the audit log store. When artifacts or images are required, the Artifact Repo supplies images to VMs or mirrors external registries during staging for air-gapped projects. The Workflow Engine enforces sequencing and triggers notifications and escalations via the Notification service which integrates with Email/Chat. Monitoring systems send alerts to the platform which then escalate to PMs and SIEM. SSH Gateway/ bastion manages controlled access into VMs; all access and session metadata are written to logs. Key transformation points: user actions -> API calls, workflow state transitions -> DB updates and audit writes, artifact staging -> repository mirroring and integrity verification, and alert events -> notification dispatch and escalation.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"External package registries\",\n        \"Email/Chat Services\",\n        \"SSO/MFA Provider\"\n      ],\n      \"boundary_type\": \"Perimeter/External\",\n      \"security_controls\": [\n        \"Outbound allow-listing for package pull endpoints\",\n        \"TLS for all external communications\",\n        \"VPN or jump host isolation for artifact staging\",\n        \"Firewall egress controls and proxy gateway\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge\",\n      \"components\": [\n        \"Edge API Gateway\",\n        \"Web Proxy\",\n        \"Notification Gateway\"\n      ],\n      \"boundary_type\": \"Perimeter/Ingress\",\n      \"security_controls\": [\n        \"WAF and rate limiting\",\n        \"TLS termination with strict ciphers\",\n        \"API gateway auth and request validation\",\n        \"DDoS protection\"\n      ]\n    },\n    {\n      \"name\": \"Internal Network\",\n      \"components\": [\n        \"Frontend\",\n        \"Application Services\",\n        \"Monitoring Integration\"\n      ],\n      \"boundary_type\": \"Internal\",\n      \"security_controls\": [\n        \"Network segmentation and ACLs\",\n        \"Mutual TLS between services\",\n        \"RBAC enforced at service layer\",\n        \"Service-to-service authentication (mTLS, service tokens)\"\n      ]\n    },\n    {\n      \"name\": \"Database Tier\",\n      \"components\": [\n        \"Relational DB\",\n        \"Immutable Audit Log Store\",\n        \"Artifact Repository\"\n      ],\n      \"boundary_type\": \"Data / Storage\",\n      \"security_controls\": [\n        \"Encryption at rest and in transit\",\n        \"Access control via least privilege\",\n        \"Immutable storage or WORM for audit logs\",\n        \"Regular backups and integrity checks\"\n      ]\n    },\n    {\n      \"name\": \"Air-gapped Zone\",\n      \"components\": [\n        \"Bare-metal Artifact Repo\",\n        \"Staging Server with Internet Access (controlled)\",\n        \"Project VMs in disconnected network\"\n      ],\n      \"boundary_type\": \"Isolated/Disconnected\",\n      \"security_controls\": [\n        \"Physical isolation and strict change control\",\n        \"Controlled staging server with documented approvals\",\n        \"Signed artifact verification (hashes/signatures)\",\n        \"Network ACLs permitting only internal access to repo\"\n      ]\n    },\n    {\n      \"name\": \"Management/Operations\",\n      \"components\": [\n        \"SSH Bastion\",\n        \"Key Management Service\",\n        \"SIEM\"\n      ],\n      \"boundary_type\": \"Privileged Access\",\n      \"security_controls\": [\n        \"Centralized key management and session recording\",\n        \"MFA for administrative access\",\n        \"Privileged access reviews and just-in-time access\",\n        \"Audit trails exported to SIEM\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: Web UI/API Gateway (high risk) \u2014 exposes authentication flow, RBAC checks, and API endpoints; requires strong input validation, rate limiting, WAF and MFA. SSH Bastion/SSH Gateway (high risk) \u2014 privileged access to infrastructure and VMs; mitigations include centralized key mgmt, session recording, and JIT access. Artifact mirror and staging server (medium-high risk) \u2014 introduces supply-chain risk; require integrity checks, signed artifacts and strict staging approvals. External integrations (SSO, Email/Chat, Monitoring, IaC registries) (medium risk) \u2014 dependency on third-party availability and trust; enforce secure connectors, least privilege service accounts and circuit breakers. Database and audit stores (critical assets) \u2014 risk of data exfiltration and tampering; controls: encryption, strict DB access controls, immutable logs and SIEM integration. APIs for per-VM policy management and firewall changes (high risk) \u2014 privileged operations that affect network security; require approval workflows, change auditing, strong authN/Z and change-review gates. Attack vectors: credential compromise, supply-chain compromise of images, malicious or buggy workflow transitions, improper RBAC configuration, and insider threats. Risk levels are highest for components that grant direct infrastructure changes (API, SSH, Artifact Repo) and for integrations that can forge identity or inject artifacts; monitoring, alerting, and auditability are essential to detect and respond quickly.\"\n}",
+  "pydantic": {
+    "architecture_summary": "A cloud-first, hybrid-capable web platform that orchestrates multi-layer infrastructure projects by combining a single-page frontend, API-driven backend services (workflow engine, RBAC/auth, notifications, monitoring integration), persistent data stores (relational DB for projects and assignments, immutable audit log store, and an artifact/bare-metal repository for air-gapped use), and an infrastructure access layer (SSH bastion, VM inventory, bare-metal hosts). Users interact via web UI or automated APIs; the backend enforces sequencing, handles per-VM policies and audit logging, triggers notifications and escalations, mirrors artifacts for disconnected environments, and integrates with external systems (SSO/MFA, email/chat, monitoring, IaC registries).",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Users and Edge\"\n  U[Users Admins Infra Admins]\n  U --> EG\n  EG[Edge API Gateway & Web Proxy]\nend\n\nsubgraph \"Frontend Layer\"\n  FE[Web App SPA & Admin UI]\n  EG --> FE\nend\n\nsubgraph \"Application Services\"\n  API[Core API Users/Tasks/RBAC]\n  WF[Workflow Engine Sequencing]\n  AUTH[Auth Service SSO MFA & SSH Gateway]\n  NOTIF[Notifications Scheduler & Alerts]\n  MON[Monitoring Integration & Alert Router]\n  FE --> API\n  API --> WF\n  API --> AUTH\n  API --> NOTIF\n  API --> MON\nend\n\nsubgraph \"Data Layer\"\n  DB[Relational DB Projects/Assignments]\n  LOGS[Immutable Audit Log Store]\n  ARTIFACT[Artifact Repo Bare-metal Mirror]\n  API --> DB\n  API --> LOGS\n  ARTIFACT --> API\nend\n\nsubgraph \"Infrastructure & Access\"\n  VMS[Managed VMs Bare-metal Servers]\n  SSH[SSH Bastion Key Mgmt]\n  ARTIFACT --> VMS\n  AUTH --> SSH\n  SSH --> VMS\n  WF --> VMS\nend\n\nsubgraph \"External Services\"\n  SSO[SSO/MFA Provider]\n  EMAIL[Email & Chat Services]\n  IAC[Package Registries & IaC Providers]\n  SIEM[SIEM/Logging]\n  NOTIF --> EMAIL\n  AUTH --> SSO\n  MON --> SIEM\n  API --> IAC\nend",
+    "components": [
+      {
+        "name": "Frontend Layer",
+        "responsibility": "Provide web-based SPA and admin UI for project planning, dashboards, handovers, approvals, and per-user views; mediate user interactions and invoke backend APIs.",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "Corporate SSO/MFA",
+          "Browser clients"
+        ],
+        "data_handled": [
+          "UI session tokens",
+          "Project metadata (view)",
+          "User preferences and notifications"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core backend: REST/gRPC API, workflow engine enforcing layer sequencing and deadlines, RBAC/authZ, notification scheduling, monitoring integration, and business logic for VM/port/policy management.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "SSO/MFA provider",
+          "Email/Chat providers",
+          "Monitoring/Alerting systems"
+        ],
+        "data_handled": [
+          "User identities and roles",
+          "Layer workflows and state",
+          "Per-VM policy metadata",
+          "Audit events"
+        ]
+      },
+      {
+        "name": "Data Storage",
+        "responsibility": "Persistent storage for project data, assignments, deadlines, audit logs, issue trackers, and bare-metal artifact repository for air-gapped operations.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Cloud-managed RDBMS (or on-prem DB)",
+          "Object storage / Artifact storage"
+        ],
+        "data_handled": [
+          "Project records",
+          "Audit logs",
+          "Handover documents and reports",
+          "Artifacts and images"
+        ]
+      },
+      {
+        "name": "Infrastructure & Access Layer",
+        "responsibility": "Manage SSH bastion/centralized key/session management, orchestrate access to VMs and bare-metal servers, and ensure artifact delivery to project servers in both connected and disconnected modes.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Key Management Service (KMS)",
+          "Target hypervisor/cloud provider APIs"
+        ],
+        "data_handled": [
+          "SSH keys and session metadata",
+          "Per-VM access mappings",
+          "Network/firewall rule deployments"
+        ]
+      },
+      {
+        "name": "Artifact & Air-gap Services",
+        "responsibility": "Mirror external registries, maintain bare-metal repositories, perform integrity checks and manage staging servers for disconnected deployments.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "External package registries (Docker Hub, apt/yum registries)",
+          "SLSA / Artifact signing services"
+        ],
+        "data_handled": [
+          "Container images",
+          "OS images",
+          "Hashes/signatures and provenance metadata"
+        ]
+      },
+      {
+        "name": "Integrations & External Services",
+        "responsibility": "Third-party integrations for SSO/MFA, email/chat notifications, IaC registries, monitoring/alerting, and SIEM/log aggregation.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Corporate SSO/MFA",
+          "Email/Chat providers (SMTP, Slack, MS Teams)",
+          "Monitoring services (Prometheus, Datadog)",
+          "SIEM solutions"
+        ],
+        "data_handled": [
+          "Authentication assertions",
+          "Notification payloads",
+          "Monitoring events",
+          "Log exports"
+        ]
+      }
+    ],
+    "data_flow_description": "Users authenticate via SSO/MFA and interact with the Web UI which calls the Core API. The Core API routes requests to the Workflow Engine, Auth service, and Notification Scheduler. Project definitions, assignments, deadlines, VM policies, and handover documents are persisted in the relational DB; immutable events and audit trails are written to the audit log store. When artifacts or images are required, the Artifact Repo supplies images to VMs or mirrors external registries during staging for air-gapped projects. The Workflow Engine enforces sequencing and triggers notifications and escalations via the Notification service which integrates with Email/Chat. Monitoring systems send alerts to the platform which then escalate to PMs and SIEM. SSH Gateway/ bastion manages controlled access into VMs; all access and session metadata are written to logs. Key transformation points: user actions -> API calls, workflow state transitions -> DB updates and audit writes, artifact staging -> repository mirroring and integrity verification, and alert events -> notification dispatch and escalation.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "External package registries",
+          "Email/Chat Services",
+          "SSO/MFA Provider"
+        ],
+        "boundary_type": "Perimeter/External",
+        "security_controls": [
+          "Outbound allow-listing for package pull endpoints",
+          "TLS for all external communications",
+          "VPN or jump host isolation for artifact staging",
+          "Firewall egress controls and proxy gateway"
+        ]
+      },
+      {
+        "name": "DMZ / Edge",
+        "components": [
+          "Edge API Gateway",
+          "Web Proxy",
+          "Notification Gateway"
+        ],
+        "boundary_type": "Perimeter/Ingress",
+        "security_controls": [
+          "WAF and rate limiting",
+          "TLS termination with strict ciphers",
+          "API gateway auth and request validation",
+          "DDoS protection"
+        ]
+      },
+      {
+        "name": "Internal Network",
+        "components": [
+          "Frontend",
+          "Application Services",
+          "Monitoring Integration"
+        ],
+        "boundary_type": "Internal",
+        "security_controls": [
+          "Network segmentation and ACLs",
+          "Mutual TLS between services",
+          "RBAC enforced at service layer",
+          "Service-to-service authentication (mTLS, service tokens)"
+        ]
+      },
+      {
+        "name": "Database Tier",
+        "components": [
+          "Relational DB",
+          "Immutable Audit Log Store",
+          "Artifact Repository"
+        ],
+        "boundary_type": "Data / Storage",
+        "security_controls": [
+          "Encryption at rest and in transit",
+          "Access control via least privilege",
+          "Immutable storage or WORM for audit logs",
+          "Regular backups and integrity checks"
+        ]
+      },
+      {
+        "name": "Air-gapped Zone",
+        "components": [
+          "Bare-metal Artifact Repo",
+          "Staging Server with Internet Access (controlled)",
+          "Project VMs in disconnected network"
+        ],
+        "boundary_type": "Isolated/Disconnected",
+        "security_controls": [
+          "Physical isolation and strict change control",
+          "Controlled staging server with documented approvals",
+          "Signed artifact verification (hashes/signatures)",
+          "Network ACLs permitting only internal access to repo"
+        ]
+      },
+      {
+        "name": "Management/Operations",
+        "components": [
+          "SSH Bastion",
+          "Key Management Service",
+          "SIEM"
+        ],
+        "boundary_type": "Privileged Access",
+        "security_controls": [
+          "Centralized key management and session recording",
+          "MFA for administrative access",
+          "Privileged access reviews and just-in-time access",
+          "Audit trails exported to SIEM"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Primary entry points: Web UI/API Gateway (high risk) \u2014 exposes authentication flow, RBAC checks, and API endpoints; requires strong input validation, rate limiting, WAF and MFA. SSH Bastion/SSH Gateway (high risk) \u2014 privileged access to infrastructure and VMs; mitigations include centralized key mgmt, session recording, and JIT access. Artifact mirror and staging server (medium-high risk) \u2014 introduces supply-chain risk; require integrity checks, signed artifacts and strict staging approvals. External integrations (SSO, Email/Chat, Monitoring, IaC registries) (medium risk) \u2014 dependency on third-party availability and trust; enforce secure connectors, least privilege service accounts and circuit breakers. Database and audit stores (critical assets) \u2014 risk of data exfiltration and tampering; controls: encryption, strict DB access controls, immutable logs and SIEM integration. APIs for per-VM policy management and firewall changes (high risk) \u2014 privileged operations that affect network security; require approval workflows, change auditing, strong authN/Z and change-review gates. Attack vectors: credential compromise, supply-chain compromise of images, malicious or buggy workflow transitions, improper RBAC configuration, and insider threats. Risk levels are highest for components that grant direct infrastructure changes (API, SSH, Artifact Repo) and for integrations that can forge identity or inject artifacts; monitoring, alerting, and auditability are essential to detect and respond quickly."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A web-based project management platform to plan, execute, and audit multi-layer infrastructure and cloud projects that enforces structured workflows, role-based access controls, per-VM network and access policies, collaboration and handover processes, automated file management for air-gapped environments, integrated notifications/monitoring, and manager-facing reporting to ensure accountability, traceability and safe operations across hybrid cloud and on-premises resources.\",\n  \"high_level_requirements\": [\n    \"Role-based user management with Infra Admin, admin, user, and reader roles\",\n    \"Per-VM access mapping and permission management with audit trails\",\n    \"Per-VM firewall rules: allowed ingress/egress ports and stored port assignments\",\n    \"Per-VM ingress and egress IP endpoint recording, control, reporting, and audit\",\n    \"Project structure as layered stages (hardware, network, verification, container, storage, cloud, authz)\",\n    \"Assignment of users to layers with explicit ownership and accountability\",\n    \"Layer sequencing enforcement: prerequisite completion and approval required before next layer creation\",\n    \"Layer deadlines, escalation to management dashboard and notifications on delays\",\n    \"User dashboards and personal notifications showing assigned layers and due dates\",\n    \"Mandatory handover design document submission at layer completion\",\n    \"Approval/rejection workflow for handover with feedback loop and immutable logs\",\n    \"Post-completion user availability requirement to address blockers/dependencies\",\n    \"Air-gapped project support: isolated server for initial downloads and prerequisite tooling\",\n    \"Automated local repository mirroring and storage of required images/tools on bare-metal servers\",\n    \"Guaranteed access to bare-metal repository after network disconnection for all project servers\",\n    \"Real-time notifications to project manager upon layer completion (email/chat/internal alerts)\",\n    \"Notifications to all project members when a layer completes, including status and reports\",\n    \"Advance notification (one week) to user slated to start next layer via preferred channels\",\n    \"Integration with project monitoring system to raise alarms for critical events/blockers pre-project\",\n    \"System administrator log summary reports on failures or critical errors\",\n    \"Project manager reporting and role/assignment records with progress tracking\",\n    \"Manager-facing dashboard showing progress by layer, status, and deadlines\",\n    \"Conflict/tracker list for bugs and blockers with statuses (Blocked, Untriaged, In Progress, Fixed)\",\n    \"Mandatory completion of handover documentation and final report for each layer within one week of deadline\",\n    \"Generation and sending of formal progress summaries from PM to customers with traceability\",\n    \"Secure SSH access to infrastructure resources and web-based access for workflows\",\n    \"Support for initial internet access for image pulls and IaC integrations, with local-hosting alternative if restricted\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"Role-based user management with Infra Admin, admin, user, and reader roles including creation, modification, deactivation and role assignment audit logs.\",\n      \"business_category\": \"Authentication & Authorization\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Centralized RBAC ensures least-privilege, separates duties (infrastructure vs application), and provides control and auditability over who can perform sensitive operations.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Per-VM access mapping and permission management: map users to specific VMs, define permission levels (e.g., admin, sudo, read-only), and record changes with immutable audit trails.\",\n      \"business_category\": \"Access Control\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Precise VM-level access control reduces attack surface, enforces accountability, and supports forensic investigations when incidents occur.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"Store and manage allowed ingress and egress ports per VM (firewall rules), including versioned rule sets and approval workflow for changes.\",\n      \"business_category\": \"Network & Data Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Per-VM firewall rules enforce network segmentation and protect resources; tracking and approvals prevent unauthorized opening of network paths.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Record and control ingress (source) and egress (destination) IP endpoints for every VM; provide reporting and audit logs for endpoint changes and usage.\",\n      \"business_category\": \"Network & Monitoring\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Restricting endpoints prevents lateral movement, suspicious external connections; logs support compliance and incident response.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"Define project as layered stages (hardware provisioning, network setup, network verification, container environment, storage system, cloud setup, authentication & authorization) with metadata for each stage.\",\n      \"business_category\": \"Project Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Structured stages improve planning, resource allocation and ensure standardized delivery across complex infrastructure projects.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"Assign users to develop and deliver individual layers with explicit ownership, contact info and responsibility fields; track assignment history.\",\n      \"business_category\": \"Collaboration & Accountability\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Clear ownership enables accountability, escalation paths and clarifies operational responsibility for each deliverable.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Enforce layer sequencing: prevent creation or start of a dependent layer until the prerequisite layer is completed and approved.\",\n      \"business_category\": \"Workflow Enforcement\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Sequencing prevents configuration and security mistakes from later stages operating on incomplete or unsafe foundations.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Set deadlines per layer and escalate status to management dashboard and send notifications if layer is not completed by due date (including repeated escalations according to policy).\",\n      \"business_category\": \"Scheduling & Escalation\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Deadlines with escalations keep projects on track, flag risks early, and create observable SLAs for management intervention.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Provide per-user dashboards and notification channels so users can track assigned layers, due dates, and outstanding actions.\",\n      \"business_category\": \"User Experience & Notifications\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Visibility into assignments reduces missed deadlines and improves coordination.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Require submission of a handover design document upon completing each layer; the document must be stored, versioned, and linked to the layer record.\",\n      \"business_category\": \"Documentation & Knowledge Transfer\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Handover documents capture design decisions and operational details necessary for secure continuation and maintenance of infrastructure.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Implement a mandatory approval/rejection workflow for the next-layer owner to accept or reject handovers, with timestamped feedback and immutable decision logs.\",\n      \"business_category\": \"Workflow & Audit\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"A two-way acceptance process prevents silent handoffs and creates traceable records for accountability and dispute resolution.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"Require users who completed a layer to remain available for a defined support window to address escalations and dependencies identified later.\",\n      \"business_category\": \"Operational Support\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Continuity reduces risk of unresolved blockers and ensures knowledge continuity for troubleshooting.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"For air-gapped projects, provide an isolated server with internet access as a prerequisite for downloading required tools and images and document the process and approvals for use.\",\n      \"business_category\": \"File Management & Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Controlled staging for air-gapped environments mitigates introduction of malicious artifacts while allowing necessary assets to be acquired.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Automate local repository mirroring and store essential images/tools on dedicated bare-metal servers before network disconnection; maintain integrity checks (hashes/signatures).\",\n      \"business_category\": \"Software Supply Chain\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Ensures availability of vetted software/artifacts in disconnected environments and mitigates supply-chain and tampering risks via integrity verification.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"After disconnecting from the internet, ensure all project servers can access the bare-metal repository for required images and configuration files via internal networking and access controls.\",\n      \"business_category\": \"Infrastructure Availability\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Operational continuity of air-gapped projects requires guaranteed internal access to required artifacts without internet connectivity.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"Send real-time email or internal chat alerts to the project manager whenever a layer's process is completed, including layer metadata and links to reports.\",\n      \"business_category\": \"Notifications & Communication\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Timely notifications enable managers to review, validate and coordinate next steps promptly.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"Notify all project members upon completion of each project layer with status, attached reports and links to handover documents.\",\n      \"business_category\": \"Collaboration\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Broad awareness reduces duplication of effort and provides context for dependent work.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"Alert the user due to start the next layer one week before the scheduled date via their preferred communication channel(s) configured in profile.\",\n      \"business_category\": \"Scheduling & Notifications\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Advance notification reduces idle time, helps resource planning and prevents missed starts.\"\n    },\n    {\n      \"requirement_id\": \"REQ-019\",\n      \"requirement_text\": \"Integrate with project monitoring systems to raise alerts for critical events or blockers prior to and during project execution, with configurable thresholds.\",\n      \"business_category\": \"Monitoring & Incident Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Early detection of critical conditions enables timely mitigation and reduces project and security risk.\"\n    },\n    {\n      \"requirement_id\": \"REQ-020\",\n      \"requirement_text\": \"Provide system administrators with log summary reports upon detection of failures or critical errors, including contextual linkbacks to full logs and affected resources.\",\n      \"business_category\": \"Operations & Audit\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Summarized actionable reports speed incident response and support root-cause analysis, while links support deeper investigation.\"\n    },\n    {\n      \"requirement_id\": \"REQ-021\",\n      \"requirement_text\": \"Enable project managers to assign roles, maintain records of user assignments, and produce progress reports; retain historical assignment data.\",\n      \"business_category\": \"Reporting & Governance\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Record-keeping of assignments and progress supports governance, audits and customer reporting.\"\n    },\n    {\n      \"requirement_id\": \"REQ-022\",\n      \"requirement_text\": \"Display project progress by layer, status, and deadlines on a manager-facing dashboard with filtering and export capabilities.\",\n      \"business_category\": \"Management Reporting\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Dashboards give managers a single-pane-of-glass to assess project health and make informed decisions.\"\n    },\n    {\n      \"requirement_id\": \"REQ-023\",\n      \"requirement_text\": \"Maintain a conflict/issue list tracking all bugs and blockers, each with status enum (Blocked, Untriaged, In Progress, Fixed), owner, priority and history.\",\n      \"business_category\": \"Issue Tracking\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Structured issue tracking enables prioritization and resolution visibility for blockers that affect project sequencing and security posture.\"\n    },\n    {\n      \"requirement_id\": \"REQ-024\",\n      \"requirement_text\": \"Mandate completion of handover documentation and a final report for each layer no later than one week after the layer's deadline; block final project closure until all required docs are submitted.\",\n      \"business_category\": \"Compliance & Deliverables\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Enforcing documentation deadlines ensures deliverables are auditable and that knowledge and compliance requirements are met before closure.\"\n    },\n    {\n      \"requirement_id\": \"REQ-025\",\n      \"requirement_text\": \"Generate and send formal progress summaries from the project manager to customers via email with traceability (signed/digested and archived).\",\n      \"business_category\": \"External Reporting & Compliance\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Customer-facing communications must be auditable, consistent and provide traceability for contractual and compliance obligations.\"\n    },\n    {\n      \"requirement_id\": \"REQ-026\",\n      \"requirement_text\": \"Provide secure SSH access to infrastructure resources with centralized key and session management, and web-based access for cloud and application workflows following RBAC rules.\",\n      \"business_category\": \"Access & Connectivity\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Secure remote access with centralized control and monitoring reduces credential sprawl, supports session audit and enforces policy.\"\n    },\n    {\n      \"requirement_id\": \"REQ-027\",\n      \"requirement_text\": \"Require internet access for initial image pulls and integration with IaC tools (e.g., Terraform); where internet is restricted, mandate provisioning of an additional server to host required images locally and provide documented synchronization procedures.\",\n      \"business_category\": \"Infrastructure Provisioning & Supply Chain\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"IaC and initial provisioning need vetted artifacts; when internet is unavailable, a controlled local source preserves capability while reducing risk.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulations and frameworks (select as applicable to customer/data): GDPR (if processing personal data of EU residents) \u2014 ensure data subject rights, data minimization and lawful basis for processing; ISO/IEC 27001 \u2014 implement an ISMS for confidentiality, integrity and availability controls; SOC 2 Type II \u2014 controls for security, availability, processing integrity, confidentiality and privacy for service providers; NIST SP 800-53 / NIST Cybersecurity Framework \u2014 controls for system security, identity and access management, monitoring, and incident response; CIS Controls \u2014 baseline technical controls including secure configuration and logging; Cloud provider responsibilities (shared responsibility model) \u2014 follow CSP guidance for IAM, network controls and key management; Export control and government security standards (e.g., ITAR, FedRAMP/FISMA) if government data or regulated workloads are in scope; Software Supply Chain guidance (SLSA) for artifact provenance and integrity for mirrored images in air-gapped environments. Additionally, data residency and contractual customer obligations may impose encryption, retention and breach notification requirements. Ensure privacy impact assessments and threat modeling are performed for regulated data and high-risk configurations.\",\n  \"assumptions\": [\n    \"Primary deployment is cloud-hosted with hybrid/on-prem options for air-gapped/bare-metal projects.\",\n    \"Users have institutional identities (Corporate SSO) or will use platform-managed accounts; MFA is available.\",\n    \"Project teams will provide required contact and role assignment details and adhere to escalation policies.\",\n    \"Initial internet access is available for repositories and IaC operations except for explicitly air-gapped projects.\",\n    \"Organization will operate centralized logging, monitoring and SIEM or provide integration endpoints.\",\n    \"Bare-metal servers and internal networks for air-gapped projects are procured and managed by the customer organization.\",\n    \"Cryptographic key management (KMS) infrastructure exists or will be provided for secrets and artifact signing.\",\n    \"Customers will classify data (public/internal/confidential/restricted) and provide constraints for retention and export.\",\n    \"Users will configure preferred notification channels (email, chat, internal messaging) and consent to alerts.\",\n    \"The platform will integrate with existing ticketing/issue-tracking and IAM systems where required.\"\n  ],\n  \"constraints\": [\n    \"Must support both cloud-hosted and fully air-gapped on-prem bare-metal environments, including disconnected operation.\",\n    \"Must integrate with Infrastructure-as-Code tools (e.g., Terraform) and package repositories; initial internet access required or an approved local mirror must be provided.\",\n    \"Retention and immutable audit logs must meet regulatory requirements (configurable retention policy and tamper-evident storage).\",\n    \"RBAC and per-VM policy enforcement must be compatible with target hypervisors/cloud providers and support centralized session/key management.\",\n    \"All network policy and firewall definitions must be expressible in both UI and API and support change approval workflows.\",\n    \"System must support exportable reports and signed communications for customer-facing deliverables.\",\n    \"Operational SLAs for notification delivery, escalation timings and dashboard refresh rates will be defined and must be met.\",\n    \"Support for integrity checks (hashes/signatures) and secure provenance verification for mirrored images is required.\",\n    \"Performance constraints: dashboard and query operations must scale to projects with hundreds of VMs and dozens of layers without significant latency.\",\n    \"Legal and contractual constraints: any personally identifiable information or regulated data cannot leave permitted jurisdictions and must adhere to customer-specified retention/encryption requirements.\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A web-based project management platform to plan, execute, and audit multi-layer infrastructure and cloud projects that enforces structured workflows, role-based access controls, per-VM network and access policies, collaboration and handover processes, automated file management for air-gapped environments, integrated notifications/monitoring, and manager-facing reporting to ensure accountability, traceability and safe operations across hybrid cloud and on-premises resources.",
+        "high_level_requirements": [
+          "Role-based user management with Infra Admin, admin, user, and reader roles",
+          "Per-VM access mapping and permission management with audit trails",
+          "Per-VM firewall rules: allowed ingress/egress ports and stored port assignments",
+          "Per-VM ingress and egress IP endpoint recording, control, reporting, and audit",
+          "Project structure as layered stages (hardware, network, verification, container, storage, cloud, authz)",
+          "Assignment of users to layers with explicit ownership and accountability",
+          "Layer sequencing enforcement: prerequisite completion and approval required before next layer creation",
+          "Layer deadlines, escalation to management dashboard and notifications on delays",
+          "User dashboards and personal notifications showing assigned layers and due dates",
+          "Mandatory handover design document submission at layer completion",
+          "Approval/rejection workflow for handover with feedback loop and immutable logs",
+          "Post-completion user availability requirement to address blockers/dependencies",
+          "Air-gapped project support: isolated server for initial downloads and prerequisite tooling",
+          "Automated local repository mirroring and storage of required images/tools on bare-metal servers",
+          "Guaranteed access to bare-metal repository after network disconnection for all project servers",
+          "Real-time notifications to project manager upon layer completion (email/chat/internal alerts)",
+          "Notifications to all project members when a layer completes, including status and reports",
+          "Advance notification (one week) to user slated to start next layer via preferred channels",
+          "Integration with project monitoring system to raise alarms for critical events/blockers pre-project",
+          "System administrator log summary reports on failures or critical errors",
+          "Project manager reporting and role/assignment records with progress tracking",
+          "Manager-facing dashboard showing progress by layer, status, and deadlines",
+          "Conflict/tracker list for bugs and blockers with statuses (Blocked, Untriaged, In Progress, Fixed)",
+          "Mandatory completion of handover documentation and final report for each layer within one week of deadline",
+          "Generation and sending of formal progress summaries from PM to customers with traceability",
+          "Secure SSH access to infrastructure resources and web-based access for workflows",
+          "Support for initial internet access for image pulls and IaC integrations, with local-hosting alternative if restricted"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "Role-based user management with Infra Admin, admin, user, and reader roles including creation, modification, deactivation and role assignment audit logs.",
+            "business_category": "Authentication & Authorization",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Centralized RBAC ensures least-privilege, separates duties (infrastructure vs application), and provides control and auditability over who can perform sensitive operations."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Per-VM access mapping and permission management: map users to specific VMs, define permission levels (e.g., admin, sudo, read-only), and record changes with immutable audit trails.",
+            "business_category": "Access Control",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Precise VM-level access control reduces attack surface, enforces accountability, and supports forensic investigations when incidents occur."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "Store and manage allowed ingress and egress ports per VM (firewall rules), including versioned rule sets and approval workflow for changes.",
+            "business_category": "Network & Data Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Per-VM firewall rules enforce network segmentation and protect resources; tracking and approvals prevent unauthorized opening of network paths."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Record and control ingress (source) and egress (destination) IP endpoints for every VM; provide reporting and audit logs for endpoint changes and usage.",
+            "business_category": "Network & Monitoring",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Restricting endpoints prevents lateral movement, suspicious external connections; logs support compliance and incident response."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "Define project as layered stages (hardware provisioning, network setup, network verification, container environment, storage system, cloud setup, authentication & authorization) with metadata for each stage.",
+            "business_category": "Project Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Structured stages improve planning, resource allocation and ensure standardized delivery across complex infrastructure projects."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "Assign users to develop and deliver individual layers with explicit ownership, contact info and responsibility fields; track assignment history.",
+            "business_category": "Collaboration & Accountability",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Clear ownership enables accountability, escalation paths and clarifies operational responsibility for each deliverable."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Enforce layer sequencing: prevent creation or start of a dependent layer until the prerequisite layer is completed and approved.",
+            "business_category": "Workflow Enforcement",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Sequencing prevents configuration and security mistakes from later stages operating on incomplete or unsafe foundations."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Set deadlines per layer and escalate status to management dashboard and send notifications if layer is not completed by due date (including repeated escalations according to policy).",
+            "business_category": "Scheduling & Escalation",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Deadlines with escalations keep projects on track, flag risks early, and create observable SLAs for management intervention."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Provide per-user dashboards and notification channels so users can track assigned layers, due dates, and outstanding actions.",
+            "business_category": "User Experience & Notifications",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Visibility into assignments reduces missed deadlines and improves coordination."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Require submission of a handover design document upon completing each layer; the document must be stored, versioned, and linked to the layer record.",
+            "business_category": "Documentation & Knowledge Transfer",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Handover documents capture design decisions and operational details necessary for secure continuation and maintenance of infrastructure."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Implement a mandatory approval/rejection workflow for the next-layer owner to accept or reject handovers, with timestamped feedback and immutable decision logs.",
+            "business_category": "Workflow & Audit",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "A two-way acceptance process prevents silent handoffs and creates traceable records for accountability and dispute resolution."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "Require users who completed a layer to remain available for a defined support window to address escalations and dependencies identified later.",
+            "business_category": "Operational Support",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Continuity reduces risk of unresolved blockers and ensures knowledge continuity for troubleshooting."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "For air-gapped projects, provide an isolated server with internet access as a prerequisite for downloading required tools and images and document the process and approvals for use.",
+            "business_category": "File Management & Security",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Controlled staging for air-gapped environments mitigates introduction of malicious artifacts while allowing necessary assets to be acquired."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Automate local repository mirroring and store essential images/tools on dedicated bare-metal servers before network disconnection; maintain integrity checks (hashes/signatures).",
+            "business_category": "Software Supply Chain",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Ensures availability of vetted software/artifacts in disconnected environments and mitigates supply-chain and tampering risks via integrity verification."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "After disconnecting from the internet, ensure all project servers can access the bare-metal repository for required images and configuration files via internal networking and access controls.",
+            "business_category": "Infrastructure Availability",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Operational continuity of air-gapped projects requires guaranteed internal access to required artifacts without internet connectivity."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "Send real-time email or internal chat alerts to the project manager whenever a layer's process is completed, including layer metadata and links to reports.",
+            "business_category": "Notifications & Communication",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Timely notifications enable managers to review, validate and coordinate next steps promptly."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "Notify all project members upon completion of each project layer with status, attached reports and links to handover documents.",
+            "business_category": "Collaboration",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Broad awareness reduces duplication of effort and provides context for dependent work."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "Alert the user due to start the next layer one week before the scheduled date via their preferred communication channel(s) configured in profile.",
+            "business_category": "Scheduling & Notifications",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Advance notification reduces idle time, helps resource planning and prevents missed starts."
+          },
+          {
+            "requirement_id": "REQ-019",
+            "requirement_text": "Integrate with project monitoring systems to raise alerts for critical events or blockers prior to and during project execution, with configurable thresholds.",
+            "business_category": "Monitoring & Incident Management",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Early detection of critical conditions enables timely mitigation and reduces project and security risk."
+          },
+          {
+            "requirement_id": "REQ-020",
+            "requirement_text": "Provide system administrators with log summary reports upon detection of failures or critical errors, including contextual linkbacks to full logs and affected resources.",
+            "business_category": "Operations & Audit",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Summarized actionable reports speed incident response and support root-cause analysis, while links support deeper investigation."
+          },
+          {
+            "requirement_id": "REQ-021",
+            "requirement_text": "Enable project managers to assign roles, maintain records of user assignments, and produce progress reports; retain historical assignment data.",
+            "business_category": "Reporting & Governance",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Record-keeping of assignments and progress supports governance, audits and customer reporting."
+          },
+          {
+            "requirement_id": "REQ-022",
+            "requirement_text": "Display project progress by layer, status, and deadlines on a manager-facing dashboard with filtering and export capabilities.",
+            "business_category": "Management Reporting",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Dashboards give managers a single-pane-of-glass to assess project health and make informed decisions."
+          },
+          {
+            "requirement_id": "REQ-023",
+            "requirement_text": "Maintain a conflict/issue list tracking all bugs and blockers, each with status enum (Blocked, Untriaged, In Progress, Fixed), owner, priority and history.",
+            "business_category": "Issue Tracking",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Structured issue tracking enables prioritization and resolution visibility for blockers that affect project sequencing and security posture."
+          },
+          {
+            "requirement_id": "REQ-024",
+            "requirement_text": "Mandate completion of handover documentation and a final report for each layer no later than one week after the layer's deadline; block final project closure until all required docs are submitted.",
+            "business_category": "Compliance & Deliverables",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Enforcing documentation deadlines ensures deliverables are auditable and that knowledge and compliance requirements are met before closure."
+          },
+          {
+            "requirement_id": "REQ-025",
+            "requirement_text": "Generate and send formal progress summaries from the project manager to customers via email with traceability (signed/digested and archived).",
+            "business_category": "External Reporting & Compliance",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Customer-facing communications must be auditable, consistent and provide traceability for contractual and compliance obligations."
+          },
+          {
+            "requirement_id": "REQ-026",
+            "requirement_text": "Provide secure SSH access to infrastructure resources with centralized key and session management, and web-based access for cloud and application workflows following RBAC rules.",
+            "business_category": "Access & Connectivity",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Secure remote access with centralized control and monitoring reduces credential sprawl, supports session audit and enforces policy."
+          },
+          {
+            "requirement_id": "REQ-027",
+            "requirement_text": "Require internet access for initial image pulls and integration with IaC tools (e.g., Terraform); where internet is restricted, mandate provisioning of an additional server to host required images locally and provide documented synchronization procedures.",
+            "business_category": "Infrastructure Provisioning & Supply Chain",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "IaC and initial provisioning need vetted artifacts; when internet is unavailable, a controlled local source preserves capability while reducing risk."
+          }
+        ],
+        "security_context": "Applicable regulations and frameworks (select as applicable to customer/data): GDPR (if processing personal data of EU residents) \u2014 ensure data subject rights, data minimization and lawful basis for processing; ISO/IEC 27001 \u2014 implement an ISMS for confidentiality, integrity and availability controls; SOC 2 Type II \u2014 controls for security, availability, processing integrity, confidentiality and privacy for service providers; NIST SP 800-53 / NIST Cybersecurity Framework \u2014 controls for system security, identity and access management, monitoring, and incident response; CIS Controls \u2014 baseline technical controls including secure configuration and logging; Cloud provider responsibilities (shared responsibility model) \u2014 follow CSP guidance for IAM, network controls and key management; Export control and government security standards (e.g., ITAR, FedRAMP/FISMA) if government data or regulated workloads are in scope; Software Supply Chain guidance (SLSA) for artifact provenance and integrity for mirrored images in air-gapped environments. Additionally, data residency and contractual customer obligations may impose encryption, retention and breach notification requirements. Ensure privacy impact assessments and threat modeling are performed for regulated data and high-risk configurations.",
+        "assumptions": [
+          "Primary deployment is cloud-hosted with hybrid/on-prem options for air-gapped/bare-metal projects.",
+          "Users have institutional identities (Corporate SSO) or will use platform-managed accounts; MFA is available.",
+          "Project teams will provide required contact and role assignment details and adhere to escalation policies.",
+          "Initial internet access is available for repositories and IaC operations except for explicitly air-gapped projects.",
+          "Organization will operate centralized logging, monitoring and SIEM or provide integration endpoints.",
+          "Bare-metal servers and internal networks for air-gapped projects are procured and managed by the customer organization.",
+          "Cryptographic key management (KMS) infrastructure exists or will be provided for secrets and artifact signing.",
+          "Customers will classify data (public/internal/confidential/restricted) and provide constraints for retention and export.",
+          "Users will configure preferred notification channels (email, chat, internal messaging) and consent to alerts.",
+          "The platform will integrate with existing ticketing/issue-tracking and IAM systems where required."
+        ],
+        "constraints": [
+          "Must support both cloud-hosted and fully air-gapped on-prem bare-metal environments, including disconnected operation.",
+          "Must integrate with Infrastructure-as-Code tools (e.g., Terraform) and package repositories; initial internet access required or an approved local mirror must be provided.",
+          "Retention and immutable audit logs must meet regulatory requirements (configurable retention policy and tamper-evident storage).",
+          "RBAC and per-VM policy enforcement must be compatible with target hypervisors/cloud providers and support centralized session/key management.",
+          "All network policy and firewall definitions must be expressible in both UI and API and support change approval workflows.",
+          "System must support exportable reports and signed communications for customer-facing deliverables.",
+          "Operational SLAs for notification delivery, escalation timings and dashboard refresh rates will be defined and must be met.",
+          "Support for integrity checks (hashes/signatures) and secure provenance verification for mirrored images is required.",
+          "Performance constraints: dashboard and query operations must scale to projects with hundreds of VMs and dozens of layers without significant latency.",
+          "Legal and contractual constraints: any personally identifiable information or regulated data cannot leave permitted jurisdictions and must adhere to customer-specified retention/encryption requirements."
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "Your final answer must be the great and the most complete as possible, it must be outcome described.\n{\n  \"architecture_summary\": \"A cloud-first, hybrid-capable web platform that orchestrates multi-layer infrastructure projects by combining a single-page frontend, API-driven backend services (workflow engine, RBAC/auth, notifications, monitoring integration), persistent data stores (relational DB for projects and assignments, immutable audit log store, and an artifact/bare-metal repository for air-gapped use), and an infrastructure access layer (SSH bastion, VM inventory, bare-metal hosts). Users interact via web UI or automated APIs; the backend enforces sequencing, handles per-VM policies and audit logging, triggers notifications and escalations, mirrors artifacts for disconnected environments, and integrates with external systems (SSO/MFA, email/chat, monitoring, IaC registries).\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Users and Edge\\\"\\n  U[Users Admins Infra Admins]\\n  U --> EG\\n  EG[Edge API Gateway & Web Proxy]\\nend\\n\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web App SPA & Admin UI]\\n  EG --> FE\\nend\\n\\nsubgraph \\\"Application Services\\\"\\n  API[Core API Users/Tasks/RBAC]\\n  WF[Workflow Engine Sequencing]\\n  AUTH[Auth Service SSO MFA & SSH Gateway]\\n  NOTIF[Notifications Scheduler & Alerts]\\n  MON[Monitoring Integration & Alert Router]\\n  FE --> API\\n  API --> WF\\n  API --> AUTH\\n  API --> NOTIF\\n  API --> MON\\nend\\n\\nsubgraph \\\"Data Layer\\\"\\n  DB[Relational DB Projects/Assignments]\\n  LOGS[Immutable Audit Log Store]\\n  ARTIFACT[Artifact Repo Bare-metal Mirror]\\n  API --> DB\\n  API --> LOGS\\n  ARTIFACT --> API\\nend\\n\\nsubgraph \\\"Infrastructure & Access\\\"\\n  VMS[Managed VMs Bare-metal Servers]\\n  SSH[SSH Bastion Key Mgmt]\\n  ARTIFACT --> VMS\\n  AUTH --> SSH\\n  SSH --> VMS\\n  WF --> VMS\\nend\\n\\nsubgraph \\\"External Services\\\"\\n  SSO[SSO/MFA Provider]\\n  EMAIL[Email & Chat Services]\\n  IAC[Package Registries & IaC Providers]\\n  SIEM[SIEM/Logging]\\n  NOTIF --> EMAIL\\n  AUTH --> SSO\\n  MON --> SIEM\\n  API --> IAC\\nend\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Provide web-based SPA and admin UI for project planning, dashboards, handovers, approvals, and per-user views; mediate user interactions and invoke backend APIs.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"Corporate SSO/MFA\",\n        \"Browser clients\"\n      ],\n      \"data_handled\": [\n        \"UI session tokens\",\n        \"Project metadata (view)\",\n        \"User preferences and notifications\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core backend: REST/gRPC API, workflow engine enforcing layer sequencing and deadlines, RBAC/authZ, notification scheduling, monitoring integration, and business logic for VM/port/policy management.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"SSO/MFA provider\",\n        \"Email/Chat providers\",\n        \"Monitoring/Alerting systems\"\n      ],\n      \"data_handled\": [\n        \"User identities and roles\",\n        \"Layer workflows and state\",\n        \"Per-VM policy metadata\",\n        \"Audit events\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Persistent storage for project data, assignments, deadlines, audit logs, issue trackers, and bare-metal artifact repository for air-gapped operations.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud-managed RDBMS (or on-prem DB)\",\n        \"Object storage / Artifact storage\"\n      ],\n      \"data_handled\": [\n        \"Project records\",\n        \"Audit logs\",\n        \"Handover documents and reports\",\n        \"Artifacts and images\"\n      ]\n    },\n    {\n      \"name\": \"Infrastructure & Access Layer\",\n      \"responsibility\": \"Manage SSH bastion/centralized key/session management, orchestrate access to VMs and bare-metal servers, and ensure artifact delivery to project servers in both connected and disconnected modes.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Key Management Service (KMS)\",\n        \"Target hypervisor/cloud provider APIs\"\n      ],\n      \"data_handled\": [\n        \"SSH keys and session metadata\",\n        \"Per-VM access mappings\",\n        \"Network/firewall rule deployments\"\n      ]\n    },\n    {\n      \"name\": \"Artifact & Air-gap Services\",\n      \"responsibility\": \"Mirror external registries, maintain bare-metal repositories, perform integrity checks and manage staging servers for disconnected deployments.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"External package registries (Docker Hub, apt/yum registries)\",\n        \"SLSA / Artifact signing services\"\n      ],\n      \"data_handled\": [\n        \"Container images\",\n        \"OS images\",\n        \"Hashes/signatures and provenance metadata\"\n      ]\n    },\n    {\n      \"name\": \"Integrations & External Services\",\n      \"responsibility\": \"Third-party integrations for SSO/MFA, email/chat notifications, IaC registries, monitoring/alerting, and SIEM/log aggregation.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Corporate SSO/MFA\",\n        \"Email/Chat providers (SMTP, Slack, MS Teams)\",\n        \"Monitoring services (Prometheus, Datadog)\",\n        \"SIEM solutions\"\n      ],\n      \"data_handled\": [\n        \"Authentication assertions\",\n        \"Notification payloads\",\n        \"Monitoring events\",\n        \"Log exports\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users authenticate via SSO/MFA and interact with the Web UI which calls the Core API. The Core API routes requests to the Workflow Engine, Auth service, and Notification Scheduler. Project definitions, assignments, deadlines, VM policies, and handover documents are persisted in the relational DB; immutable events and audit trails are written to the audit log store. When artifacts or images are required, the Artifact Repo supplies images to VMs or mirrors external registries during staging for air-gapped projects. The Workflow Engine enforces sequencing and triggers notifications and escalations via the Notification service which integrates with Email/Chat. Monitoring systems send alerts to the platform which then escalate to PMs and SIEM. SSH Gateway/ bastion manages controlled access into VMs; all access and session metadata are written to logs. Key transformation points: user actions -> API calls, workflow state transitions -> DB updates and audit writes, artifact staging -> repository mirroring and integrity verification, and alert events -> notification dispatch and escalation.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"External package registries\",\n        \"Email/Chat Services\",\n        \"SSO/MFA Provider\"\n      ],\n      \"boundary_type\": \"Perimeter/External\",\n      \"security_controls\": [\n        \"Outbound allow-listing for package pull endpoints\",\n        \"TLS for all external communications\",\n        \"VPN or jump host isolation for artifact staging\",\n        \"Firewall egress controls and proxy gateway\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge\",\n      \"components\": [\n        \"Edge API Gateway\",\n        \"Web Proxy\",\n        \"Notification Gateway\"\n      ],\n      \"boundary_type\": \"Perimeter/Ingress\",\n      \"security_controls\": [\n        \"WAF and rate limiting\",\n        \"TLS termination with strict ciphers\",\n        \"API gateway auth and request validation\",\n        \"DDoS protection\"\n      ]\n    },\n    {\n      \"name\": \"Internal Network\",\n      \"components\": [\n        \"Frontend\",\n        \"Application Services\",\n        \"Monitoring Integration\"\n      ],\n      \"boundary_type\": \"Internal\",\n      \"security_controls\": [\n        \"Network segmentation and ACLs\",\n        \"Mutual TLS between services\",\n        \"RBAC enforced at service layer\",\n        \"Service-to-service authentication (mTLS, service tokens)\"\n      ]\n    },\n    {\n      \"name\": \"Database Tier\",\n      \"components\": [\n        \"Relational DB\",\n        \"Immutable Audit Log Store\",\n        \"Artifact Repository\"\n      ],\n      \"boundary_type\": \"Data / Storage\",\n      \"security_controls\": [\n        \"Encryption at rest and in transit\",\n        \"Access control via least privilege\",\n        \"Immutable storage or WORM for audit logs\",\n        \"Regular backups and integrity checks\"\n      ]\n    },\n    {\n      \"name\": \"Air-gapped Zone\",\n      \"components\": [\n        \"Bare-metal Artifact Repo\",\n        \"Staging Server with Internet Access (controlled)\",\n        \"Project VMs in disconnected network\"\n      ],\n      \"boundary_type\": \"Isolated/Disconnected\",\n      \"security_controls\": [\n        \"Physical isolation and strict change control\",\n        \"Controlled staging server with documented approvals\",\n        \"Signed artifact verification (hashes/signatures)\",\n        \"Network ACLs permitting only internal access to repo\"\n      ]\n    },\n    {\n      \"name\": \"Management/Operations\",\n      \"components\": [\n        \"SSH Bastion\",\n        \"Key Management Service\",\n        \"SIEM\"\n      ],\n      \"boundary_type\": \"Privileged Access\",\n      \"security_controls\": [\n        \"Centralized key management and session recording\",\n        \"MFA for administrative access\",\n        \"Privileged access reviews and just-in-time access\",\n        \"Audit trails exported to SIEM\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: Web UI/API Gateway (high risk) \u2014 exposes authentication flow, RBAC checks, and API endpoints; requires strong input validation, rate limiting, WAF and MFA. SSH Bastion/SSH Gateway (high risk) \u2014 privileged access to infrastructure and VMs; mitigations include centralized key mgmt, session recording, and JIT access. Artifact mirror and staging server (medium-high risk) \u2014 introduces supply-chain risk; require integrity checks, signed artifacts and strict staging approvals. External integrations (SSO, Email/Chat, Monitoring, IaC registries) (medium risk) \u2014 dependency on third-party availability and trust; enforce secure connectors, least privilege service accounts and circuit breakers. Database and audit stores (critical assets) \u2014 risk of data exfiltration and tampering; controls: encryption, strict DB access controls, immutable logs and SIEM integration. APIs for per-VM policy management and firewall changes (high risk) \u2014 privileged operations that affect network security; require approval workflows, change auditing, strong authN/Z and change-review gates. Attack vectors: credential compromise, supply-chain compromise of images, malicious or buggy workflow transitions, improper RBAC configuration, and insider threats. Risk levels are highest for components that grant direct infrastructure changes (API, SSH, Artifact Repo) and for integrations that can forge identity or inject artifacts; monitoring, alerting, and auditability are essential to detect and respond quickly.\"\n}",
+      "pydantic": {
+        "architecture_summary": "A cloud-first, hybrid-capable web platform that orchestrates multi-layer infrastructure projects by combining a single-page frontend, API-driven backend services (workflow engine, RBAC/auth, notifications, monitoring integration), persistent data stores (relational DB for projects and assignments, immutable audit log store, and an artifact/bare-metal repository for air-gapped use), and an infrastructure access layer (SSH bastion, VM inventory, bare-metal hosts). Users interact via web UI or automated APIs; the backend enforces sequencing, handles per-VM policies and audit logging, triggers notifications and escalations, mirrors artifacts for disconnected environments, and integrates with external systems (SSO/MFA, email/chat, monitoring, IaC registries).",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Users and Edge\"\n  U[Users Admins Infra Admins]\n  U --> EG\n  EG[Edge API Gateway & Web Proxy]\nend\n\nsubgraph \"Frontend Layer\"\n  FE[Web App SPA & Admin UI]\n  EG --> FE\nend\n\nsubgraph \"Application Services\"\n  API[Core API Users/Tasks/RBAC]\n  WF[Workflow Engine Sequencing]\n  AUTH[Auth Service SSO MFA & SSH Gateway]\n  NOTIF[Notifications Scheduler & Alerts]\n  MON[Monitoring Integration & Alert Router]\n  FE --> API\n  API --> WF\n  API --> AUTH\n  API --> NOTIF\n  API --> MON\nend\n\nsubgraph \"Data Layer\"\n  DB[Relational DB Projects/Assignments]\n  LOGS[Immutable Audit Log Store]\n  ARTIFACT[Artifact Repo Bare-metal Mirror]\n  API --> DB\n  API --> LOGS\n  ARTIFACT --> API\nend\n\nsubgraph \"Infrastructure & Access\"\n  VMS[Managed VMs Bare-metal Servers]\n  SSH[SSH Bastion Key Mgmt]\n  ARTIFACT --> VMS\n  AUTH --> SSH\n  SSH --> VMS\n  WF --> VMS\nend\n\nsubgraph \"External Services\"\n  SSO[SSO/MFA Provider]\n  EMAIL[Email & Chat Services]\n  IAC[Package Registries & IaC Providers]\n  SIEM[SIEM/Logging]\n  NOTIF --> EMAIL\n  AUTH --> SSO\n  MON --> SIEM\n  API --> IAC\nend",
+        "components": [
+          {
+            "name": "Frontend Layer",
+            "responsibility": "Provide web-based SPA and admin UI for project planning, dashboards, handovers, approvals, and per-user views; mediate user interactions and invoke backend APIs.",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "Corporate SSO/MFA",
+              "Browser clients"
+            ],
+            "data_handled": [
+              "UI session tokens",
+              "Project metadata (view)",
+              "User preferences and notifications"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core backend: REST/gRPC API, workflow engine enforcing layer sequencing and deadlines, RBAC/authZ, notification scheduling, monitoring integration, and business logic for VM/port/policy management.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "SSO/MFA provider",
+              "Email/Chat providers",
+              "Monitoring/Alerting systems"
+            ],
+            "data_handled": [
+              "User identities and roles",
+              "Layer workflows and state",
+              "Per-VM policy metadata",
+              "Audit events"
+            ]
+          },
+          {
+            "name": "Data Storage",
+            "responsibility": "Persistent storage for project data, assignments, deadlines, audit logs, issue trackers, and bare-metal artifact repository for air-gapped operations.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Cloud-managed RDBMS (or on-prem DB)",
+              "Object storage / Artifact storage"
+            ],
+            "data_handled": [
+              "Project records",
+              "Audit logs",
+              "Handover documents and reports",
+              "Artifacts and images"
+            ]
+          },
+          {
+            "name": "Infrastructure & Access Layer",
+            "responsibility": "Manage SSH bastion/centralized key/session management, orchestrate access to VMs and bare-metal servers, and ensure artifact delivery to project servers in both connected and disconnected modes.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Key Management Service (KMS)",
+              "Target hypervisor/cloud provider APIs"
+            ],
+            "data_handled": [
+              "SSH keys and session metadata",
+              "Per-VM access mappings",
+              "Network/firewall rule deployments"
+            ]
+          },
+          {
+            "name": "Artifact & Air-gap Services",
+            "responsibility": "Mirror external registries, maintain bare-metal repositories, perform integrity checks and manage staging servers for disconnected deployments.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "External package registries (Docker Hub, apt/yum registries)",
+              "SLSA / Artifact signing services"
+            ],
+            "data_handled": [
+              "Container images",
+              "OS images",
+              "Hashes/signatures and provenance metadata"
+            ]
+          },
+          {
+            "name": "Integrations & External Services",
+            "responsibility": "Third-party integrations for SSO/MFA, email/chat notifications, IaC registries, monitoring/alerting, and SIEM/log aggregation.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Corporate SSO/MFA",
+              "Email/Chat providers (SMTP, Slack, MS Teams)",
+              "Monitoring services (Prometheus, Datadog)",
+              "SIEM solutions"
+            ],
+            "data_handled": [
+              "Authentication assertions",
+              "Notification payloads",
+              "Monitoring events",
+              "Log exports"
+            ]
+          }
+        ],
+        "data_flow_description": "Users authenticate via SSO/MFA and interact with the Web UI which calls the Core API. The Core API routes requests to the Workflow Engine, Auth service, and Notification Scheduler. Project definitions, assignments, deadlines, VM policies, and handover documents are persisted in the relational DB; immutable events and audit trails are written to the audit log store. When artifacts or images are required, the Artifact Repo supplies images to VMs or mirrors external registries during staging for air-gapped projects. The Workflow Engine enforces sequencing and triggers notifications and escalations via the Notification service which integrates with Email/Chat. Monitoring systems send alerts to the platform which then escalate to PMs and SIEM. SSH Gateway/ bastion manages controlled access into VMs; all access and session metadata are written to logs. Key transformation points: user actions -> API calls, workflow state transitions -> DB updates and audit writes, artifact staging -> repository mirroring and integrity verification, and alert events -> notification dispatch and escalation.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "External package registries",
+              "Email/Chat Services",
+              "SSO/MFA Provider"
+            ],
+            "boundary_type": "Perimeter/External",
+            "security_controls": [
+              "Outbound allow-listing for package pull endpoints",
+              "TLS for all external communications",
+              "VPN or jump host isolation for artifact staging",
+              "Firewall egress controls and proxy gateway"
+            ]
+          },
+          {
+            "name": "DMZ / Edge",
+            "components": [
+              "Edge API Gateway",
+              "Web Proxy",
+              "Notification Gateway"
+            ],
+            "boundary_type": "Perimeter/Ingress",
+            "security_controls": [
+              "WAF and rate limiting",
+              "TLS termination with strict ciphers",
+              "API gateway auth and request validation",
+              "DDoS protection"
+            ]
+          },
+          {
+            "name": "Internal Network",
+            "components": [
+              "Frontend",
+              "Application Services",
+              "Monitoring Integration"
+            ],
+            "boundary_type": "Internal",
+            "security_controls": [
+              "Network segmentation and ACLs",
+              "Mutual TLS between services",
+              "RBAC enforced at service layer",
+              "Service-to-service authentication (mTLS, service tokens)"
+            ]
+          },
+          {
+            "name": "Database Tier",
+            "components": [
+              "Relational DB",
+              "Immutable Audit Log Store",
+              "Artifact Repository"
+            ],
+            "boundary_type": "Data / Storage",
+            "security_controls": [
+              "Encryption at rest and in transit",
+              "Access control via least privilege",
+              "Immutable storage or WORM for audit logs",
+              "Regular backups and integrity checks"
+            ]
+          },
+          {
+            "name": "Air-gapped Zone",
+            "components": [
+              "Bare-metal Artifact Repo",
+              "Staging Server with Internet Access (controlled)",
+              "Project VMs in disconnected network"
+            ],
+            "boundary_type": "Isolated/Disconnected",
+            "security_controls": [
+              "Physical isolation and strict change control",
+              "Controlled staging server with documented approvals",
+              "Signed artifact verification (hashes/signatures)",
+              "Network ACLs permitting only internal access to repo"
+            ]
+          },
+          {
+            "name": "Management/Operations",
+            "components": [
+              "SSH Bastion",
+              "Key Management Service",
+              "SIEM"
+            ],
+            "boundary_type": "Privileged Access",
+            "security_controls": [
+              "Centralized key management and session recording",
+              "MFA for administrative access",
+              "Privileged access reviews and just-in-time access",
+              "Audit trails exported to SIEM"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Primary entry points: Web UI/API Gateway (high risk) \u2014 exposes authentication flow, RBAC checks, and API endpoints; requires strong input validation, rate limiting, WAF and MFA. SSH Bastion/SSH Gateway (high risk) \u2014 privileged access to infrastructure and VMs; mitigations include centralized key mgmt, session recording, and JIT access. Artifact mirror and staging server (medium-high risk) \u2014 introduces supply-chain risk; require integrity checks, signed artifacts and strict staging approvals. External integrations (SSO, Email/Chat, Monitoring, IaC registries) (medium risk) \u2014 dependency on third-party availability and trust; enforce secure connectors, least privilege service accounts and circuit breakers. Database and audit stores (critical assets) \u2014 risk of data exfiltration and tampering; controls: encryption, strict DB access controls, immutable logs and SIEM integration. APIs for per-VM policy management and firewall changes (high risk) \u2014 privileged operations that affect network security; require approval workflows, change auditing, strong authN/Z and change-review gates. Attack vectors: credential compromise, supply-chain compromise of images, malicious or buggy workflow transitions, improper RBAC configuration, and insider threats. Risk levels are highest for components that grant direct infrastructure changes (API, SSH, Artifact Repo) and for integrations that can forge identity or inject artifacts; monitoring, alerting, and auditability are essential to detect and respond quickly."
+      }
+    }
+  ]
+}

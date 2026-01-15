@@ -1,0 +1,272 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge & Auth (SSO/OAuth flows, Auth tokens)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "An attacker forges or replays authentication tokens (JWT/OAuth tokens) or exploits weak SSO/OAuth configuration to impersonate a legitimate user and gain access to boards and organization resources."
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer (web clients)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Client-side JavaScript or local cached board deltas are tampered with (local modification of deltas or replay) to inject malicious deltas or corrupt board content that then syncs to other users."
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (Realtime Sync / CRDT/OT)",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Users or attackers perform malicious edits (delete or alter board history) and later deny actions; without proper immutable logging, attribution is lost and actions cannot be proven."
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Frontend Layer (web/embedded content)",
+    "risk_level": "Critical",
+    "category": "Information Disclosure",
+    "description": "Cross-site scripting (XSS) via user-supplied text boxes, sticky notes, embedded links or comments leads to session theft, credential exposure, or data exfiltration for other users viewing the board."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (Core API)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "API endpoints vulnerable to injection (SQL/NoSQL/command injection) allow attackers to modify database records, board content, or permissions."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer & API (CSRF attack surface)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Cross-Site Request Forgery causes authenticated users' browsers to execute state-changing API calls (e.g., change sharing settings, invite users, transfer ownership) without their intent."
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer (object storage for assets)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Misconfigured object storage (public buckets, insecure signed URL expiry) exposes uploaded assets or board exports to unauthorized users or search engines."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Services (third-party integrations)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Compromised third-party integration (e.g., Jira, Google Drive) or leaked integration tokens allow an attacker to access, modify, or exfiltrate organization data via integrations."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Realtime Sync / Presence / PubSub",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "An attacker floods the realtime sync channels with bogus operations or presence signals, causing high CPU/network usage, increased latencies or resource exhaustion affecting collaboration for many use"
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Application Services (Media/AV processing)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Malicious media (audio/video) or crafted files cause remote code execution or memory corruption in media processing pipelines or third-party SDKs used for conferencing."
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Notifications & Integrations (webhooks)",
+    "risk_level": "Medium",
+    "category": "Spoofing",
+    "description": "An attacker spoofs webhook events or forges callbacks (from Slack/Jira/etc.) to trigger unauthorized actions or inject content into boards and activity streams."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "File Management (uploads)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Uploaded files contain sensitive data (PII, secrets) that are stored without encryption or leaked via export features, public links, or backups."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Access Control (RBAC, ownership transfer)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Broken access control or logic flaws allow users to escalate privileges (e.g., Member -> Admin, transfer ownership, access private boards of other teams)."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer & API (Insecure Direct Object References)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Predictable or sequential identifiers for boards/assets allow attackers to enumerate and access resources (insecure direct object references) via unauthenticated or insufficiently authorized requests."
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Application Services (API layer)",
+    "risk_level": "Critical",
+    "category": "Denial of Service",
+    "description": "Abuse of API endpoints (mass board creation, large file uploads, repeated export requests) leads to resource exhaustion impacting availability."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "External Services (SSO/Identity Providers)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Compromise or misconfiguration of an external IdP (or compromised enterprise IdP account) leads to disclosure or unauthorized access across multiple tenants via SSO."
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Frontend Layer (Embedded external content)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Embedded content (iframes, links) from external sites can leak user data or metadata (referrer, cookies) to third-party sites or enable clickjacking."
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (Integrations & OAuth tokens storage)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Stored integration tokens (Jira/Slack/Drive) are exfiltrated from databases or logs, allowing attackers to access external services and data."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Data Layer (relational/document DBs)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "An attacker or compromised process modifies board version history, RBAC metadata, or audit logs in the primary databases to cover tracks or change permissions."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer & API (Clickjacking / UI redress)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "An attacker frames the application or uses hidden UI overlays to trick users into performing sensitive actions (e.g., changing access, exporting data)."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (API layer)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "API clients use stolen API keys or reused tokens to impersonate service clients (server-to-server integrations) and perform unauthorized API calls."
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer (client-side plugins/widgets)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Client-side telemetry or local caches accidentally include sensitive board content or PII and are leaked via browser-sync or telemetry endpoints."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Data Layer (audit/log store)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Admin or attacker with elevated privileges alters or deletes audit logs to erase evidence of malicious activity."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Services (cloud storage integrations)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Integration with third-party cloud storage results in unintentional sharing of organization documents (e.g., Drive link made public), leaking sensitive business information."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services (export/PDF/image generation)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Board exports (PDF/PNG) are generated with embedded metadata (emails, internal URLs) that leak internal information when shared externally."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Frontend Layer & Chat/Commenting",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "@mentions, threaded comments or chat may be used to spam or leak data (e.g., mention external email to exfiltrate content), or to phish other users via malicious links in chat."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Performance & Scalability (CDN, Realtime gateway)",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Large boards with many objects or many simultaneous collaborators lead to performance degradation; an attacker may intentionally craft large documents to cause high memory/cpu on rendering and sync."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Integrations/API (SSRF via file import or URL fetch)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Attackers supply URLs or files causing the backend to fetch internal metadata or access internal resources (SSRF), enabling discovery of internal services or exfiltration."
+  },
+  {
+    "id": "THR-029",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Frontend Layer & Invitation System",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Invitation system is abused to send phishing invites or an attacker forges invitation emails to trick users into visiting malicious links or handing over credentials."
+  },
+  {
+    "id": "THR-030",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Supply Chain (third-party SDKs used in frontend/backends)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Compromised or malicious third-party libraries (npm packages, SDKs) introduce backdoors or escalations allowing attackers to run arbitrary code or access secrets."
+  }
+]

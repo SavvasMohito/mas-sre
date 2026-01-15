@@ -1,0 +1,656 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"A cloud-hosted, multi-region collaborative whiteboarding platform composed of client frontends (web, desktop, mobile) served via CDN and an API/Realtime gateway. An Auth & API Gateway handles authentication (email/SSO/OAuth/MFA), authorization and request routing to backend application services that include Core API, Realtime Sync (CRDT/OT), Media/AV handling, Integrations, Notifications and Analytics. Persistent storage includes relational/document DBs for users and metadata, object storage for boards/assets and an append-only audit/log store; caching and pub/sub support low-latency sync and presence. External integrations (SSO providers, cloud storage, productivity and communication tools, virus scanning) are used via secure OAuth flows. The layers interact over TLS with RBAC and tenancy controls, supporting versioning, file management, exports and analytics while enabling horizontal scaling for enterprise workloads.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\\\ngraph TB\\\\nU[End Users Web/Desktop/Mobile]\\\\nsubgraph \\\"Edge & Auth\\\"\\\\n  CDN[CDN & Static Hosting]\\\\n  GW[Auth & API Gateway]\\\\n  RTG[Realtime Gateway WS/RTC]\\\\nend\\\\nsubgraph \\\"Frontend Layer\\\"\\\\n  FE[Web App SPA & Native Clients]\\\\nend\\\\nsubgraph \\\"Application Services\\\"\\\\n  API[Core API Services REST/GraphQL]\\\\n  RT[Realtime Sync Service CRDT/OT]\\\\n  Media[Media Service Audio/Video]\\\\n  Integrations[Integration & Webhook Service]\\\\n  Notifications[Notification Service]\\\\n  Analytics[Analytics & Admin API]\\\\nend\\\\nsubgraph \\\"Data Layer\\\"\\\\n  UserDB[User Accounts & RBAC DB]\\\\n  BoardStore[Boards Object Store & Versioning]\\\\n  Assets[Asset Storage & CDN]\\\\n  Cache[In-Memory Cache & PubSub]\\\\n  Logs[Audit Logs & Metrics Store]\\\\nend\\\\nsubgraph \\\"External Services\\\"\\\\n  IDP[SSO/OAuth Providers]\\\\n  CloudStorage[GoogleDrive/Dropbox/OneDrive]\\\\n  Productivity[Jira/Asana/Trello]\\\\n  Comm[Slack/MSTeams]\\\\n  VirusScan[Malware/Virus Scanner]\\\\nend\\\\nU --> CDN\\\\nCDN --> FE\\\\nFE --> GW\\\\nFE --> RTG\\\\nGW --> API\\\\nRTG --> RT\\\\nAPI --> UserDB\\\\nAPI --> BoardStore\\\\nAPI --> Assets\\\\nAPI --> Cache\\\\nRT --> Cache\\\\nRT --> BoardStore\\\\nMedia --> Assets\\\\nMedia --> API\\\\nAPI --> Integrations\\\\nAPI --> Notifications\\\\nAPI --> Analytics\\\\nIntegrations --> CloudStorage\\\\nIntegrations --> Productivity\\\\nNotifications --> Comm\\\\nAssets --> VirusScan\\\\nGW --> IDP\\\\nUserDB --> Logs\\\\nBoardStore --> Logs\\\\nAnalytics --> Logs\\\\nCache --> BoardStore\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Deliver UI/UX for web, desktop and mobile clients including rendering infinite canvas, input capture, offline caching and client-side widgets; forward user events to gateways and handle presence display and local undo/redo.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN\",\n        \"Auth Gateway\"\n      ],\n      \"data_handled\": [\n        \"UI state / ephemeral presence\",\n        \"User input events\",\n        \"Local cached board deltas\",\n        \"Telemetry (opt-in)\"\n      ]\n    },\n    {\n      \"name\": \"Edge & Auth\",\n      \"responsibility\": \"Terminate TLS, serve static assets via CDN, handle authentication/SSO/OAuth/MFA flows, API authentication/token validation, rate limiting, WAF and route realtime connections to sync services.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Identity Providers (Google/Microsoft/SAML IdPs)\",\n        \"WAF/DDoS providers\"\n      ],\n      \"data_handled\": [\n        \"Auth tokens/credentials\",\n        \"Session metadata\",\n        \"Ingress request logs\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Host core business logic: Core API for boards/users/permissions, Realtime Sync service for low-latency collaboration (CRDT/OT), Media service for audio/video processing, Integrations/webhooks, Notifications and Analytics.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud media/RTC SDKs\",\n        \"Third-party integrations (Slack/Jira)\",\n        \"Email providers\",\n        \"Push notification services\"\n      ],\n      \"data_handled\": [\n        \"Board deltas/operations\",\n        \"Comments/chat/messages\",\n        \"Meeting/session metadata\",\n        \"Integration tokens/metadata\",\n        \"Notification preferences\"\n      ]\n    },\n    {\n      \"name\": \"Data Layer\",\n      \"responsibility\": \"Durable storage of user accounts, RBAC, board content and version history, binary assets, caches for fast reads, and tamper-evident audit logs and metrics; support backups and regional residency.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud object storage\",\n        \"Managed databases\",\n        \"KMS for encryption\"\n      ],\n      \"data_handled\": [\n        \"User PII and credentials (hashed)\",\n        \"Board content and version history\",\n        \"Uploaded assets (images/docs)\",\n        \"Audit logs and telemetry\",\n        \"Access control metadata\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Third-party identity providers, cloud storage providers, productivity and communication tools, and security tooling used for malware scanning and optional media processing; used for integrations and off-platform storage/identity.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"SSO/OAuth providers (Google/Microsoft/SAML IdPs)\",\n        \"Cloud storage (GoogleDrive/Dropbox/OneDrive)\",\n        \"Productivity APIs (Jira/Asana/Trello)\",\n        \"Comm platforms (Slack/MSTeams)\",\n        \"Virus scanning/AV services\"\n      ],\n      \"data_handled\": [\n        \"OAuth tokens and integration metadata\",\n        \"External file links and content metadata\",\n        \"Third-party webhook events\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users connect from web or native clients through CDN to the Auth/API Gateway which authenticates requests (email/SSO/OAuth/MFA). UI actions are sent to Core API for CRUD operations and to the Realtime Sync service for low-latency collaborative operations; realtime deltas are published via Pub/Sub/Cache and persisted to BoardStore for durability and versioning. Uploaded assets are scanned by VirusScan, stored in object storage and served via CDN. Notifications and integration events are dispatched by dedicated services. Audit logs and metrics are streamed to an append-only store and analytics pipelines. Backups and KMS-backed encryption protect persisted data; regional deployments can restrict BoardStore/Assets to required data residency zones.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"End Users Web/Desktop/Mobile\",\n        \"External Services (OAuth IdPs, Integrations)\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS 1.2+/HTTPS\",\n        \"CSP/SameSite/XSS protections\",\n        \"Rate limiting on public endpoints\",\n        \"Client certificate or PKI for native updates when applicable\"\n      ]\n    },\n    {\n      \"name\": \"Edge/DMZ\",\n      \"components\": [\n        \"CDN\",\n        \"Auth & API Gateway\",\n        \"Realtime Gateway WS/RTC\"\n      ],\n      \"boundary_type\": \"DMZ\",\n      \"security_controls\": [\n        \"Web Application Firewall (WAF)\",\n        \"DDoS mitigation\",\n        \"IP allowlisting/rate limiting\",\n        \"Strict token validation and short-lived session tokens\",\n        \"Input validation and request sanitization\"\n      ]\n    },\n    {\n      \"name\": \"Internal App Network\",\n      \"components\": [\n        \"Core API Services\",\n        \"Realtime Sync Service\",\n        \"Media Service\",\n        \"Integration Service\",\n        \"Notification Service\",\n        \"Analytics Service\",\n        \"Cache & PubSub\"\n      ],\n      \"boundary_type\": \"Internal/Trusted\",\n      \"security_controls\": [\n        \"Private VPC or network segmentation\",\n        \"Mutual TLS between services\",\n        \"Service-level RBAC and IAM\",\n        \"Network ACLs and security groups\",\n        \"Monitoring/IDS and auditing\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage Tier\",\n      \"components\": [\n        \"User Accounts & RBAC DB\",\n        \"Boards Object Store & Versioning\",\n        \"Asset Storage\",\n        \"Audit Logs & Metrics Store\"\n      ],\n      \"boundary_type\": \"Database/Storage Tier\",\n      \"security_controls\": [\n        \"Encryption at rest (KMS)\",\n        \"Encryption in transit\",\n        \"Database access controls and least privilege\",\n        \"WORM/tamper-evident logs\",\n        \"Backups, periodic restores, and retention policies\"\n      ]\n    },\n    {\n      \"name\": \"Third-Party Services\",\n      \"components\": [\n        \"SSO/OAuth Providers\",\n        \"Cloud Storage Providers\",\n        \"Productivity & Communication APIs\",\n        \"VirusScan\"\n      ],\n      \"boundary_type\": \"External Trusted\",\n      \"security_controls\": [\n        \"Scoped OAuth with least-privilege scopes\",\n        \"Secure token storage and rotation\",\n        \"Contractual DPAs and vendor assessments\",\n        \"Validation/sanitization of incoming data from providers\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points include: 1) Client UIs (web/native) exposing XSS, CSRF and supply-chain risks \u2014 mitigations: CSP, SameSite cookies, code signing and secure update channels (Risk: Medium). 2) Auth & API Gateway (login, SSO/OAuth flows, token endpoints) \u2014 high-value target for credential stuffing, token theft and SAML/OIDC misconfiguration (Risk: High). 3) Realtime endpoints (WebSocket/RTC) for low-latency sync and media \u2014 exposed to resource exhaustion, message injection and reconnection amplification (Risk: High). 4) Public REST/GraphQL APIs and Public Integrations/Webhooks \u2014 rate limit, auth scope misuse, and data exfiltration risks (Risk: High). 5) File upload and embed handling \u2014 malware, malicious file types and SSRF/XSS via embedded content (Risk: High). 6) Third-party integrations and OAuth tokens \u2014 token leakage and excessive scopes can enable lateral access (Risk: High). 7) CDN and cached assets \u2014 cache poisoning and stale content risks (Risk: Medium). 8) Admin/Analytics dashboards and export features \u2014 privileged access paths requiring strict RBAC and audit logging to prevent data exfiltration (Risk: High). Recommended mitigations: strong MFA/SSO hygiene, short-lived tokens, least-privilege OAuth scopes, content sanitization, virus scanning and sandboxed processing for files, WAF, rate limiting, monitoring/alerting, tamper-evident audit logs, region-aware data partitioning and periodic pentesting.\"\n}",
+  "pydantic": {
+    "architecture_summary": "A cloud-hosted, multi-region collaborative whiteboarding platform composed of client frontends (web, desktop, mobile) served via CDN and an API/Realtime gateway. An Auth & API Gateway handles authentication (email/SSO/OAuth/MFA), authorization and request routing to backend application services that include Core API, Realtime Sync (CRDT/OT), Media/AV handling, Integrations, Notifications and Analytics. Persistent storage includes relational/document DBs for users and metadata, object storage for boards/assets and an append-only audit/log store; caching and pub/sub support low-latency sync and presence. External integrations (SSO providers, cloud storage, productivity and communication tools, virus scanning) are used via secure OAuth flows. The layers interact over TLS with RBAC and tenancy controls, supporting versioning, file management, exports and analytics while enabling horizontal scaling for enterprise workloads.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\\ngraph TB\\nU[End Users Web/Desktop/Mobile]\\nsubgraph \"Edge & Auth\"\\n  CDN[CDN & Static Hosting]\\n  GW[Auth & API Gateway]\\n  RTG[Realtime Gateway WS/RTC]\\nend\\nsubgraph \"Frontend Layer\"\\n  FE[Web App SPA & Native Clients]\\nend\\nsubgraph \"Application Services\"\\n  API[Core API Services REST/GraphQL]\\n  RT[Realtime Sync Service CRDT/OT]\\n  Media[Media Service Audio/Video]\\n  Integrations[Integration & Webhook Service]\\n  Notifications[Notification Service]\\n  Analytics[Analytics & Admin API]\\nend\\nsubgraph \"Data Layer\"\\n  UserDB[User Accounts & RBAC DB]\\n  BoardStore[Boards Object Store & Versioning]\\n  Assets[Asset Storage & CDN]\\n  Cache[In-Memory Cache & PubSub]\\n  Logs[Audit Logs & Metrics Store]\\nend\\nsubgraph \"External Services\"\\n  IDP[SSO/OAuth Providers]\\n  CloudStorage[GoogleDrive/Dropbox/OneDrive]\\n  Productivity[Jira/Asana/Trello]\\n  Comm[Slack/MSTeams]\\n  VirusScan[Malware/Virus Scanner]\\nend\\nU --> CDN\\nCDN --> FE\\nFE --> GW\\nFE --> RTG\\nGW --> API\\nRTG --> RT\\nAPI --> UserDB\\nAPI --> BoardStore\\nAPI --> Assets\\nAPI --> Cache\\nRT --> Cache\\nRT --> BoardStore\\nMedia --> Assets\\nMedia --> API\\nAPI --> Integrations\\nAPI --> Notifications\\nAPI --> Analytics\\nIntegrations --> CloudStorage\\nIntegrations --> Productivity\\nNotifications --> Comm\\nAssets --> VirusScan\\nGW --> IDP\\nUserDB --> Logs\\nBoardStore --> Logs\\nAnalytics --> Logs\\nCache --> BoardStore",
+    "components": [
+      {
+        "name": "Frontend Layer",
+        "responsibility": "Deliver UI/UX for web, desktop and mobile clients including rendering infinite canvas, input capture, offline caching and client-side widgets; forward user events to gateways and handle presence display and local undo/redo.",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "CDN",
+          "Auth Gateway"
+        ],
+        "data_handled": [
+          "UI state / ephemeral presence",
+          "User input events",
+          "Local cached board deltas",
+          "Telemetry (opt-in)"
+        ]
+      },
+      {
+        "name": "Edge & Auth",
+        "responsibility": "Terminate TLS, serve static assets via CDN, handle authentication/SSO/OAuth/MFA flows, API authentication/token validation, rate limiting, WAF and route realtime connections to sync services.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Identity Providers (Google/Microsoft/SAML IdPs)",
+          "WAF/DDoS providers"
+        ],
+        "data_handled": [
+          "Auth tokens/credentials",
+          "Session metadata",
+          "Ingress request logs"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Host core business logic: Core API for boards/users/permissions, Realtime Sync service for low-latency collaboration (CRDT/OT), Media service for audio/video processing, Integrations/webhooks, Notifications and Analytics.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Cloud media/RTC SDKs",
+          "Third-party integrations (Slack/Jira)",
+          "Email providers",
+          "Push notification services"
+        ],
+        "data_handled": [
+          "Board deltas/operations",
+          "Comments/chat/messages",
+          "Meeting/session metadata",
+          "Integration tokens/metadata",
+          "Notification preferences"
+        ]
+      },
+      {
+        "name": "Data Layer",
+        "responsibility": "Durable storage of user accounts, RBAC, board content and version history, binary assets, caches for fast reads, and tamper-evident audit logs and metrics; support backups and regional residency.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Cloud object storage",
+          "Managed databases",
+          "KMS for encryption"
+        ],
+        "data_handled": [
+          "User PII and credentials (hashed)",
+          "Board content and version history",
+          "Uploaded assets (images/docs)",
+          "Audit logs and telemetry",
+          "Access control metadata"
+        ]
+      },
+      {
+        "name": "External Services",
+        "responsibility": "Third-party identity providers, cloud storage providers, productivity and communication tools, and security tooling used for malware scanning and optional media processing; used for integrations and off-platform storage/identity.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "SSO/OAuth providers (Google/Microsoft/SAML IdPs)",
+          "Cloud storage (GoogleDrive/Dropbox/OneDrive)",
+          "Productivity APIs (Jira/Asana/Trello)",
+          "Comm platforms (Slack/MSTeams)",
+          "Virus scanning/AV services"
+        ],
+        "data_handled": [
+          "OAuth tokens and integration metadata",
+          "External file links and content metadata",
+          "Third-party webhook events"
+        ]
+      }
+    ],
+    "data_flow_description": "Users connect from web or native clients through CDN to the Auth/API Gateway which authenticates requests (email/SSO/OAuth/MFA). UI actions are sent to Core API for CRUD operations and to the Realtime Sync service for low-latency collaborative operations; realtime deltas are published via Pub/Sub/Cache and persisted to BoardStore for durability and versioning. Uploaded assets are scanned by VirusScan, stored in object storage and served via CDN. Notifications and integration events are dispatched by dedicated services. Audit logs and metrics are streamed to an append-only store and analytics pipelines. Backups and KMS-backed encryption protect persisted data; regional deployments can restrict BoardStore/Assets to required data residency zones.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "End Users Web/Desktop/Mobile",
+          "External Services (OAuth IdPs, Integrations)"
+        ],
+        "boundary_type": "Untrusted",
+        "security_controls": [
+          "TLS 1.2+/HTTPS",
+          "CSP/SameSite/XSS protections",
+          "Rate limiting on public endpoints",
+          "Client certificate or PKI for native updates when applicable"
+        ]
+      },
+      {
+        "name": "Edge/DMZ",
+        "components": [
+          "CDN",
+          "Auth & API Gateway",
+          "Realtime Gateway WS/RTC"
+        ],
+        "boundary_type": "DMZ",
+        "security_controls": [
+          "Web Application Firewall (WAF)",
+          "DDoS mitigation",
+          "IP allowlisting/rate limiting",
+          "Strict token validation and short-lived session tokens",
+          "Input validation and request sanitization"
+        ]
+      },
+      {
+        "name": "Internal App Network",
+        "components": [
+          "Core API Services",
+          "Realtime Sync Service",
+          "Media Service",
+          "Integration Service",
+          "Notification Service",
+          "Analytics Service",
+          "Cache & PubSub"
+        ],
+        "boundary_type": "Internal/Trusted",
+        "security_controls": [
+          "Private VPC or network segmentation",
+          "Mutual TLS between services",
+          "Service-level RBAC and IAM",
+          "Network ACLs and security groups",
+          "Monitoring/IDS and auditing"
+        ]
+      },
+      {
+        "name": "Data Storage Tier",
+        "components": [
+          "User Accounts & RBAC DB",
+          "Boards Object Store & Versioning",
+          "Asset Storage",
+          "Audit Logs & Metrics Store"
+        ],
+        "boundary_type": "Database/Storage Tier",
+        "security_controls": [
+          "Encryption at rest (KMS)",
+          "Encryption in transit",
+          "Database access controls and least privilege",
+          "WORM/tamper-evident logs",
+          "Backups, periodic restores, and retention policies"
+        ]
+      },
+      {
+        "name": "Third-Party Services",
+        "components": [
+          "SSO/OAuth Providers",
+          "Cloud Storage Providers",
+          "Productivity & Communication APIs",
+          "VirusScan"
+        ],
+        "boundary_type": "External Trusted",
+        "security_controls": [
+          "Scoped OAuth with least-privilege scopes",
+          "Secure token storage and rotation",
+          "Contractual DPAs and vendor assessments",
+          "Validation/sanitization of incoming data from providers"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Primary entry points include: 1) Client UIs (web/native) exposing XSS, CSRF and supply-chain risks \u2014 mitigations: CSP, SameSite cookies, code signing and secure update channels (Risk: Medium). 2) Auth & API Gateway (login, SSO/OAuth flows, token endpoints) \u2014 high-value target for credential stuffing, token theft and SAML/OIDC misconfiguration (Risk: High). 3) Realtime endpoints (WebSocket/RTC) for low-latency sync and media \u2014 exposed to resource exhaustion, message injection and reconnection amplification (Risk: High). 4) Public REST/GraphQL APIs and Public Integrations/Webhooks \u2014 rate limit, auth scope misuse, and data exfiltration risks (Risk: High). 5) File upload and embed handling \u2014 malware, malicious file types and SSRF/XSS via embedded content (Risk: High). 6) Third-party integrations and OAuth tokens \u2014 token leakage and excessive scopes can enable lateral access (Risk: High). 7) CDN and cached assets \u2014 cache poisoning and stale content risks (Risk: Medium). 8) Admin/Analytics dashboards and export features \u2014 privileged access paths requiring strict RBAC and audit logging to prevent data exfiltration (Risk: High). Recommended mitigations: strong MFA/SSO hygiene, short-lived tokens, least-privilege OAuth scopes, content sanitization, virus scanning and sandboxed processing for files, WAF, rate limiting, monitoring/alerting, tamper-evident audit logs, region-aware data partitioning and periodic pentesting."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A cloud-hosted collaborative whiteboarding platform enabling distributed teams to visually brainstorm, design, and plan projects in real time across web and native clients. The platform provides multi-user boards with an infinite canvas, drawing and layout tools, templates, real-time syncing (live cursors, in-board chat, comments, audio/video integration), granular role-based access and sharing, integrations with productivity and storage services, file and version management, audit logging, notifications, and administrative analytics \u2014 all designed to scale for enterprise use with strong security, compliance, and operational controls.\",\n  \"high_level_requirements\": [\n    \"User registration and login with email/password, SSO (SAML/OIDC), OAuth (Google/Microsoft) and optional multi-factor authentication\",\n    \"Team and workspace management with role-based access controls (Owner, Admin, Member, Guest)\",\n    \"User profile management and organization-level settings\",\n    \"Invitation and onboarding flow for adding collaborators to teams and boards\",\n    \"Create, edit, duplicate, and delete boards with organization and project hierarchies\",\n    \"Board sharing controls: private, team-only, public link with permissions (view/comment/edit)\",\n    \"Board versioning, undo/redo, and change history with ability to restore prior versions\",\n    \"Board templates library for common use cases\",\n    \"Real-time collaborative editing with low-latency synchronization and conflict resolution\",\n    \"Presence indicators and live cursors for collaborators\",\n    \"In-board chat, commenting, @mentions and threaded discussions\",\n    \"Audio/video conferencing integration during sessions\",\n    \"Infinite canvas with pan/zoom and high-performance rendering\",\n    \"Drawing and layout tools: shapes, connectors, sticky notes, text boxes, grouping, alignment, smart connectors\",\n    \"Embed external content (images, documents, videos, links) and support interactive widgets (voting, timers)\",\n    \"File upload and asset management with common format support (PNG, JPG, PDF, DOCX, etc.)\",\n    \"Export boards as images or PDFs and support version control for uploaded files\",\n    \"Integrations with productivity tools (Jira, Asana, Trello), cloud storage (Google Drive, Dropbox, OneDrive), and communication platforms (Slack, Teams)\",\n    \"Public API for custom integrations and automation with secure token management\",\n    \"Fine-grained access control and ownership transfer for boards\",\n    \"Audit logging for user activity, changes, and administrative actions\",\n    \"Configurable notifications (in-app, email) and integration-driven notifications (Slack, Teams)\",\n    \"Performance and scalability goals: horizontal scaling, efficient sync, conflict resolution, and large-board performance\",\n    \"Reporting and analytics (usage, activity logs, license/admin dashboards) with export capability\",\n    \"Operational capabilities: backups, restore, monitoring, rate limiting, and DDoS mitigation\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"User registration and authentication supporting email/password, SSO (SAML/OIDC), OAuth with Google/Microsoft, and optional multi-factor authentication (MFA).\",\n      \"business_category\": \"Authentication\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Authentication is the primary gatekeeper for access to sensitive boards and organization data. Supporting SSO/OAuth simplifies enterprise adoption, while MFA reduces account compromise risk.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Team and workspace creation and management, with role-based permissions (Owner, Admin, Member, Guest) and ability to configure organization-wide policies.\",\n      \"business_category\": \"User Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Teams and workspaces partition data and determine access. Clear RBAC is required to enforce least privilege and to support multi-tenant enterprise governance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"User profiles with editable attributes and organization-level settings for privacy and sharing defaults.\",\n      \"business_category\": \"User Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Profiles personalize collaboration and are used for presence and audit trails. Organization-level defaults ease administration and compliance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Invitation system to invite users to teams and boards via email with link expiration, revocation, and invitation auditing.\",\n      \"business_category\": \"User Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Invitations are an attack surface for unauthorized access; expiration and revocation reduce risk and auditing supports investigations.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"Create, edit, duplicate, and delete boards with resource lifecycle management and soft-delete/retention policies.\",\n      \"business_category\": \"Board Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Boards are the primary data containers; lifecycle controls and retention support data recovery, compliance, and reduce accidental loss.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"Organize boards within projects and teams and provide search and tagging for discoverability.\",\n      \"business_category\": \"Data Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Organization and discoverability improve productivity; tags and metadata must be protected but are less sensitive than board content.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Manage sharing options per board: private, team-only, or public link. Public links should support configurable permissions and optional password protection and expiration.\",\n      \"business_category\": \"Access Control\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Flexible sharing is core to collaboration but must be constrained to prevent data leakage; configurable controls mitigate over-sharing risks.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Version history, undo/redo capabilities and ability to view and restore historical board states with metadata about authors and timestamps.\",\n      \"business_category\": \"Data Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Versioning supports collaboration, auditing, and recovery from accidental or malicious changes; historical data increases retention/compliance obligations.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Board templates library for common workflows (brainstorming, retrospectives, UX flows) and ability for organizations to create private template sets.\",\n      \"business_category\": \"User Experience\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Templates speed adoption and standardize methods; private org templates must be access-controlled to avoid leakage of internal processes.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Real-time collaboration with multiple users editing simultaneously, efficient synchronization (e.g., OT or CRDT), conflict resolution, and low-latency updates.\",\n      \"business_category\": \"Collaboration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Core product differentiator; correctness and low latency are essential for usability. Concurrency mechanisms must preserve integrity and avoid data corruption.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Presence indicators and live cursors with configurable privacy controls (e.g., anonymize presence or disable live cursors).\",\n      \"business_category\": \"Collaboration\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Presence enhances collaboration but may surface user activity. Privacy controls are needed to comply with privacy expectations and organizational policies.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"In-board chat, commenting, threaded discussions, and @mentions with notification triggers and opt-out preferences.\",\n      \"business_category\": \"Communication\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Communication features reduce context switching. Message content may include sensitive info and must be retained/audited per policy.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"Audio/video conferencing integration (via third-party SDKs or built-in) with secure media handling, meeting access controls, and ephemeral session keys.\",\n      \"business_category\": \"Collaboration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Integrated communications improve workflow; media streams and recordings can expose sensitive information and require secure handling and consent management.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Infinite canvas with smooth pan/zoom and high-performance rendering across devices, including progressive loading for very large boards.\",\n      \"business_category\": \"User Experience\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Usability requirement for creative workflows; performance features interact with sync and storage but are not high-sensitivity by themselves.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"Drawing and layout tools: shapes, lines, connectors, sticky notes, text boxes, grouping, alignment, and smart connectors with accessibility considerations.\",\n      \"business_category\": \"Whiteboard Tools\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Core feature set for whiteboarding; tool actions generate content that must be persisted and versioned.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"Embedding external content (images, documents, videos, links) with validation, sanitization, and content security policies to prevent XSS and remote data exfiltration.\",\n      \"business_category\": \"File Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Embedded content often comes from external sources and can be a vector for malware, XSS, CSRF, or privacy leaks; validation and CSP reduce risk.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"Interactive widgets (voting, timers) that run client-side safely and adhere to permission checks and data privacy constraints.\",\n      \"business_category\": \"User Experience\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Widgets enhance collaboration but must respect permissions and not expose aggregate data beyond intended audiences.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"File upload and asset management with support for common formats (PNG, JPG, PDF, DOCX), virus/malware scanning, file type validation, size quotas and version control for uploaded files.\",\n      \"business_category\": \"File Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"User-supplied files can contain malware or sensitive data; scanning, validation and quotas are required to mitigate risks and manage storage.\"\n    },\n    {\n      \"requirement_id\": \"REQ-019\",\n      \"requirement_text\": \"Export boards as raster images or PDFs with permissions enforcement; exports should be logged and optionally watermarked for sensitive content.\",\n      \"business_category\": \"Data Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Exporting data may lead to exfiltration; logging and watermarking deter misuse and support audits.\"\n    },\n    {\n      \"requirement_id\": \"REQ-020\",\n      \"requirement_text\": \"Integrations with productivity tools (Jira, Asana, Trello), cloud storages (Google Drive, Dropbox, OneDrive), and communications (Slack, Teams) using secure OAuth flows and least-privilege scopes.\",\n      \"business_category\": \"Integrations\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Integrations increase productivity but extend trust boundaries; secure token handling and scoped permissions prevent lateral access and leakage.\"\n    },\n    {\n      \"requirement_id\": \"REQ-021\",\n      \"requirement_text\": \"Public API for custom integrations and automation with authentication (OAuth2 or API keys), rate limiting, scope-limited tokens, and detailed API usage logging.\",\n      \"business_category\": \"Integrations\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"APIs enable extensibility but present an attack surface; auth, throttling, and auditing controls are required for platform security and abuse prevention.\"\n    },\n    {\n      \"requirement_id\": \"REQ-022\",\n      \"requirement_text\": \"Fine-grained board access controls: view, comment, edit, owner, with ability to transfer ownership and to audit permission changes.\",\n      \"business_category\": \"Access Control\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Granular permissions are needed to reflect real-world collaboration boundaries and for compliance with data governance policies.\"\n    },\n    {\n      \"requirement_id\": \"REQ-023\",\n      \"requirement_text\": \"Audit logging for authentication events, permission changes, board edits (high-level), file uploads/downloads, exports, and admin actions; logs must be tamper-evident and exportable.\",\n      \"business_category\": \"Security/Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Comprehensive logs enable incident response, compliance reporting, and forensic investigations; tamper-evidence preserves trustworthiness of logs.\"\n    },\n    {\n      \"requirement_id\": \"REQ-024\",\n      \"requirement_text\": \"Configurable notifications (in-app, email) for mentions, comments and board changes with user preferences and optional webhook/channel integrations (Slack, Teams).\",\n      \"business_category\": \"Notifications\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Notifications drive engagement; user control over preferences prevents unwanted disclosures and notification fatigue.\"\n    },\n    {\n      \"requirement_id\": \"REQ-025\",\n      \"requirement_text\": \"Performance and scalability requirements: horizontal scaling of real-time servers, efficient conflict resolution for large boards, sub-second latency targets for updates in typical network conditions, and graceful degradation for poor networks.\",\n      \"business_category\": \"Performance & Scalability\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Scalability ensures product viability for enterprise customers; implementation decisions (sharding, partitioning) affect security and consistency guarantees.\"\n    },\n    {\n      \"requirement_id\": \"REQ-026\",\n      \"requirement_text\": \"Reporting and analytics: per-team and per-organization usage metrics, active boards/users/sessions, exportable activity logs, and admin dashboards for license and user management with role-limited access.\",\n      \"business_category\": \"Analytics & Administration\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Admins need visibility to manage licenses and usage; analytics contain metadata that can be sensitive and must be access-controlled.\"\n    },\n    {\n      \"requirement_id\": \"REQ-027\",\n      \"requirement_text\": \"Operational controls: encrypted storage (at-rest and in-transit), key management, backups and point-in-time restore, monitoring and alerting, rate limiting, WAF/DDoS protections, and incident response procedures.\",\n      \"business_category\": \"Operations & Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Operational controls protect availability, confidentiality and integrity of customer data and support compliance with enterprise security expectations.\"\n    },\n    {\n      \"requirement_id\": \"REQ-028\",\n      \"requirement_text\": \"Privacy and data residency controls: per-organization options for region-based data storage, retention policies, data export/deletion (including 'right to be forgotten'), and consent management.\",\n      \"business_category\": \"Security/Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Different customers require data residency, retention and deletion guarantees for legal/regulatory compliance (e.g., GDPR).\"\n    },\n    {\n      \"requirement_id\": \"REQ-029\",\n      \"requirement_text\": \"Client software distribution model for web, desktop and mobile with secure automatic update mechanisms, code signing, and telemetry opt-in controls.\",\n      \"business_category\": \"Client Platforms\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Secure distribution reduces risk of supply-chain attacks and ensures consistent, patched clients; telemetry must respect privacy choices.\"\n    },\n    {\n      \"requirement_id\": \"REQ-030\",\n      \"requirement_text\": \"Content moderation and compliance tooling: ability to flag/report boards or content, admin review workflows, and optional automated scanning for offensive/sensitive content.\",\n      \"business_category\": \"Governance\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Moderation protects community standards and limits legal exposure; automated and manual workflows balance scale and accuracy.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulations and compliance obligations include GDPR (EU personal data protection and data subject rights), CCPA/CPRA (California consumer privacy), SOC 2/ISO 27001 (security and operational controls for enterprise customers), and potential HIPAA obligations if platform is used to store protected health information (requires BAA and appropriate safeguards). If payments or billing data are processed directly, PCI-DSS requirements apply. Additional regional data residency laws (e.g., EU data localization, APAC variants) and workplace privacy laws may apply depending on customers. Controls should include encryption in transit and at rest, robust access controls and RBAC, retention and deletion workflows to satisfy data subject requests, comprehensive audit logging, incident response and breach notification processes, secure third-party vendor assessments for integrations and SDKs, and contractual measures (BAA, DPA) when needed.\",\n  \"assumptions\": [\n    \"System will be cloud-hosted with multi-region deployment options for data residency.\",\n    \"Clients use modern browsers (Chrome, Edge, Firefox, Safari) and supported native desktop/mobile runtimes.\",\n    \"Realtime synchronization will use WebSockets/RTC or comparable protocols (and may leverage OT or CRDT algorithms).\",\n    \"Third-party integration providers (Google, Microsoft, Slack, Jira, etc.) support secure OAuth flows and provide necessary APIs.\",\n    \"Enterprise customers will desire SSO/SAML support and centralized admin controls.\",\n    \"Customers may require compliance certifications (e.g., SOC 2) and contractual agreements (DPA, BAA) depending on industry use.\",\n    \"Users have intermittent network connectivity; offline editing support may be limited or offered with constraints.\",\n    \"Recording/archiving of audio/video streams will be optional and subject to separate consent and retention controls.\"\n  ],\n  \"constraints\": [\n    \"Must integrate with multiple third-party authentication providers and support enterprise SSO (SAML/OIDC), which constrains identity design.\",\n    \"Real-time sync and low-latency requirements impose constraints on infrastructure (stateful servers or managed real-time services) and may limit geographic/regional architectures.\",\n    \"Supporting infinite canvas and large boards increases storage and compute costs and requires sharding/tiling strategies and efficient diff/patch formats.\",\n    \"Mobile and desktop native clients impose platform-specific limitations (memory, CPU, background execution) that affect feature parity and caching strategies.\",\n    \"Third-party SDKs for audio/video may have licensing and regional availability constraints and bring additional security/privilege requirements.\",\n    \"To satisfy data residency/regulatory requirements, need conditional data partitioning by region which complicates global features like public link sharing across regions.\",\n    \"Integration with external cloud storage requires handling of external OAuth tokens, refresh tokens and secure token storage, introducing additional compliance scope.\",\n    \"Retention, deletion, and right-to-be-forgotten features may conflict with audit and export requirements and require careful design of logical vs physical deletion.\",\n    \"High availability, backup, and disaster recovery SLAs will increase operational cost and complexity (cross-region replication, failover strategies).\",\n    \"Supporting export and preview of many file formats (DOCX, PDF) requires server-side processing which increases attack surface and must be sandboxed.\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A cloud-hosted collaborative whiteboarding platform enabling distributed teams to visually brainstorm, design, and plan projects in real time across web and native clients. The platform provides multi-user boards with an infinite canvas, drawing and layout tools, templates, real-time syncing (live cursors, in-board chat, comments, audio/video integration), granular role-based access and sharing, integrations with productivity and storage services, file and version management, audit logging, notifications, and administrative analytics \u2014 all designed to scale for enterprise use with strong security, compliance, and operational controls.",
+        "high_level_requirements": [
+          "User registration and login with email/password, SSO (SAML/OIDC), OAuth (Google/Microsoft) and optional multi-factor authentication",
+          "Team and workspace management with role-based access controls (Owner, Admin, Member, Guest)",
+          "User profile management and organization-level settings",
+          "Invitation and onboarding flow for adding collaborators to teams and boards",
+          "Create, edit, duplicate, and delete boards with organization and project hierarchies",
+          "Board sharing controls: private, team-only, public link with permissions (view/comment/edit)",
+          "Board versioning, undo/redo, and change history with ability to restore prior versions",
+          "Board templates library for common use cases",
+          "Real-time collaborative editing with low-latency synchronization and conflict resolution",
+          "Presence indicators and live cursors for collaborators",
+          "In-board chat, commenting, @mentions and threaded discussions",
+          "Audio/video conferencing integration during sessions",
+          "Infinite canvas with pan/zoom and high-performance rendering",
+          "Drawing and layout tools: shapes, connectors, sticky notes, text boxes, grouping, alignment, smart connectors",
+          "Embed external content (images, documents, videos, links) and support interactive widgets (voting, timers)",
+          "File upload and asset management with common format support (PNG, JPG, PDF, DOCX, etc.)",
+          "Export boards as images or PDFs and support version control for uploaded files",
+          "Integrations with productivity tools (Jira, Asana, Trello), cloud storage (Google Drive, Dropbox, OneDrive), and communication platforms (Slack, Teams)",
+          "Public API for custom integrations and automation with secure token management",
+          "Fine-grained access control and ownership transfer for boards",
+          "Audit logging for user activity, changes, and administrative actions",
+          "Configurable notifications (in-app, email) and integration-driven notifications (Slack, Teams)",
+          "Performance and scalability goals: horizontal scaling, efficient sync, conflict resolution, and large-board performance",
+          "Reporting and analytics (usage, activity logs, license/admin dashboards) with export capability",
+          "Operational capabilities: backups, restore, monitoring, rate limiting, and DDoS mitigation"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "User registration and authentication supporting email/password, SSO (SAML/OIDC), OAuth with Google/Microsoft, and optional multi-factor authentication (MFA).",
+            "business_category": "Authentication",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Authentication is the primary gatekeeper for access to sensitive boards and organization data. Supporting SSO/OAuth simplifies enterprise adoption, while MFA reduces account compromise risk."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Team and workspace creation and management, with role-based permissions (Owner, Admin, Member, Guest) and ability to configure organization-wide policies.",
+            "business_category": "User Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Teams and workspaces partition data and determine access. Clear RBAC is required to enforce least privilege and to support multi-tenant enterprise governance."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "User profiles with editable attributes and organization-level settings for privacy and sharing defaults.",
+            "business_category": "User Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Profiles personalize collaboration and are used for presence and audit trails. Organization-level defaults ease administration and compliance."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Invitation system to invite users to teams and boards via email with link expiration, revocation, and invitation auditing.",
+            "business_category": "User Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Invitations are an attack surface for unauthorized access; expiration and revocation reduce risk and auditing supports investigations."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "Create, edit, duplicate, and delete boards with resource lifecycle management and soft-delete/retention policies.",
+            "business_category": "Board Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Boards are the primary data containers; lifecycle controls and retention support data recovery, compliance, and reduce accidental loss."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "Organize boards within projects and teams and provide search and tagging for discoverability.",
+            "business_category": "Data Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Organization and discoverability improve productivity; tags and metadata must be protected but are less sensitive than board content."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Manage sharing options per board: private, team-only, or public link. Public links should support configurable permissions and optional password protection and expiration.",
+            "business_category": "Access Control",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Flexible sharing is core to collaboration but must be constrained to prevent data leakage; configurable controls mitigate over-sharing risks."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Version history, undo/redo capabilities and ability to view and restore historical board states with metadata about authors and timestamps.",
+            "business_category": "Data Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Versioning supports collaboration, auditing, and recovery from accidental or malicious changes; historical data increases retention/compliance obligations."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Board templates library for common workflows (brainstorming, retrospectives, UX flows) and ability for organizations to create private template sets.",
+            "business_category": "User Experience",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Templates speed adoption and standardize methods; private org templates must be access-controlled to avoid leakage of internal processes."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Real-time collaboration with multiple users editing simultaneously, efficient synchronization (e.g., OT or CRDT), conflict resolution, and low-latency updates.",
+            "business_category": "Collaboration",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Core product differentiator; correctness and low latency are essential for usability. Concurrency mechanisms must preserve integrity and avoid data corruption."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Presence indicators and live cursors with configurable privacy controls (e.g., anonymize presence or disable live cursors).",
+            "business_category": "Collaboration",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Presence enhances collaboration but may surface user activity. Privacy controls are needed to comply with privacy expectations and organizational policies."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "In-board chat, commenting, threaded discussions, and @mentions with notification triggers and opt-out preferences.",
+            "business_category": "Communication",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Communication features reduce context switching. Message content may include sensitive info and must be retained/audited per policy."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "Audio/video conferencing integration (via third-party SDKs or built-in) with secure media handling, meeting access controls, and ephemeral session keys.",
+            "business_category": "Collaboration",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Integrated communications improve workflow; media streams and recordings can expose sensitive information and require secure handling and consent management."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Infinite canvas with smooth pan/zoom and high-performance rendering across devices, including progressive loading for very large boards.",
+            "business_category": "User Experience",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Usability requirement for creative workflows; performance features interact with sync and storage but are not high-sensitivity by themselves."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "Drawing and layout tools: shapes, lines, connectors, sticky notes, text boxes, grouping, alignment, and smart connectors with accessibility considerations.",
+            "business_category": "Whiteboard Tools",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Core feature set for whiteboarding; tool actions generate content that must be persisted and versioned."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "Embedding external content (images, documents, videos, links) with validation, sanitization, and content security policies to prevent XSS and remote data exfiltration.",
+            "business_category": "File Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Embedded content often comes from external sources and can be a vector for malware, XSS, CSRF, or privacy leaks; validation and CSP reduce risk."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "Interactive widgets (voting, timers) that run client-side safely and adhere to permission checks and data privacy constraints.",
+            "business_category": "User Experience",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Widgets enhance collaboration but must respect permissions and not expose aggregate data beyond intended audiences."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "File upload and asset management with support for common formats (PNG, JPG, PDF, DOCX), virus/malware scanning, file type validation, size quotas and version control for uploaded files.",
+            "business_category": "File Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "User-supplied files can contain malware or sensitive data; scanning, validation and quotas are required to mitigate risks and manage storage."
+          },
+          {
+            "requirement_id": "REQ-019",
+            "requirement_text": "Export boards as raster images or PDFs with permissions enforcement; exports should be logged and optionally watermarked for sensitive content.",
+            "business_category": "Data Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Exporting data may lead to exfiltration; logging and watermarking deter misuse and support audits."
+          },
+          {
+            "requirement_id": "REQ-020",
+            "requirement_text": "Integrations with productivity tools (Jira, Asana, Trello), cloud storages (Google Drive, Dropbox, OneDrive), and communications (Slack, Teams) using secure OAuth flows and least-privilege scopes.",
+            "business_category": "Integrations",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Integrations increase productivity but extend trust boundaries; secure token handling and scoped permissions prevent lateral access and leakage."
+          },
+          {
+            "requirement_id": "REQ-021",
+            "requirement_text": "Public API for custom integrations and automation with authentication (OAuth2 or API keys), rate limiting, scope-limited tokens, and detailed API usage logging.",
+            "business_category": "Integrations",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "APIs enable extensibility but present an attack surface; auth, throttling, and auditing controls are required for platform security and abuse prevention."
+          },
+          {
+            "requirement_id": "REQ-022",
+            "requirement_text": "Fine-grained board access controls: view, comment, edit, owner, with ability to transfer ownership and to audit permission changes.",
+            "business_category": "Access Control",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Granular permissions are needed to reflect real-world collaboration boundaries and for compliance with data governance policies."
+          },
+          {
+            "requirement_id": "REQ-023",
+            "requirement_text": "Audit logging for authentication events, permission changes, board edits (high-level), file uploads/downloads, exports, and admin actions; logs must be tamper-evident and exportable.",
+            "business_category": "Security/Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Comprehensive logs enable incident response, compliance reporting, and forensic investigations; tamper-evidence preserves trustworthiness of logs."
+          },
+          {
+            "requirement_id": "REQ-024",
+            "requirement_text": "Configurable notifications (in-app, email) for mentions, comments and board changes with user preferences and optional webhook/channel integrations (Slack, Teams).",
+            "business_category": "Notifications",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Notifications drive engagement; user control over preferences prevents unwanted disclosures and notification fatigue."
+          },
+          {
+            "requirement_id": "REQ-025",
+            "requirement_text": "Performance and scalability requirements: horizontal scaling of real-time servers, efficient conflict resolution for large boards, sub-second latency targets for updates in typical network conditions, and graceful degradation for poor networks.",
+            "business_category": "Performance & Scalability",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Scalability ensures product viability for enterprise customers; implementation decisions (sharding, partitioning) affect security and consistency guarantees."
+          },
+          {
+            "requirement_id": "REQ-026",
+            "requirement_text": "Reporting and analytics: per-team and per-organization usage metrics, active boards/users/sessions, exportable activity logs, and admin dashboards for license and user management with role-limited access.",
+            "business_category": "Analytics & Administration",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Admins need visibility to manage licenses and usage; analytics contain metadata that can be sensitive and must be access-controlled."
+          },
+          {
+            "requirement_id": "REQ-027",
+            "requirement_text": "Operational controls: encrypted storage (at-rest and in-transit), key management, backups and point-in-time restore, monitoring and alerting, rate limiting, WAF/DDoS protections, and incident response procedures.",
+            "business_category": "Operations & Security",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Operational controls protect availability, confidentiality and integrity of customer data and support compliance with enterprise security expectations."
+          },
+          {
+            "requirement_id": "REQ-028",
+            "requirement_text": "Privacy and data residency controls: per-organization options for region-based data storage, retention policies, data export/deletion (including 'right to be forgotten'), and consent management.",
+            "business_category": "Security/Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Different customers require data residency, retention and deletion guarantees for legal/regulatory compliance (e.g., GDPR)."
+          },
+          {
+            "requirement_id": "REQ-029",
+            "requirement_text": "Client software distribution model for web, desktop and mobile with secure automatic update mechanisms, code signing, and telemetry opt-in controls.",
+            "business_category": "Client Platforms",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Secure distribution reduces risk of supply-chain attacks and ensures consistent, patched clients; telemetry must respect privacy choices."
+          },
+          {
+            "requirement_id": "REQ-030",
+            "requirement_text": "Content moderation and compliance tooling: ability to flag/report boards or content, admin review workflows, and optional automated scanning for offensive/sensitive content.",
+            "business_category": "Governance",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Moderation protects community standards and limits legal exposure; automated and manual workflows balance scale and accuracy."
+          }
+        ],
+        "security_context": "Applicable regulations and compliance obligations include GDPR (EU personal data protection and data subject rights), CCPA/CPRA (California consumer privacy), SOC 2/ISO 27001 (security and operational controls for enterprise customers), and potential HIPAA obligations if platform is used to store protected health information (requires BAA and appropriate safeguards). If payments or billing data are processed directly, PCI-DSS requirements apply. Additional regional data residency laws (e.g., EU data localization, APAC variants) and workplace privacy laws may apply depending on customers. Controls should include encryption in transit and at rest, robust access controls and RBAC, retention and deletion workflows to satisfy data subject requests, comprehensive audit logging, incident response and breach notification processes, secure third-party vendor assessments for integrations and SDKs, and contractual measures (BAA, DPA) when needed.",
+        "assumptions": [
+          "System will be cloud-hosted with multi-region deployment options for data residency.",
+          "Clients use modern browsers (Chrome, Edge, Firefox, Safari) and supported native desktop/mobile runtimes.",
+          "Realtime synchronization will use WebSockets/RTC or comparable protocols (and may leverage OT or CRDT algorithms).",
+          "Third-party integration providers (Google, Microsoft, Slack, Jira, etc.) support secure OAuth flows and provide necessary APIs.",
+          "Enterprise customers will desire SSO/SAML support and centralized admin controls.",
+          "Customers may require compliance certifications (e.g., SOC 2) and contractual agreements (DPA, BAA) depending on industry use.",
+          "Users have intermittent network connectivity; offline editing support may be limited or offered with constraints.",
+          "Recording/archiving of audio/video streams will be optional and subject to separate consent and retention controls."
+        ],
+        "constraints": [
+          "Must integrate with multiple third-party authentication providers and support enterprise SSO (SAML/OIDC), which constrains identity design.",
+          "Real-time sync and low-latency requirements impose constraints on infrastructure (stateful servers or managed real-time services) and may limit geographic/regional architectures.",
+          "Supporting infinite canvas and large boards increases storage and compute costs and requires sharding/tiling strategies and efficient diff/patch formats.",
+          "Mobile and desktop native clients impose platform-specific limitations (memory, CPU, background execution) that affect feature parity and caching strategies.",
+          "Third-party SDKs for audio/video may have licensing and regional availability constraints and bring additional security/privilege requirements.",
+          "To satisfy data residency/regulatory requirements, need conditional data partitioning by region which complicates global features like public link sharing across regions.",
+          "Integration with external cloud storage requires handling of external OAuth tokens, refresh tokens and secure token storage, introducing additional compliance scope.",
+          "Retention, deletion, and right-to-be-forgotten features may conflict with audit and export requirements and require careful design of logical vs physical deletion.",
+          "High availability, backup, and disaster recovery SLAs will increase operational cost and complexity (cross-region replication, failover strategies).",
+          "Supporting export and preview of many file formats (DOCX, PDF) requires server-side processing which increases attack surface and must be sandboxed."
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"A cloud-hosted, multi-region collaborative whiteboarding platform composed of client frontends (web, desktop, mobile) served via CDN and an API/Realtime gateway. An Auth & API Gateway handles authentication (email/SSO/OAuth/MFA), authorization and request routing to backend application services that include Core API, Realtime Sync (CRDT/OT), Media/AV handling, Integrations, Notifications and Analytics. Persistent storage includes relational/document DBs for users and metadata, object storage for boards/assets and an append-only audit/log store; caching and pub/sub support low-latency sync and presence. External integrations (SSO providers, cloud storage, productivity and communication tools, virus scanning) are used via secure OAuth flows. The layers interact over TLS with RBAC and tenancy controls, supporting versioning, file management, exports and analytics while enabling horizontal scaling for enterprise workloads.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\\\ngraph TB\\\\nU[End Users Web/Desktop/Mobile]\\\\nsubgraph \\\"Edge & Auth\\\"\\\\n  CDN[CDN & Static Hosting]\\\\n  GW[Auth & API Gateway]\\\\n  RTG[Realtime Gateway WS/RTC]\\\\nend\\\\nsubgraph \\\"Frontend Layer\\\"\\\\n  FE[Web App SPA & Native Clients]\\\\nend\\\\nsubgraph \\\"Application Services\\\"\\\\n  API[Core API Services REST/GraphQL]\\\\n  RT[Realtime Sync Service CRDT/OT]\\\\n  Media[Media Service Audio/Video]\\\\n  Integrations[Integration & Webhook Service]\\\\n  Notifications[Notification Service]\\\\n  Analytics[Analytics & Admin API]\\\\nend\\\\nsubgraph \\\"Data Layer\\\"\\\\n  UserDB[User Accounts & RBAC DB]\\\\n  BoardStore[Boards Object Store & Versioning]\\\\n  Assets[Asset Storage & CDN]\\\\n  Cache[In-Memory Cache & PubSub]\\\\n  Logs[Audit Logs & Metrics Store]\\\\nend\\\\nsubgraph \\\"External Services\\\"\\\\n  IDP[SSO/OAuth Providers]\\\\n  CloudStorage[GoogleDrive/Dropbox/OneDrive]\\\\n  Productivity[Jira/Asana/Trello]\\\\n  Comm[Slack/MSTeams]\\\\n  VirusScan[Malware/Virus Scanner]\\\\nend\\\\nU --> CDN\\\\nCDN --> FE\\\\nFE --> GW\\\\nFE --> RTG\\\\nGW --> API\\\\nRTG --> RT\\\\nAPI --> UserDB\\\\nAPI --> BoardStore\\\\nAPI --> Assets\\\\nAPI --> Cache\\\\nRT --> Cache\\\\nRT --> BoardStore\\\\nMedia --> Assets\\\\nMedia --> API\\\\nAPI --> Integrations\\\\nAPI --> Notifications\\\\nAPI --> Analytics\\\\nIntegrations --> CloudStorage\\\\nIntegrations --> Productivity\\\\nNotifications --> Comm\\\\nAssets --> VirusScan\\\\nGW --> IDP\\\\nUserDB --> Logs\\\\nBoardStore --> Logs\\\\nAnalytics --> Logs\\\\nCache --> BoardStore\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Deliver UI/UX for web, desktop and mobile clients including rendering infinite canvas, input capture, offline caching and client-side widgets; forward user events to gateways and handle presence display and local undo/redo.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN\",\n        \"Auth Gateway\"\n      ],\n      \"data_handled\": [\n        \"UI state / ephemeral presence\",\n        \"User input events\",\n        \"Local cached board deltas\",\n        \"Telemetry (opt-in)\"\n      ]\n    },\n    {\n      \"name\": \"Edge & Auth\",\n      \"responsibility\": \"Terminate TLS, serve static assets via CDN, handle authentication/SSO/OAuth/MFA flows, API authentication/token validation, rate limiting, WAF and route realtime connections to sync services.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Identity Providers (Google/Microsoft/SAML IdPs)\",\n        \"WAF/DDoS providers\"\n      ],\n      \"data_handled\": [\n        \"Auth tokens/credentials\",\n        \"Session metadata\",\n        \"Ingress request logs\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Host core business logic: Core API for boards/users/permissions, Realtime Sync service for low-latency collaboration (CRDT/OT), Media service for audio/video processing, Integrations/webhooks, Notifications and Analytics.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud media/RTC SDKs\",\n        \"Third-party integrations (Slack/Jira)\",\n        \"Email providers\",\n        \"Push notification services\"\n      ],\n      \"data_handled\": [\n        \"Board deltas/operations\",\n        \"Comments/chat/messages\",\n        \"Meeting/session metadata\",\n        \"Integration tokens/metadata\",\n        \"Notification preferences\"\n      ]\n    },\n    {\n      \"name\": \"Data Layer\",\n      \"responsibility\": \"Durable storage of user accounts, RBAC, board content and version history, binary assets, caches for fast reads, and tamper-evident audit logs and metrics; support backups and regional residency.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud object storage\",\n        \"Managed databases\",\n        \"KMS for encryption\"\n      ],\n      \"data_handled\": [\n        \"User PII and credentials (hashed)\",\n        \"Board content and version history\",\n        \"Uploaded assets (images/docs)\",\n        \"Audit logs and telemetry\",\n        \"Access control metadata\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Third-party identity providers, cloud storage providers, productivity and communication tools, and security tooling used for malware scanning and optional media processing; used for integrations and off-platform storage/identity.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"SSO/OAuth providers (Google/Microsoft/SAML IdPs)\",\n        \"Cloud storage (GoogleDrive/Dropbox/OneDrive)\",\n        \"Productivity APIs (Jira/Asana/Trello)\",\n        \"Comm platforms (Slack/MSTeams)\",\n        \"Virus scanning/AV services\"\n      ],\n      \"data_handled\": [\n        \"OAuth tokens and integration metadata\",\n        \"External file links and content metadata\",\n        \"Third-party webhook events\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users connect from web or native clients through CDN to the Auth/API Gateway which authenticates requests (email/SSO/OAuth/MFA). UI actions are sent to Core API for CRUD operations and to the Realtime Sync service for low-latency collaborative operations; realtime deltas are published via Pub/Sub/Cache and persisted to BoardStore for durability and versioning. Uploaded assets are scanned by VirusScan, stored in object storage and served via CDN. Notifications and integration events are dispatched by dedicated services. Audit logs and metrics are streamed to an append-only store and analytics pipelines. Backups and KMS-backed encryption protect persisted data; regional deployments can restrict BoardStore/Assets to required data residency zones.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"End Users Web/Desktop/Mobile\",\n        \"External Services (OAuth IdPs, Integrations)\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS 1.2+/HTTPS\",\n        \"CSP/SameSite/XSS protections\",\n        \"Rate limiting on public endpoints\",\n        \"Client certificate or PKI for native updates when applicable\"\n      ]\n    },\n    {\n      \"name\": \"Edge/DMZ\",\n      \"components\": [\n        \"CDN\",\n        \"Auth & API Gateway\",\n        \"Realtime Gateway WS/RTC\"\n      ],\n      \"boundary_type\": \"DMZ\",\n      \"security_controls\": [\n        \"Web Application Firewall (WAF)\",\n        \"DDoS mitigation\",\n        \"IP allowlisting/rate limiting\",\n        \"Strict token validation and short-lived session tokens\",\n        \"Input validation and request sanitization\"\n      ]\n    },\n    {\n      \"name\": \"Internal App Network\",\n      \"components\": [\n        \"Core API Services\",\n        \"Realtime Sync Service\",\n        \"Media Service\",\n        \"Integration Service\",\n        \"Notification Service\",\n        \"Analytics Service\",\n        \"Cache & PubSub\"\n      ],\n      \"boundary_type\": \"Internal/Trusted\",\n      \"security_controls\": [\n        \"Private VPC or network segmentation\",\n        \"Mutual TLS between services\",\n        \"Service-level RBAC and IAM\",\n        \"Network ACLs and security groups\",\n        \"Monitoring/IDS and auditing\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage Tier\",\n      \"components\": [\n        \"User Accounts & RBAC DB\",\n        \"Boards Object Store & Versioning\",\n        \"Asset Storage\",\n        \"Audit Logs & Metrics Store\"\n      ],\n      \"boundary_type\": \"Database/Storage Tier\",\n      \"security_controls\": [\n        \"Encryption at rest (KMS)\",\n        \"Encryption in transit\",\n        \"Database access controls and least privilege\",\n        \"WORM/tamper-evident logs\",\n        \"Backups, periodic restores, and retention policies\"\n      ]\n    },\n    {\n      \"name\": \"Third-Party Services\",\n      \"components\": [\n        \"SSO/OAuth Providers\",\n        \"Cloud Storage Providers\",\n        \"Productivity & Communication APIs\",\n        \"VirusScan\"\n      ],\n      \"boundary_type\": \"External Trusted\",\n      \"security_controls\": [\n        \"Scoped OAuth with least-privilege scopes\",\n        \"Secure token storage and rotation\",\n        \"Contractual DPAs and vendor assessments\",\n        \"Validation/sanitization of incoming data from providers\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points include: 1) Client UIs (web/native) exposing XSS, CSRF and supply-chain risks \u2014 mitigations: CSP, SameSite cookies, code signing and secure update channels (Risk: Medium). 2) Auth & API Gateway (login, SSO/OAuth flows, token endpoints) \u2014 high-value target for credential stuffing, token theft and SAML/OIDC misconfiguration (Risk: High). 3) Realtime endpoints (WebSocket/RTC) for low-latency sync and media \u2014 exposed to resource exhaustion, message injection and reconnection amplification (Risk: High). 4) Public REST/GraphQL APIs and Public Integrations/Webhooks \u2014 rate limit, auth scope misuse, and data exfiltration risks (Risk: High). 5) File upload and embed handling \u2014 malware, malicious file types and SSRF/XSS via embedded content (Risk: High). 6) Third-party integrations and OAuth tokens \u2014 token leakage and excessive scopes can enable lateral access (Risk: High). 7) CDN and cached assets \u2014 cache poisoning and stale content risks (Risk: Medium). 8) Admin/Analytics dashboards and export features \u2014 privileged access paths requiring strict RBAC and audit logging to prevent data exfiltration (Risk: High). Recommended mitigations: strong MFA/SSO hygiene, short-lived tokens, least-privilege OAuth scopes, content sanitization, virus scanning and sandboxed processing for files, WAF, rate limiting, monitoring/alerting, tamper-evident audit logs, region-aware data partitioning and periodic pentesting.\"\n}",
+      "pydantic": {
+        "architecture_summary": "A cloud-hosted, multi-region collaborative whiteboarding platform composed of client frontends (web, desktop, mobile) served via CDN and an API/Realtime gateway. An Auth & API Gateway handles authentication (email/SSO/OAuth/MFA), authorization and request routing to backend application services that include Core API, Realtime Sync (CRDT/OT), Media/AV handling, Integrations, Notifications and Analytics. Persistent storage includes relational/document DBs for users and metadata, object storage for boards/assets and an append-only audit/log store; caching and pub/sub support low-latency sync and presence. External integrations (SSO providers, cloud storage, productivity and communication tools, virus scanning) are used via secure OAuth flows. The layers interact over TLS with RBAC and tenancy controls, supporting versioning, file management, exports and analytics while enabling horizontal scaling for enterprise workloads.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\\ngraph TB\\nU[End Users Web/Desktop/Mobile]\\nsubgraph \"Edge & Auth\"\\n  CDN[CDN & Static Hosting]\\n  GW[Auth & API Gateway]\\n  RTG[Realtime Gateway WS/RTC]\\nend\\nsubgraph \"Frontend Layer\"\\n  FE[Web App SPA & Native Clients]\\nend\\nsubgraph \"Application Services\"\\n  API[Core API Services REST/GraphQL]\\n  RT[Realtime Sync Service CRDT/OT]\\n  Media[Media Service Audio/Video]\\n  Integrations[Integration & Webhook Service]\\n  Notifications[Notification Service]\\n  Analytics[Analytics & Admin API]\\nend\\nsubgraph \"Data Layer\"\\n  UserDB[User Accounts & RBAC DB]\\n  BoardStore[Boards Object Store & Versioning]\\n  Assets[Asset Storage & CDN]\\n  Cache[In-Memory Cache & PubSub]\\n  Logs[Audit Logs & Metrics Store]\\nend\\nsubgraph \"External Services\"\\n  IDP[SSO/OAuth Providers]\\n  CloudStorage[GoogleDrive/Dropbox/OneDrive]\\n  Productivity[Jira/Asana/Trello]\\n  Comm[Slack/MSTeams]\\n  VirusScan[Malware/Virus Scanner]\\nend\\nU --> CDN\\nCDN --> FE\\nFE --> GW\\nFE --> RTG\\nGW --> API\\nRTG --> RT\\nAPI --> UserDB\\nAPI --> BoardStore\\nAPI --> Assets\\nAPI --> Cache\\nRT --> Cache\\nRT --> BoardStore\\nMedia --> Assets\\nMedia --> API\\nAPI --> Integrations\\nAPI --> Notifications\\nAPI --> Analytics\\nIntegrations --> CloudStorage\\nIntegrations --> Productivity\\nNotifications --> Comm\\nAssets --> VirusScan\\nGW --> IDP\\nUserDB --> Logs\\nBoardStore --> Logs\\nAnalytics --> Logs\\nCache --> BoardStore",
+        "components": [
+          {
+            "name": "Frontend Layer",
+            "responsibility": "Deliver UI/UX for web, desktop and mobile clients including rendering infinite canvas, input capture, offline caching and client-side widgets; forward user events to gateways and handle presence display and local undo/redo.",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "CDN",
+              "Auth Gateway"
+            ],
+            "data_handled": [
+              "UI state / ephemeral presence",
+              "User input events",
+              "Local cached board deltas",
+              "Telemetry (opt-in)"
+            ]
+          },
+          {
+            "name": "Edge & Auth",
+            "responsibility": "Terminate TLS, serve static assets via CDN, handle authentication/SSO/OAuth/MFA flows, API authentication/token validation, rate limiting, WAF and route realtime connections to sync services.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Identity Providers (Google/Microsoft/SAML IdPs)",
+              "WAF/DDoS providers"
+            ],
+            "data_handled": [
+              "Auth tokens/credentials",
+              "Session metadata",
+              "Ingress request logs"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Host core business logic: Core API for boards/users/permissions, Realtime Sync service for low-latency collaboration (CRDT/OT), Media service for audio/video processing, Integrations/webhooks, Notifications and Analytics.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Cloud media/RTC SDKs",
+              "Third-party integrations (Slack/Jira)",
+              "Email providers",
+              "Push notification services"
+            ],
+            "data_handled": [
+              "Board deltas/operations",
+              "Comments/chat/messages",
+              "Meeting/session metadata",
+              "Integration tokens/metadata",
+              "Notification preferences"
+            ]
+          },
+          {
+            "name": "Data Layer",
+            "responsibility": "Durable storage of user accounts, RBAC, board content and version history, binary assets, caches for fast reads, and tamper-evident audit logs and metrics; support backups and regional residency.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Cloud object storage",
+              "Managed databases",
+              "KMS for encryption"
+            ],
+            "data_handled": [
+              "User PII and credentials (hashed)",
+              "Board content and version history",
+              "Uploaded assets (images/docs)",
+              "Audit logs and telemetry",
+              "Access control metadata"
+            ]
+          },
+          {
+            "name": "External Services",
+            "responsibility": "Third-party identity providers, cloud storage providers, productivity and communication tools, and security tooling used for malware scanning and optional media processing; used for integrations and off-platform storage/identity.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "SSO/OAuth providers (Google/Microsoft/SAML IdPs)",
+              "Cloud storage (GoogleDrive/Dropbox/OneDrive)",
+              "Productivity APIs (Jira/Asana/Trello)",
+              "Comm platforms (Slack/MSTeams)",
+              "Virus scanning/AV services"
+            ],
+            "data_handled": [
+              "OAuth tokens and integration metadata",
+              "External file links and content metadata",
+              "Third-party webhook events"
+            ]
+          }
+        ],
+        "data_flow_description": "Users connect from web or native clients through CDN to the Auth/API Gateway which authenticates requests (email/SSO/OAuth/MFA). UI actions are sent to Core API for CRUD operations and to the Realtime Sync service for low-latency collaborative operations; realtime deltas are published via Pub/Sub/Cache and persisted to BoardStore for durability and versioning. Uploaded assets are scanned by VirusScan, stored in object storage and served via CDN. Notifications and integration events are dispatched by dedicated services. Audit logs and metrics are streamed to an append-only store and analytics pipelines. Backups and KMS-backed encryption protect persisted data; regional deployments can restrict BoardStore/Assets to required data residency zones.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "End Users Web/Desktop/Mobile",
+              "External Services (OAuth IdPs, Integrations)"
+            ],
+            "boundary_type": "Untrusted",
+            "security_controls": [
+              "TLS 1.2+/HTTPS",
+              "CSP/SameSite/XSS protections",
+              "Rate limiting on public endpoints",
+              "Client certificate or PKI for native updates when applicable"
+            ]
+          },
+          {
+            "name": "Edge/DMZ",
+            "components": [
+              "CDN",
+              "Auth & API Gateway",
+              "Realtime Gateway WS/RTC"
+            ],
+            "boundary_type": "DMZ",
+            "security_controls": [
+              "Web Application Firewall (WAF)",
+              "DDoS mitigation",
+              "IP allowlisting/rate limiting",
+              "Strict token validation and short-lived session tokens",
+              "Input validation and request sanitization"
+            ]
+          },
+          {
+            "name": "Internal App Network",
+            "components": [
+              "Core API Services",
+              "Realtime Sync Service",
+              "Media Service",
+              "Integration Service",
+              "Notification Service",
+              "Analytics Service",
+              "Cache & PubSub"
+            ],
+            "boundary_type": "Internal/Trusted",
+            "security_controls": [
+              "Private VPC or network segmentation",
+              "Mutual TLS between services",
+              "Service-level RBAC and IAM",
+              "Network ACLs and security groups",
+              "Monitoring/IDS and auditing"
+            ]
+          },
+          {
+            "name": "Data Storage Tier",
+            "components": [
+              "User Accounts & RBAC DB",
+              "Boards Object Store & Versioning",
+              "Asset Storage",
+              "Audit Logs & Metrics Store"
+            ],
+            "boundary_type": "Database/Storage Tier",
+            "security_controls": [
+              "Encryption at rest (KMS)",
+              "Encryption in transit",
+              "Database access controls and least privilege",
+              "WORM/tamper-evident logs",
+              "Backups, periodic restores, and retention policies"
+            ]
+          },
+          {
+            "name": "Third-Party Services",
+            "components": [
+              "SSO/OAuth Providers",
+              "Cloud Storage Providers",
+              "Productivity & Communication APIs",
+              "VirusScan"
+            ],
+            "boundary_type": "External Trusted",
+            "security_controls": [
+              "Scoped OAuth with least-privilege scopes",
+              "Secure token storage and rotation",
+              "Contractual DPAs and vendor assessments",
+              "Validation/sanitization of incoming data from providers"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Primary entry points include: 1) Client UIs (web/native) exposing XSS, CSRF and supply-chain risks \u2014 mitigations: CSP, SameSite cookies, code signing and secure update channels (Risk: Medium). 2) Auth & API Gateway (login, SSO/OAuth flows, token endpoints) \u2014 high-value target for credential stuffing, token theft and SAML/OIDC misconfiguration (Risk: High). 3) Realtime endpoints (WebSocket/RTC) for low-latency sync and media \u2014 exposed to resource exhaustion, message injection and reconnection amplification (Risk: High). 4) Public REST/GraphQL APIs and Public Integrations/Webhooks \u2014 rate limit, auth scope misuse, and data exfiltration risks (Risk: High). 5) File upload and embed handling \u2014 malware, malicious file types and SSRF/XSS via embedded content (Risk: High). 6) Third-party integrations and OAuth tokens \u2014 token leakage and excessive scopes can enable lateral access (Risk: High). 7) CDN and cached assets \u2014 cache poisoning and stale content risks (Risk: Medium). 8) Admin/Analytics dashboards and export features \u2014 privileged access paths requiring strict RBAC and audit logging to prevent data exfiltration (Risk: High). Recommended mitigations: strong MFA/SSO hygiene, short-lived tokens, least-privilege OAuth scopes, content sanitization, virus scanning and sandboxed processing for files, WAF, rate limiting, monitoring/alerting, tamper-evident audit logs, region-aware data partitioning and periodic pentesting."
+      }
+    }
+  ]
+}

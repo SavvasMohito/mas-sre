@@ -1,0 +1,254 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "User Management / Frontend / Authentication Service",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Credential stuffing / account takeover: attackers use breached credentials or automated credential lists to log in to user accounts, leading to unauthorized access to profiles, orders, and saved payme"
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Integrations (Social Login)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "OAuth/OIDC token spoofing or redirect URI manipulation allows an attacker to impersonate users via social login (Google/Facebook) and gain access to accounts or create linked accounts."
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Frontend Layer (Public Storefront)",
+    "risk_level": "Critical",
+    "category": "Information Disclosure",
+    "description": "Session cookie or token theft via Cross-Site Scripting (XSS) or malicious third-party scripts leads to account takeover and data exfiltration."
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Shopping Cart & Checkout / APIs",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Cross-Site Request Forgery (CSRF) on checkout or payment endpoints allows attackers to create/modify orders or change account data using authenticated user's session."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Order & Catalog APIs",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "SQL Injection or other code injection in API endpoints (search, filters, admin endpoints) enabling data tampering, unauthorized data modification, or retrieval of sensitive records."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage Layer (Search Engine / Elasticsearch/OpenSearch)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Unauthenticated or misconfigured access to search cluster exposes product/customer indices and PII (e.g., user profiles included in search index)."
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage Layer (Object Storage for Media)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Publicly accessible object storage bucket (S3-like) exposes product images or PII-containing objects (e.g., shipping labels) leading to data leakage."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Payment Processing / External Integrations (Stripe/PayPal/Apple Pay)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Interception or leakage of payment data (cardholder data) in transit or at rest, or improper storage of PANs, leading to PCI-DSS violations and financial fraud."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Payment & Admin Processes",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Refund abuse or fraudulent chargebacks where attackers manipulate refund workflows or claim unauthorized transactions, causing financial loss and reconciliation issues."
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Admin Dashboard",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Compromise of an admin account or lack of segmentation allows an attacker to escalate privileges, modify product catalog, adjust pricing, process refunds, or access customer PII."
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Order Management",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Broken access control allowing users to view/modify other users' orders or checkout using another's payment method, due to missing object-level authorization checks."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "APIs / Catalog & Auth Endpoints",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "User enumeration and data leakage via inconsistent API responses (e.g., different error messages or timing reveals whether a user/email exists) or via over-permissive endpoints."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer / API Gateway",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "API abuse or volumetric/flooding attacks that overwhelm services (checkout, payment, search) causing downtime or degraded performance during peak events or promotions."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "AI Services / External Integrations",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Remote code or model injection compromise via third-party AI/ML providers or malicious model outputs that lead to data leakage or incorrect recommendations/orders (supply chain or prompt-injection att"
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer / External Third-party SDKs",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Compromised third-party JavaScript SDKs (analytics or social libraries) inject malicious scripts that perform XSS, exfiltrate tokens, or manipulate the DOM leading to user account compromise or data l"
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "External Integrations (Email Providers)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Email spoofing or phishing of order confirmation/notification emails leading customers to phishing sites or credential theft; also reputation damage from unauthenticated sending."
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Data Storage Layer / External Integrations (Analytics & Marketing)",
+    "risk_level": "Critical",
+    "category": "Information Disclosure",
+    "description": "Uncontrolled sharing of customer data to analytics and marketing providers (or retention beyond consent) leading to GDPR/CCPA violations, regulatory fines, and reputational damage."
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Logging & Analytics",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Sensitive PII or payment-related data accidentally logged (application logs, access logs, analytics data) and accessible to engineers or third-parties."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Cloud Infrastructure (IAM / Networking)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Cloud misconfiguration (over-permissive IAM roles, open management ports, misconfigured security groups) enables attackers to pivot, escalate privileges, or access databases/storage."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "CI/CD Pipeline",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Compromise of build pipeline or developer credentials allows insertion of malicious code/backdoors into production artifacts."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Payment & Order APIs",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Replay attacks where valid requests (payment or order submission) are replayed by an attacker causing duplicate orders or unauthorized charges."
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Product Catalog / Reviews Feature",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Stored XSS via customer reviews (malicious content in product reviews) can lead to account takeover or hijacking of sessions viewing pages with reviews."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Admin Dashboard",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "CSRF or session hijacking targeting admin dashboard to perform unauthorized administrative actions (e.g., change inventory, issue refunds)."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Data Storage / Admin Access",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Insider threat: authorized employees misuse access to customer data (view, export, or sell PII) or tamper with records causing compliance and reputational risk."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Build Artifacts / Dependencies",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Supply chain compromise via malicious npm/PyPI packages or transitive dependencies injected into frontend/backend code leading to data exfiltration or backdoors."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Promotions & Pricing Engine",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Promotional code calculation or pricing engine logic is abused or loaded with pathological inputs, causing performance degradation or outages (e.g., unbounded computation or DB queries during flash sa"
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 2,
+    "impact": 2,
+    "component": "Shipping Integration / Frontend (Address & Geo)",
+    "risk_level": "Low",
+    "category": "Spoofing",
+    "description": "Client-side location or address spoofing used to manipulate shipping rates, tax calculations, or fraudulently alter delivery addresses to intercept shipments."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer / TLS & Key Management",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Weak TLS configuration or poor key management exposes data in transit or enables downgrade attacks; expired/corrupt certs may cause outages or degrade trust."
+  }
+]

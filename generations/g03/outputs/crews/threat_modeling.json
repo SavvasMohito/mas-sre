@@ -1,0 +1,1127 @@
+{
+  "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Reflected or stored Cross-Site Scripting (XSS) via user-supplied advert content, favourites, or saved searches causing session token theft, account takeover, or exfiltration of PII from pages rendered in other users' browsers.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Apply strict output encoding/escaping for all user content, use a secure templating engine, implement Content Security Policy (CSP) restricting script sources, sanitize HTML with a safe whitelist or disallow HTML, mark session cookies HttpOnly and SameSite=strict; conduct automated and manual security testing (SAST/DAST).\",\n      \"applicable_controls\": [\n        \"CSP\",\n        \"Input Validation\",\n        \"Output Encoding\",\n        \"HttpOnly/SameSite Cookies\",\n        \"SAST/DAST\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Client-side manipulation of UI (e.g., modifying JS to change advert metadata, prices, or display premium features) and submitting forged requests that rely on client-side checks (price, entitlements).\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce server-side authorization and validation for all business-critical operations (price changes, entitlement checks). Sign client-visible configuration where needed, validate inputs on server, and log suspicious client-side anomalies.\",\n      \"applicable_controls\": [\n        \"Server-side Authorization\",\n        \"Request Validation\",\n        \"Integrity Checks\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"UI-level phishing via malicious adverts or profiles that mimic platform branding to trick users into revealing credentials or off-platform contact details.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Restrict HTML/branding in adverts, enforce a platform watermark and verified-badge UI for verified advertisers, run automated moderation for suspicious branding, user education and reporting flow, and block off-platform contact until verification.\",\n      \"applicable_controls\": [\n        \"Automated Moderation\",\n        \"Verified Badges\",\n        \"User Reporting\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Edge Layer (CDN/WAF/API Gateway)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Layer 7 volumetric or application-layer DDoS targeting search, messaging, or advert submission endpoints to degrade availability and impact revenue and user confidence.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use CDN + WAF with adaptive rate-limiting and geo-blocking, API Gateway throttling per IP and per-account, autoscaling backend, CAPTCHA for suspicious flows (advert creation), traffic anomaly detection and scrubbing service.\",\n      \"applicable_controls\": [\n        \"WAF\",\n        \"Rate Limiting\",\n        \"Autoscaling\",\n        \"DDoS Mitigation Service\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Edge Layer (API Gateway)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Replay attacks or token theft in transit due to inadequate transport security or poor token handling (long-lived tokens, insecure storage on client) leading to account hijacking.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce TLS 1.2+/HSTS, short-lived access tokens with refresh tokens stored securely, require token binding if possible, use OAuth 2.0 best practices, revoke tokens on suspicious activity, secure local storage (avoid persistent tokens in localStorage), implement device/session fingerprinting and MFA for sensitive actions.\",\n      \"applicable_controls\": [\n        \"TLS\",\n        \"OAuth2\",\n        \"Short-lived Tokens\",\n        \"MFA\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Application Services (Auth/RBAC)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Credential stuffing, weak password reuse, or brute-force attacks leading to account takeover for advertisers or moderators. Email domain filtering for free-tier may be bypassed using disposable or compromised university addresses.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Implement rate-limited login attempts, account lockouts with progressive delays, MFA (mandatory for moderators/admins and encouraged for advertisers), password strength policy, monitor for credential stuffing via IP reputation and breached-password checks; verify university domain via domain MX checks and time-limited email verification tokens.\",\n      \"applicable_controls\": [\n        \"MFA\",\n        \"Rate Limiting\",\n        \"Breached Password Checks\",\n        \"Email Domain Verification\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Application Services (Auth/RBAC)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken access control allowing privilege escalation (e.g., seeker modifies request to set 'role=moderator' or uses API endpoints reserved for admin to approve adverts).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce server-side RBAC checks for every sensitive endpoint, implement deny-by-default ACLs, use centralized authorization library, detailed audit logging of role changes, review admin endpoints manually and require MFA/SSO for admin actions.\",\n      \"applicable_controls\": [\n        \"RBAC\",\n        \"Centralized Authorization\",\n        \"Admin MFA/SSO\",\n        \"Audit Logging\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"Application Services (Core API/Search/Geo)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Exposure of exact addresses or PII via search index or API responses (e.g., detailed coordinates leaked in map tile queries or in metadata exposed in API), undermining privacy requirement of approximate locations.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement server-side fuzzing/geo-obfuscation before storing/searching; strip exact coordinates from public search results, only store precise addresses encrypted and available to authorized parties, review third-party map integrations so they only receive approximate coordinates, log and monitor access to precise location fields.\",\n      \"applicable_controls\": [\n        \"Field-level Encryption\",\n        \"Geo-obfuscation\",\n        \"Least Privilege Access\",\n        \"Third-party Data Minimization\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"Application Services (Moderation Pipeline)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Adversarial content engineered to bypass automated moderation (image/text obfuscation, alternate language, unicode tricks) leading to publication of spam, scams, or malicious adverts.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use layered moderation: ML heuristics + deterministic rules + human review for flagged or high-risk adverts; adversarial testing of moderation models; limit feature exposure for new/low-reputation advertisers; rate-limit advert creation.\",\n      \"applicable_controls\": [\n        \"Automated Moderation\",\n        \"Human-in-the-loop\",\n        \"Adversarial Testing\",\n        \"Rate Limiting\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"Application Services (Messaging)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"In-app moderated messaging used to exchange PII; messages stored in DB and in transit may be exposed due to weak encryption, improper RBAC, or logging of message bodies to analytics systems.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt messages at rest with KMS-managed keys, enforce TLS in transit, restrict access to message stores to smallest set of service accounts, redact PII in analytics pipelines, provide ephemeral message retention policies and user-controlled deletion, log only metadata not message contents.\",\n      \"applicable_controls\": [\n        \"TLS\",\n        \"At-rest Encryption (KMS)\",\n        \"RBAC\",\n        \"PII Redaction\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Notifications & Messaging (Email/Push Providers)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive information leaked via email digests or push notifications (e.g., full advert addresses, private messages) or email interception due to misconfigured email provider templates exposing PII.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Limit content in notifications to non-sensitive summaries, avoid including PII or exact location in emails/pushes, use secure provider configurations (TLS for SMTP, signed DKIM/SPF), allow users to opt-out of email content sharing, and review templates for accidental leakage.\",\n      \"applicable_controls\": [\n        \"Template Review\",\n        \"TLS for Email\",\n        \"Notification Content Policy\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"Data Storage (Relational DB / Search Index)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Unauthorized access to backups, snapshots, or misconfigured search index (Elasticsearch/OpenSearch) exposing full dataset including PII or sensitive adverts.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce network-level access controls (VPC, private endpoints), enable authentication and TLS on search services, encrypt backups at rest, rotate access keys, restrict snapshot exports, and monitor/access alerts for unusual data exports.\",\n      \"applicable_controls\": [\n        \"Network ACLs\",\n        \"Encryption at Rest\",\n        \"Access Controls\",\n        \"Monitoring/Alerts\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"Data Storage (Object Storage for Media)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Publicly accessible S3/Blob containers containing photos that include metadata or people could be exposed due to incorrect ACLs or predictable object URLs.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use private buckets with signed, time-limited URLs for media access, strip EXIF/GPS metadata from uploaded photos, scan uploads for sensitive content, enforce upload size/content checks, and set least-privilege IAM policies for storage access.\",\n      \"applicable_controls\": [\n        \"Signed URLs\",\n        \"EXIF Stripping\",\n        \"Private Buckets\",\n        \"IAM Policies\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"External Services (Maps API)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Third-party map provider logs or telemetry reveal approximate queries or leak location metadata (e.g., passing exact coords), or attacker abuses API keys embedded in frontend to query map endpoints for data enumeration.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Send only obfuscated/approximate coordinates to map provider, restrict API keys via referer/IP restrictions, avoid embedding privileged keys in client, use server-side map proxy for sensitive queries, review provider's privacy SLA.\",\n      \"applicable_controls\": [\n        \"API Key Restriction\",\n        \"Server-side Proxy\",\n        \"Coordinate Obfuscation\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"External Services (Payment Gateway)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Payment flow manipulation or token interception causing fraudulent premium listings, subscription status manipulation, or chargeback/fraud against the platform.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use PCI-compliant gateway with tokenization (never store raw card data), validate webhooks with signatures, verify payment notification origins, reconcile subscription state server-side, implement fraud detection and anomaly monitoring, require 3DS where supported.\",\n      \"applicable_controls\": [\n        \"PCI-DSS Payment Gateway\",\n        \"Webhook Signing\",\n        \"Server-side Reconciliation\",\n        \"Fraud Detection\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"Payments & Billing\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Advertisers dispute charges or claim service not delivered; lack of reliable invoice/transaction audit trail hinders dispute resolution and may lead to financial loss.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Maintain tamper-evident audit logs for billing events, store payment tokenization metadata, send receipts with transaction IDs, enable immutable logs in SIEM, and retain reconciliation records per compliance retention policies.\",\n      \"applicable_controls\": [\n        \"Immutable Audit Logs\",\n        \"Receipt/Invoice Records\",\n        \"SIEM\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"Admin & Moderation\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Compromise of admin/moderator accounts via phishing or weak SSO config leading to mass approval of malicious adverts, deletion or tampering with audit logs, or user bans.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use strong SSO with MFA, enforce least privilege for moderator roles (separation of duties), require justification and second approval for bulk actions, record all admin actions to immutable audit logs, and monitor for anomalous admin activity.\",\n      \"applicable_controls\": [\n        \"SSO with MFA\",\n        \"Least Privilege\",\n        \"Immutable Audit Logs\",\n        \"Two-person Review for Critical Actions\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"Admin & Moderation\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient or tamperable audit logs allowing admins/moderators to deny or hide actions (e.g., disabling adverts without reason), impacting incident response and compliance.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use append-only, write-once audit logging (cloud-native immutability), forward logs to SIEM with restricted access, implement logging integrity checks, and enforce log retention/rotation policies for compliance.\",\n      \"applicable_controls\": [\n        \"Immutable Logging\",\n        \"SIEM\",\n        \"RBAC on Logs\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Notifications & Messaging (In-app)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Messaging system spam or automated bots overwhelm a user's inbox or notification system causing resource exhaustion and poor UX; attackers may use messaging to send harmful links.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Rate-limit message sending per account/IP, implement reputation scoring for senders, CAPTCHAs on account actions, automated content filtering, allow users to block/report senders, throttle notifications and use backpressure in queueing system.\",\n      \"applicable_controls\": [\n        \"Rate Limiting\",\n        \"Reputation System\",\n        \"CAPTCHA\",\n        \"Content Filtering\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"Application Services (Search/Geo)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Search index poisoning or malicious adverts crafted to manipulate search ranking (e.g., SEO spam, repeated adverts to surface malicious listings), reducing quality and user trust.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Rate-limit advert creation, use deduplication checks, reputation-based ranking and human review for new advertisers, monitor ranking changes, and use anomaly detection in search metrics.\",\n      \"applicable_controls\": [\n        \"Rate Limiting\",\n        \"Reputation-based Ranking\",\n        \"Index Integrity Checks\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"External Services (Email Provider)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Compromise or misconfiguration at the email provider leading to leakage of verification emails, digests, or password resets enabling account takeover or exposure of PII.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use reputable ESP with secure contracts, enable TLS and DKIM/SPF/DMARC, minimize sensitive data in emails, send reset links that expire quickly, monitor ESP security advisories, and have incident response plan for ESP compromise.\",\n      \"applicable_controls\": [\n        \"TLS\",\n        \"DKIM/SPF/DMARC\",\n        \"ESP SLA Review\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Data Storage (Backups & Logs)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Backups or audit logs containing historic PII retained longer than necessary, or accessible by excessive staff, leading to compliance violations (GDPR) and data breach risks.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Apply data retention policies and automated deletion, anonymize/pseudonymize PII where possible, restrict access to backups via IAM, encrypt backups, and periodically audit access to retention stores.\",\n      \"applicable_controls\": [\n        \"Data Retention Policy\",\n        \"Encryption\",\n        \"Access Controls\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"Frontend / Edge (CDN)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Cache poisoning or sensitive content cached at CDN edge (e.g., user-specific pages cached publicly) exposing PII or private adverts to other users.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use cache-control headers to prevent caching of personalized content, vary cache on headers appropriately, use CDN configuration to strip sensitive cookies/headers, and test CDN caching rules for unintended caching.\",\n      \"applicable_controls\": [\n        \"Cache-Control Headers\",\n        \"CDN Configuration Review\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"Application Services / API\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Injection attacks (SQL injection or NoSQL injection) via poorly validated advert fields or search parameters allowing data tampering, unauthorized data access, or remote code execution via unsafe ORM usage.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries/ORM safe APIs, validate and constrain inputs (length/format), ORM prepared statements, adopt least-privilege DB accounts, run regular SAST/DAST and DB access monitoring, and protect admin endpoints behind stricter controls.\",\n      \"applicable_controls\": [\n        \"Parameterized Queries\",\n        \"Input Validation\",\n        \"SAST/DAST\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Application Services (API)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"API key leakage or abuse (e.g., frontend-embedded keys used to query private endpoints or enumerate adverts), enabling attackers to harvest data or bypass quotas.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Never embed privileged keys in frontend, restrict keys by origin/IP and scope, rotate keys regularly, monitor key usage and set quotas, and require server-side calls for privileged operations.\",\n      \"applicable_controls\": [\n        \"Key Rotation\",\n        \"Key Restrictions\",\n        \"Monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Payments & Billing\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Lack of immutable proof for subscription entitlement changes leads to disputes where advertisers claim upgrades/downgrades were not applied correctly or were fraudulent.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Record subscription lifecycle events immutably with timestamps, require server-side confirmation flows for entitlements, keep audit trails tied to payment gateway transaction IDs, and notify users on entitlement changes.\",\n      \"applicable_controls\": [\n        \"Immutable Audit Trail\",\n        \"Server-side Entitlement Enforcement\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"External Services (Third-party Integrations overall)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Over-sharing of PII to third-party analytics, logging, or ML moderation providers (sending full message bodies or exact addresses) creating compliance and privacy risk.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Data minimization: pseudonymize or aggregate before sending, use contracts and DPA with providers, vet security posture of providers, encrypt data in transit and at rest, and implement strict access controls on provider integrations.\",\n      \"applicable_controls\": [\n        \"Data Minimization\",\n        \"DPA/Contracts\",\n        \"Pseudonymization\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Platform-wide (Account Creation & Email Domain Filtering)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Bypass of email-domain verification for free-tier advertisers using disposable university-like addresses or compromised student mailbox leading to fraudulent adverts.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Perform MX record checks and restrict to known university domains list, implement additional checks (SAML/IdP integration with select institutions), manual/automated scrutiny for new advertiser accounts, rate-limit new accounts, and use reputation scoring before granting free-tier privileges.\",\n      \"applicable_controls\": [\n        \"MX Verification\",\n        \"Known Domain Allowlist\",\n        \"SAML/Institutional SSO\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-029\",\n      \"component\": \"Infrastructure / Cloud\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Cloud misconfigurations (open management ports, overly permissive IAM roles, publicly exposed DB or storage) allowing attackers to access or modify data and resources.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement IaC with security scanning, enforce least-privilege IAM, use VPC/private endpoints, rotate credentials, use cloud provider security posture management (CSPM), run periodic pen tests and configuration audits, and enable multi-account separation for prod/staging.\",\n      \"applicable_controls\": [\n        \"Least-Privilege IAM\",\n        \"CSPM\",\n        \"IaC Scanning\",\n        \"Network Segmentation\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-030\",\n      \"component\": \"Platform-wide (Search & Saved Searches / Alerts)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Saved searches and alert digest emails could be inferred by attackers to profile a user's activity or to stalk users (e.g., frequent queries for a person's name or location patterns).\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Protect saved search metadata with proper ACLs, encrypt saved filters in DB if sensitive, allow users to opt-out of instant alerts, aggregate digest emails, and rate-limit alerts per user to prevent metadata leakage.\",\n      \"applicable_controls\": [\n        \"ACLs\",\n        \"Encryption of User Metadata\",\n        \"User Privacy Controls\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    }\n  ],\n  \"risk_summary\": \"The most critical threats are account compromise (THR-006), XSS and client-side attacks (THR-001), exposure of PII/location data via storage or third-party integrations (THR-008, THR-012, THR-027), and payment-related fraud or token manipulation (THR-015). Attackers can enter via credential stuffing, injection vectors, third-party API key leakage, misconfigured cloud services, or by exploiting moderation gaps. Availability risks (DDoS against search/messaging \u2014 THR-004) also present high business impact. Priority controls: enforce strong authentication/MFA and centralized RBAC for admin functions; server-side input validation and parameterized queries; encryption-at-rest and field-level encryption for PII; strict handling of geolocation (server-side obfuscation and minimal sharing with map providers); implement WAF and API Gateway rate-limiting; use PCI-compliant payment tokenization and webhook verification; use layered moderation (ML + human review) and content sanitization; and operational controls such as least-privilege IAM, CSPM, immutible audit logging, and incident detection/response with SIEM. Overall risk posture is moderate-high: multiple high-impact vectors exist but can be materially reduced by implementing the above prioritized controls. Immediate attention should focus on account and admin protection (MFA, SSO hardening, RBAC), preventing PII leakage (encryption, obfuscation, third-party minimization), secure payment integration, and robust moderation and anti-abuse measures.\" }",
+  "pydantic": {
+    "methodology": "STRIDE",
+    "threats": [
+      {
+        "threat_id": "THR-001",
+        "component": "Frontend Layer",
+        "threat_category": "Information Disclosure",
+        "description": "Reflected or stored Cross-Site Scripting (XSS) via user-supplied advert content, favourites, or saved searches causing session token theft, account takeover, or exfiltration of PII from pages rendered in other users' browsers.",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Apply strict output encoding/escaping for all user content, use a secure templating engine, implement Content Security Policy (CSP) restricting script sources, sanitize HTML with a safe whitelist or disallow HTML, mark session cookies HttpOnly and SameSite=strict; conduct automated and manual security testing (SAST/DAST).",
+        "applicable_controls": [
+          "CSP",
+          "Input Validation",
+          "Output Encoding",
+          "HttpOnly/SameSite Cookies",
+          "SAST/DAST"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-002",
+        "component": "Frontend Layer",
+        "threat_category": "Tampering",
+        "description": "Client-side manipulation of UI (e.g., modifying JS to change advert metadata, prices, or display premium features) and submitting forged requests that rely on client-side checks (price, entitlements).",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce server-side authorization and validation for all business-critical operations (price changes, entitlement checks). Sign client-visible configuration where needed, validate inputs on server, and log suspicious client-side anomalies.",
+        "applicable_controls": [
+          "Server-side Authorization",
+          "Request Validation",
+          "Integrity Checks"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-003",
+        "component": "Frontend Layer",
+        "threat_category": "Spoofing",
+        "description": "UI-level phishing via malicious adverts or profiles that mimic platform branding to trick users into revealing credentials or off-platform contact details.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Restrict HTML/branding in adverts, enforce a platform watermark and verified-badge UI for verified advertisers, run automated moderation for suspicious branding, user education and reporting flow, and block off-platform contact until verification.",
+        "applicable_controls": [
+          "Automated Moderation",
+          "Verified Badges",
+          "User Reporting"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-004",
+        "component": "Edge Layer (CDN/WAF/API Gateway)",
+        "threat_category": "Denial of Service",
+        "description": "Layer 7 volumetric or application-layer DDoS targeting search, messaging, or advert submission endpoints to degrade availability and impact revenue and user confidence.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use CDN + WAF with adaptive rate-limiting and geo-blocking, API Gateway throttling per IP and per-account, autoscaling backend, CAPTCHA for suspicious flows (advert creation), traffic anomaly detection and scrubbing service.",
+        "applicable_controls": [
+          "WAF",
+          "Rate Limiting",
+          "Autoscaling",
+          "DDoS Mitigation Service"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-005",
+        "component": "Edge Layer (API Gateway)",
+        "threat_category": "Spoofing",
+        "description": "Replay attacks or token theft in transit due to inadequate transport security or poor token handling (long-lived tokens, insecure storage on client) leading to account hijacking.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce TLS 1.2+/HSTS, short-lived access tokens with refresh tokens stored securely, require token binding if possible, use OAuth 2.0 best practices, revoke tokens on suspicious activity, secure local storage (avoid persistent tokens in localStorage), implement device/session fingerprinting and MFA for sensitive actions.",
+        "applicable_controls": [
+          "TLS",
+          "OAuth2",
+          "Short-lived Tokens",
+          "MFA"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-006",
+        "component": "Application Services (Auth/RBAC)",
+        "threat_category": "Spoofing",
+        "description": "Credential stuffing, weak password reuse, or brute-force attacks leading to account takeover for advertisers or moderators. Email domain filtering for free-tier may be bypassed using disposable or compromised university addresses.",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Implement rate-limited login attempts, account lockouts with progressive delays, MFA (mandatory for moderators/admins and encouraged for advertisers), password strength policy, monitor for credential stuffing via IP reputation and breached-password checks; verify university domain via domain MX checks and time-limited email verification tokens.",
+        "applicable_controls": [
+          "MFA",
+          "Rate Limiting",
+          "Breached Password Checks",
+          "Email Domain Verification"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-007",
+        "component": "Application Services (Auth/RBAC)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Broken access control allowing privilege escalation (e.g., seeker modifies request to set 'role=moderator' or uses API endpoints reserved for admin to approve adverts).",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce server-side RBAC checks for every sensitive endpoint, implement deny-by-default ACLs, use centralized authorization library, detailed audit logging of role changes, review admin endpoints manually and require MFA/SSO for admin actions.",
+        "applicable_controls": [
+          "RBAC",
+          "Centralized Authorization",
+          "Admin MFA/SSO",
+          "Audit Logging"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-008",
+        "component": "Application Services (Core API/Search/Geo)",
+        "threat_category": "Information Disclosure",
+        "description": "Exposure of exact addresses or PII via search index or API responses (e.g., detailed coordinates leaked in map tile queries or in metadata exposed in API), undermining privacy requirement of approximate locations.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Implement server-side fuzzing/geo-obfuscation before storing/searching; strip exact coordinates from public search results, only store precise addresses encrypted and available to authorized parties, review third-party map integrations so they only receive approximate coordinates, log and monitor access to precise location fields.",
+        "applicable_controls": [
+          "Field-level Encryption",
+          "Geo-obfuscation",
+          "Least Privilege Access",
+          "Third-party Data Minimization"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-009",
+        "component": "Application Services (Moderation Pipeline)",
+        "threat_category": "Tampering",
+        "description": "Adversarial content engineered to bypass automated moderation (image/text obfuscation, alternate language, unicode tricks) leading to publication of spam, scams, or malicious adverts.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Use layered moderation: ML heuristics + deterministic rules + human review for flagged or high-risk adverts; adversarial testing of moderation models; limit feature exposure for new/low-reputation advertisers; rate-limit advert creation.",
+        "applicable_controls": [
+          "Automated Moderation",
+          "Human-in-the-loop",
+          "Adversarial Testing",
+          "Rate Limiting"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-010",
+        "component": "Application Services (Messaging)",
+        "threat_category": "Information Disclosure",
+        "description": "In-app moderated messaging used to exchange PII; messages stored in DB and in transit may be exposed due to weak encryption, improper RBAC, or logging of message bodies to analytics systems.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Encrypt messages at rest with KMS-managed keys, enforce TLS in transit, restrict access to message stores to smallest set of service accounts, redact PII in analytics pipelines, provide ephemeral message retention policies and user-controlled deletion, log only metadata not message contents.",
+        "applicable_controls": [
+          "TLS",
+          "At-rest Encryption (KMS)",
+          "RBAC",
+          "PII Redaction"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-011",
+        "component": "Notifications & Messaging (Email/Push Providers)",
+        "threat_category": "Information Disclosure",
+        "description": "Sensitive information leaked via email digests or push notifications (e.g., full advert addresses, private messages) or email interception due to misconfigured email provider templates exposing PII.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Limit content in notifications to non-sensitive summaries, avoid including PII or exact location in emails/pushes, use secure provider configurations (TLS for SMTP, signed DKIM/SPF), allow users to opt-out of email content sharing, and review templates for accidental leakage.",
+        "applicable_controls": [
+          "Template Review",
+          "TLS for Email",
+          "Notification Content Policy"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-012",
+        "component": "Data Storage (Relational DB / Search Index)",
+        "threat_category": "Information Disclosure",
+        "description": "Unauthorized access to backups, snapshots, or misconfigured search index (Elasticsearch/OpenSearch) exposing full dataset including PII or sensitive adverts.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce network-level access controls (VPC, private endpoints), enable authentication and TLS on search services, encrypt backups at rest, rotate access keys, restrict snapshot exports, and monitor/access alerts for unusual data exports.",
+        "applicable_controls": [
+          "Network ACLs",
+          "Encryption at Rest",
+          "Access Controls",
+          "Monitoring/Alerts"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-013",
+        "component": "Data Storage (Object Storage for Media)",
+        "threat_category": "Information Disclosure",
+        "description": "Publicly accessible S3/Blob containers containing photos that include metadata or people could be exposed due to incorrect ACLs or predictable object URLs.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Use private buckets with signed, time-limited URLs for media access, strip EXIF/GPS metadata from uploaded photos, scan uploads for sensitive content, enforce upload size/content checks, and set least-privilege IAM policies for storage access.",
+        "applicable_controls": [
+          "Signed URLs",
+          "EXIF Stripping",
+          "Private Buckets",
+          "IAM Policies"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-014",
+        "component": "External Services (Maps API)",
+        "threat_category": "Information Disclosure",
+        "description": "Third-party map provider logs or telemetry reveal approximate queries or leak location metadata (e.g., passing exact coords), or attacker abuses API keys embedded in frontend to query map endpoints for data enumeration.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Send only obfuscated/approximate coordinates to map provider, restrict API keys via referer/IP restrictions, avoid embedding privileged keys in client, use server-side map proxy for sensitive queries, review provider's privacy SLA.",
+        "applicable_controls": [
+          "API Key Restriction",
+          "Server-side Proxy",
+          "Coordinate Obfuscation"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-015",
+        "component": "External Services (Payment Gateway)",
+        "threat_category": "Tampering",
+        "description": "Payment flow manipulation or token interception causing fraudulent premium listings, subscription status manipulation, or chargeback/fraud against the platform.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use PCI-compliant gateway with tokenization (never store raw card data), validate webhooks with signatures, verify payment notification origins, reconcile subscription state server-side, implement fraud detection and anomaly monitoring, require 3DS where supported.",
+        "applicable_controls": [
+          "PCI-DSS Payment Gateway",
+          "Webhook Signing",
+          "Server-side Reconciliation",
+          "Fraud Detection"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-016",
+        "component": "Payments & Billing",
+        "threat_category": "Repudiation",
+        "description": "Advertisers dispute charges or claim service not delivered; lack of reliable invoice/transaction audit trail hinders dispute resolution and may lead to financial loss.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Maintain tamper-evident audit logs for billing events, store payment tokenization metadata, send receipts with transaction IDs, enable immutable logs in SIEM, and retain reconciliation records per compliance retention policies.",
+        "applicable_controls": [
+          "Immutable Audit Logs",
+          "Receipt/Invoice Records",
+          "SIEM"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-017",
+        "component": "Admin & Moderation",
+        "threat_category": "Elevation of Privilege",
+        "description": "Compromise of admin/moderator accounts via phishing or weak SSO config leading to mass approval of malicious adverts, deletion or tampering with audit logs, or user bans.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use strong SSO with MFA, enforce least privilege for moderator roles (separation of duties), require justification and second approval for bulk actions, record all admin actions to immutable audit logs, and monitor for anomalous admin activity.",
+        "applicable_controls": [
+          "SSO with MFA",
+          "Least Privilege",
+          "Immutable Audit Logs",
+          "Two-person Review for Critical Actions"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-018",
+        "component": "Admin & Moderation",
+        "threat_category": "Repudiation",
+        "description": "Insufficient or tamperable audit logs allowing admins/moderators to deny or hide actions (e.g., disabling adverts without reason), impacting incident response and compliance.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Use append-only, write-once audit logging (cloud-native immutability), forward logs to SIEM with restricted access, implement logging integrity checks, and enforce log retention/rotation policies for compliance.",
+        "applicable_controls": [
+          "Immutable Logging",
+          "SIEM",
+          "RBAC on Logs"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-019",
+        "component": "Notifications & Messaging (In-app)",
+        "threat_category": "Denial of Service",
+        "description": "Messaging system spam or automated bots overwhelm a user's inbox or notification system causing resource exhaustion and poor UX; attackers may use messaging to send harmful links.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Rate-limit message sending per account/IP, implement reputation scoring for senders, CAPTCHAs on account actions, automated content filtering, allow users to block/report senders, throttle notifications and use backpressure in queueing system.",
+        "applicable_controls": [
+          "Rate Limiting",
+          "Reputation System",
+          "CAPTCHA",
+          "Content Filtering"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-020",
+        "component": "Application Services (Search/Geo)",
+        "threat_category": "Tampering",
+        "description": "Search index poisoning or malicious adverts crafted to manipulate search ranking (e.g., SEO spam, repeated adverts to surface malicious listings), reducing quality and user trust.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Rate-limit advert creation, use deduplication checks, reputation-based ranking and human review for new advertisers, monitor ranking changes, and use anomaly detection in search metrics.",
+        "applicable_controls": [
+          "Rate Limiting",
+          "Reputation-based Ranking",
+          "Index Integrity Checks"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-021",
+        "component": "External Services (Email Provider)",
+        "threat_category": "Information Disclosure",
+        "description": "Compromise or misconfiguration at the email provider leading to leakage of verification emails, digests, or password resets enabling account takeover or exposure of PII.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use reputable ESP with secure contracts, enable TLS and DKIM/SPF/DMARC, minimize sensitive data in emails, send reset links that expire quickly, monitor ESP security advisories, and have incident response plan for ESP compromise.",
+        "applicable_controls": [
+          "TLS",
+          "DKIM/SPF/DMARC",
+          "ESP SLA Review"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-022",
+        "component": "Data Storage (Backups & Logs)",
+        "threat_category": "Information Disclosure",
+        "description": "Backups or audit logs containing historic PII retained longer than necessary, or accessible by excessive staff, leading to compliance violations (GDPR) and data breach risks.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Apply data retention policies and automated deletion, anonymize/pseudonymize PII where possible, restrict access to backups via IAM, encrypt backups, and periodically audit access to retention stores.",
+        "applicable_controls": [
+          "Data Retention Policy",
+          "Encryption",
+          "Access Controls"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-023",
+        "component": "Frontend / Edge (CDN)",
+        "threat_category": "Information Disclosure",
+        "description": "Cache poisoning or sensitive content cached at CDN edge (e.g., user-specific pages cached publicly) exposing PII or private adverts to other users.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use cache-control headers to prevent caching of personalized content, vary cache on headers appropriately, use CDN configuration to strip sensitive cookies/headers, and test CDN caching rules for unintended caching.",
+        "applicable_controls": [
+          "Cache-Control Headers",
+          "CDN Configuration Review"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-024",
+        "component": "Application Services / API",
+        "threat_category": "Tampering",
+        "description": "Injection attacks (SQL injection or NoSQL injection) via poorly validated advert fields or search parameters allowing data tampering, unauthorized data access, or remote code execution via unsafe ORM usage.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use parameterized queries/ORM safe APIs, validate and constrain inputs (length/format), ORM prepared statements, adopt least-privilege DB accounts, run regular SAST/DAST and DB access monitoring, and protect admin endpoints behind stricter controls.",
+        "applicable_controls": [
+          "Parameterized Queries",
+          "Input Validation",
+          "SAST/DAST"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-025",
+        "component": "Application Services (API)",
+        "threat_category": "Spoofing",
+        "description": "API key leakage or abuse (e.g., frontend-embedded keys used to query private endpoints or enumerate adverts), enabling attackers to harvest data or bypass quotas.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Never embed privileged keys in frontend, restrict keys by origin/IP and scope, rotate keys regularly, monitor key usage and set quotas, and require server-side calls for privileged operations.",
+        "applicable_controls": [
+          "Key Rotation",
+          "Key Restrictions",
+          "Monitoring"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-026",
+        "component": "Payments & Billing",
+        "threat_category": "Repudiation",
+        "description": "Lack of immutable proof for subscription entitlement changes leads to disputes where advertisers claim upgrades/downgrades were not applied correctly or were fraudulent.",
+        "likelihood": "Low",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Record subscription lifecycle events immutably with timestamps, require server-side confirmation flows for entitlements, keep audit trails tied to payment gateway transaction IDs, and notify users on entitlement changes.",
+        "applicable_controls": [
+          "Immutable Audit Trail",
+          "Server-side Entitlement Enforcement"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-027",
+        "component": "External Services (Third-party Integrations overall)",
+        "threat_category": "Information Disclosure",
+        "description": "Over-sharing of PII to third-party analytics, logging, or ML moderation providers (sending full message bodies or exact addresses) creating compliance and privacy risk.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Data minimization: pseudonymize or aggregate before sending, use contracts and DPA with providers, vet security posture of providers, encrypt data in transit and at rest, and implement strict access controls on provider integrations.",
+        "applicable_controls": [
+          "Data Minimization",
+          "DPA/Contracts",
+          "Pseudonymization"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-028",
+        "component": "Platform-wide (Account Creation & Email Domain Filtering)",
+        "threat_category": "Spoofing",
+        "description": "Bypass of email-domain verification for free-tier advertisers using disposable university-like addresses or compromised student mailbox leading to fraudulent adverts.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Perform MX record checks and restrict to known university domains list, implement additional checks (SAML/IdP integration with select institutions), manual/automated scrutiny for new advertiser accounts, rate-limit new accounts, and use reputation scoring before granting free-tier privileges.",
+        "applicable_controls": [
+          "MX Verification",
+          "Known Domain Allowlist",
+          "SAML/Institutional SSO"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-029",
+        "component": "Infrastructure / Cloud",
+        "threat_category": "Tampering",
+        "description": "Cloud misconfigurations (open management ports, overly permissive IAM roles, publicly exposed DB or storage) allowing attackers to access or modify data and resources.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Implement IaC with security scanning, enforce least-privilege IAM, use VPC/private endpoints, rotate credentials, use cloud provider security posture management (CSPM), run periodic pen tests and configuration audits, and enable multi-account separation for prod/staging.",
+        "applicable_controls": [
+          "Least-Privilege IAM",
+          "CSPM",
+          "IaC Scanning",
+          "Network Segmentation"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-030",
+        "component": "Platform-wide (Search & Saved Searches / Alerts)",
+        "threat_category": "Information Disclosure",
+        "description": "Saved searches and alert digest emails could be inferred by attackers to profile a user's activity or to stalk users (e.g., frequent queries for a person's name or location patterns).",
+        "likelihood": "Low",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Protect saved search metadata with proper ACLs, encrypt saved filters in DB if sensitive, allow users to opt-out of instant alerts, aggregate digest emails, and rate-limit alerts per user to prevent metadata leakage.",
+        "applicable_controls": [
+          "ACLs",
+          "Encryption of User Metadata",
+          "User Privacy Controls"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      }
+    ],
+    "risk_summary": "The most critical threats are account compromise (THR-006), XSS and client-side attacks (THR-001), exposure of PII/location data via storage or third-party integrations (THR-008, THR-012, THR-027), and payment-related fraud or token manipulation (THR-015). Attackers can enter via credential stuffing, injection vectors, third-party API key leakage, misconfigured cloud services, or by exploiting moderation gaps. Availability risks (DDoS against search/messaging \u2014 THR-004) also present high business impact. Priority controls: enforce strong authentication/MFA and centralized RBAC for admin functions; server-side input validation and parameterized queries; encryption-at-rest and field-level encryption for PII; strict handling of geolocation (server-side obfuscation and minimal sharing with map providers); implement WAF and API Gateway rate-limiting; use PCI-compliant payment tokenization and webhook verification; use layered moderation (ML + human review) and content sanitization; and operational controls such as least-privilege IAM, CSPM, immutible audit logging, and incident detection/response with SIEM. Overall risk posture is moderate-high: multiple high-impact vectors exist but can be materially reduced by implementing the above prioritized controls. Immediate attention should focus on account and admin protection (MFA, SSO hardening, RBAC), preventing PII leakage (encryption, obfuscation, third-party minimization), secure payment integration, and robust moderation and anti-abuse measures."
+  },
+  "tasks": [
+    {
+      "name": "perform_threat_modeling",
+      "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Reflected or stored Cross-Site Scripting (XSS) via user-supplied advert content, favourites, or saved searches causing session token theft, account takeover, or exfiltration of PII from pages rendered in other users' browsers.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Apply strict output encoding/escaping for all user content, use a secure templating engine, implement Content Security Policy (CSP) restricting script sources, sanitize HTML with a safe whitelist or disallow HTML, mark session cookies HttpOnly and SameSite=strict; conduct automated and manual security testing (SAST/DAST).\",\n      \"applicable_controls\": [\n        \"CSP\",\n        \"Input Validation\",\n        \"Output Encoding\",\n        \"HttpOnly/SameSite Cookies\",\n        \"SAST/DAST\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Client-side manipulation of UI (e.g., modifying JS to change advert metadata, prices, or display premium features) and submitting forged requests that rely on client-side checks (price, entitlements).\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce server-side authorization and validation for all business-critical operations (price changes, entitlement checks). Sign client-visible configuration where needed, validate inputs on server, and log suspicious client-side anomalies.\",\n      \"applicable_controls\": [\n        \"Server-side Authorization\",\n        \"Request Validation\",\n        \"Integrity Checks\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"UI-level phishing via malicious adverts or profiles that mimic platform branding to trick users into revealing credentials or off-platform contact details.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Restrict HTML/branding in adverts, enforce a platform watermark and verified-badge UI for verified advertisers, run automated moderation for suspicious branding, user education and reporting flow, and block off-platform contact until verification.\",\n      \"applicable_controls\": [\n        \"Automated Moderation\",\n        \"Verified Badges\",\n        \"User Reporting\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Edge Layer (CDN/WAF/API Gateway)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Layer 7 volumetric or application-layer DDoS targeting search, messaging, or advert submission endpoints to degrade availability and impact revenue and user confidence.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use CDN + WAF with adaptive rate-limiting and geo-blocking, API Gateway throttling per IP and per-account, autoscaling backend, CAPTCHA for suspicious flows (advert creation), traffic anomaly detection and scrubbing service.\",\n      \"applicable_controls\": [\n        \"WAF\",\n        \"Rate Limiting\",\n        \"Autoscaling\",\n        \"DDoS Mitigation Service\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Edge Layer (API Gateway)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Replay attacks or token theft in transit due to inadequate transport security or poor token handling (long-lived tokens, insecure storage on client) leading to account hijacking.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce TLS 1.2+/HSTS, short-lived access tokens with refresh tokens stored securely, require token binding if possible, use OAuth 2.0 best practices, revoke tokens on suspicious activity, secure local storage (avoid persistent tokens in localStorage), implement device/session fingerprinting and MFA for sensitive actions.\",\n      \"applicable_controls\": [\n        \"TLS\",\n        \"OAuth2\",\n        \"Short-lived Tokens\",\n        \"MFA\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Application Services (Auth/RBAC)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Credential stuffing, weak password reuse, or brute-force attacks leading to account takeover for advertisers or moderators. Email domain filtering for free-tier may be bypassed using disposable or compromised university addresses.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Implement rate-limited login attempts, account lockouts with progressive delays, MFA (mandatory for moderators/admins and encouraged for advertisers), password strength policy, monitor for credential stuffing via IP reputation and breached-password checks; verify university domain via domain MX checks and time-limited email verification tokens.\",\n      \"applicable_controls\": [\n        \"MFA\",\n        \"Rate Limiting\",\n        \"Breached Password Checks\",\n        \"Email Domain Verification\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Application Services (Auth/RBAC)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken access control allowing privilege escalation (e.g., seeker modifies request to set 'role=moderator' or uses API endpoints reserved for admin to approve adverts).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce server-side RBAC checks for every sensitive endpoint, implement deny-by-default ACLs, use centralized authorization library, detailed audit logging of role changes, review admin endpoints manually and require MFA/SSO for admin actions.\",\n      \"applicable_controls\": [\n        \"RBAC\",\n        \"Centralized Authorization\",\n        \"Admin MFA/SSO\",\n        \"Audit Logging\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"Application Services (Core API/Search/Geo)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Exposure of exact addresses or PII via search index or API responses (e.g., detailed coordinates leaked in map tile queries or in metadata exposed in API), undermining privacy requirement of approximate locations.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement server-side fuzzing/geo-obfuscation before storing/searching; strip exact coordinates from public search results, only store precise addresses encrypted and available to authorized parties, review third-party map integrations so they only receive approximate coordinates, log and monitor access to precise location fields.\",\n      \"applicable_controls\": [\n        \"Field-level Encryption\",\n        \"Geo-obfuscation\",\n        \"Least Privilege Access\",\n        \"Third-party Data Minimization\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"Application Services (Moderation Pipeline)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Adversarial content engineered to bypass automated moderation (image/text obfuscation, alternate language, unicode tricks) leading to publication of spam, scams, or malicious adverts.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use layered moderation: ML heuristics + deterministic rules + human review for flagged or high-risk adverts; adversarial testing of moderation models; limit feature exposure for new/low-reputation advertisers; rate-limit advert creation.\",\n      \"applicable_controls\": [\n        \"Automated Moderation\",\n        \"Human-in-the-loop\",\n        \"Adversarial Testing\",\n        \"Rate Limiting\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"Application Services (Messaging)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"In-app moderated messaging used to exchange PII; messages stored in DB and in transit may be exposed due to weak encryption, improper RBAC, or logging of message bodies to analytics systems.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt messages at rest with KMS-managed keys, enforce TLS in transit, restrict access to message stores to smallest set of service accounts, redact PII in analytics pipelines, provide ephemeral message retention policies and user-controlled deletion, log only metadata not message contents.\",\n      \"applicable_controls\": [\n        \"TLS\",\n        \"At-rest Encryption (KMS)\",\n        \"RBAC\",\n        \"PII Redaction\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Notifications & Messaging (Email/Push Providers)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive information leaked via email digests or push notifications (e.g., full advert addresses, private messages) or email interception due to misconfigured email provider templates exposing PII.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Limit content in notifications to non-sensitive summaries, avoid including PII or exact location in emails/pushes, use secure provider configurations (TLS for SMTP, signed DKIM/SPF), allow users to opt-out of email content sharing, and review templates for accidental leakage.\",\n      \"applicable_controls\": [\n        \"Template Review\",\n        \"TLS for Email\",\n        \"Notification Content Policy\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"Data Storage (Relational DB / Search Index)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Unauthorized access to backups, snapshots, or misconfigured search index (Elasticsearch/OpenSearch) exposing full dataset including PII or sensitive adverts.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce network-level access controls (VPC, private endpoints), enable authentication and TLS on search services, encrypt backups at rest, rotate access keys, restrict snapshot exports, and monitor/access alerts for unusual data exports.\",\n      \"applicable_controls\": [\n        \"Network ACLs\",\n        \"Encryption at Rest\",\n        \"Access Controls\",\n        \"Monitoring/Alerts\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"Data Storage (Object Storage for Media)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Publicly accessible S3/Blob containers containing photos that include metadata or people could be exposed due to incorrect ACLs or predictable object URLs.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use private buckets with signed, time-limited URLs for media access, strip EXIF/GPS metadata from uploaded photos, scan uploads for sensitive content, enforce upload size/content checks, and set least-privilege IAM policies for storage access.\",\n      \"applicable_controls\": [\n        \"Signed URLs\",\n        \"EXIF Stripping\",\n        \"Private Buckets\",\n        \"IAM Policies\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"External Services (Maps API)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Third-party map provider logs or telemetry reveal approximate queries or leak location metadata (e.g., passing exact coords), or attacker abuses API keys embedded in frontend to query map endpoints for data enumeration.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Send only obfuscated/approximate coordinates to map provider, restrict API keys via referer/IP restrictions, avoid embedding privileged keys in client, use server-side map proxy for sensitive queries, review provider's privacy SLA.\",\n      \"applicable_controls\": [\n        \"API Key Restriction\",\n        \"Server-side Proxy\",\n        \"Coordinate Obfuscation\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"External Services (Payment Gateway)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Payment flow manipulation or token interception causing fraudulent premium listings, subscription status manipulation, or chargeback/fraud against the platform.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use PCI-compliant gateway with tokenization (never store raw card data), validate webhooks with signatures, verify payment notification origins, reconcile subscription state server-side, implement fraud detection and anomaly monitoring, require 3DS where supported.\",\n      \"applicable_controls\": [\n        \"PCI-DSS Payment Gateway\",\n        \"Webhook Signing\",\n        \"Server-side Reconciliation\",\n        \"Fraud Detection\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"Payments & Billing\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Advertisers dispute charges or claim service not delivered; lack of reliable invoice/transaction audit trail hinders dispute resolution and may lead to financial loss.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Maintain tamper-evident audit logs for billing events, store payment tokenization metadata, send receipts with transaction IDs, enable immutable logs in SIEM, and retain reconciliation records per compliance retention policies.\",\n      \"applicable_controls\": [\n        \"Immutable Audit Logs\",\n        \"Receipt/Invoice Records\",\n        \"SIEM\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"Admin & Moderation\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Compromise of admin/moderator accounts via phishing or weak SSO config leading to mass approval of malicious adverts, deletion or tampering with audit logs, or user bans.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use strong SSO with MFA, enforce least privilege for moderator roles (separation of duties), require justification and second approval for bulk actions, record all admin actions to immutable audit logs, and monitor for anomalous admin activity.\",\n      \"applicable_controls\": [\n        \"SSO with MFA\",\n        \"Least Privilege\",\n        \"Immutable Audit Logs\",\n        \"Two-person Review for Critical Actions\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"Admin & Moderation\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient or tamperable audit logs allowing admins/moderators to deny or hide actions (e.g., disabling adverts without reason), impacting incident response and compliance.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use append-only, write-once audit logging (cloud-native immutability), forward logs to SIEM with restricted access, implement logging integrity checks, and enforce log retention/rotation policies for compliance.\",\n      \"applicable_controls\": [\n        \"Immutable Logging\",\n        \"SIEM\",\n        \"RBAC on Logs\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Notifications & Messaging (In-app)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Messaging system spam or automated bots overwhelm a user's inbox or notification system causing resource exhaustion and poor UX; attackers may use messaging to send harmful links.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Rate-limit message sending per account/IP, implement reputation scoring for senders, CAPTCHAs on account actions, automated content filtering, allow users to block/report senders, throttle notifications and use backpressure in queueing system.\",\n      \"applicable_controls\": [\n        \"Rate Limiting\",\n        \"Reputation System\",\n        \"CAPTCHA\",\n        \"Content Filtering\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"Application Services (Search/Geo)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Search index poisoning or malicious adverts crafted to manipulate search ranking (e.g., SEO spam, repeated adverts to surface malicious listings), reducing quality and user trust.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Rate-limit advert creation, use deduplication checks, reputation-based ranking and human review for new advertisers, monitor ranking changes, and use anomaly detection in search metrics.\",\n      \"applicable_controls\": [\n        \"Rate Limiting\",\n        \"Reputation-based Ranking\",\n        \"Index Integrity Checks\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"External Services (Email Provider)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Compromise or misconfiguration at the email provider leading to leakage of verification emails, digests, or password resets enabling account takeover or exposure of PII.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use reputable ESP with secure contracts, enable TLS and DKIM/SPF/DMARC, minimize sensitive data in emails, send reset links that expire quickly, monitor ESP security advisories, and have incident response plan for ESP compromise.\",\n      \"applicable_controls\": [\n        \"TLS\",\n        \"DKIM/SPF/DMARC\",\n        \"ESP SLA Review\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Data Storage (Backups & Logs)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Backups or audit logs containing historic PII retained longer than necessary, or accessible by excessive staff, leading to compliance violations (GDPR) and data breach risks.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Apply data retention policies and automated deletion, anonymize/pseudonymize PII where possible, restrict access to backups via IAM, encrypt backups, and periodically audit access to retention stores.\",\n      \"applicable_controls\": [\n        \"Data Retention Policy\",\n        \"Encryption\",\n        \"Access Controls\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"Frontend / Edge (CDN)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Cache poisoning or sensitive content cached at CDN edge (e.g., user-specific pages cached publicly) exposing PII or private adverts to other users.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use cache-control headers to prevent caching of personalized content, vary cache on headers appropriately, use CDN configuration to strip sensitive cookies/headers, and test CDN caching rules for unintended caching.\",\n      \"applicable_controls\": [\n        \"Cache-Control Headers\",\n        \"CDN Configuration Review\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"Application Services / API\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Injection attacks (SQL injection or NoSQL injection) via poorly validated advert fields or search parameters allowing data tampering, unauthorized data access, or remote code execution via unsafe ORM usage.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries/ORM safe APIs, validate and constrain inputs (length/format), ORM prepared statements, adopt least-privilege DB accounts, run regular SAST/DAST and DB access monitoring, and protect admin endpoints behind stricter controls.\",\n      \"applicable_controls\": [\n        \"Parameterized Queries\",\n        \"Input Validation\",\n        \"SAST/DAST\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Application Services (API)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"API key leakage or abuse (e.g., frontend-embedded keys used to query private endpoints or enumerate adverts), enabling attackers to harvest data or bypass quotas.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Never embed privileged keys in frontend, restrict keys by origin/IP and scope, rotate keys regularly, monitor key usage and set quotas, and require server-side calls for privileged operations.\",\n      \"applicable_controls\": [\n        \"Key Rotation\",\n        \"Key Restrictions\",\n        \"Monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Payments & Billing\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Lack of immutable proof for subscription entitlement changes leads to disputes where advertisers claim upgrades/downgrades were not applied correctly or were fraudulent.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Record subscription lifecycle events immutably with timestamps, require server-side confirmation flows for entitlements, keep audit trails tied to payment gateway transaction IDs, and notify users on entitlement changes.\",\n      \"applicable_controls\": [\n        \"Immutable Audit Trail\",\n        \"Server-side Entitlement Enforcement\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"External Services (Third-party Integrations overall)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Over-sharing of PII to third-party analytics, logging, or ML moderation providers (sending full message bodies or exact addresses) creating compliance and privacy risk.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Data minimization: pseudonymize or aggregate before sending, use contracts and DPA with providers, vet security posture of providers, encrypt data in transit and at rest, and implement strict access controls on provider integrations.\",\n      \"applicable_controls\": [\n        \"Data Minimization\",\n        \"DPA/Contracts\",\n        \"Pseudonymization\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Platform-wide (Account Creation & Email Domain Filtering)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Bypass of email-domain verification for free-tier advertisers using disposable university-like addresses or compromised student mailbox leading to fraudulent adverts.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Perform MX record checks and restrict to known university domains list, implement additional checks (SAML/IdP integration with select institutions), manual/automated scrutiny for new advertiser accounts, rate-limit new accounts, and use reputation scoring before granting free-tier privileges.\",\n      \"applicable_controls\": [\n        \"MX Verification\",\n        \"Known Domain Allowlist\",\n        \"SAML/Institutional SSO\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-029\",\n      \"component\": \"Infrastructure / Cloud\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Cloud misconfigurations (open management ports, overly permissive IAM roles, publicly exposed DB or storage) allowing attackers to access or modify data and resources.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement IaC with security scanning, enforce least-privilege IAM, use VPC/private endpoints, rotate credentials, use cloud provider security posture management (CSPM), run periodic pen tests and configuration audits, and enable multi-account separation for prod/staging.\",\n      \"applicable_controls\": [\n        \"Least-Privilege IAM\",\n        \"CSPM\",\n        \"IaC Scanning\",\n        \"Network Segmentation\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-030\",\n      \"component\": \"Platform-wide (Search & Saved Searches / Alerts)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Saved searches and alert digest emails could be inferred by attackers to profile a user's activity or to stalk users (e.g., frequent queries for a person's name or location patterns).\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Protect saved search metadata with proper ACLs, encrypt saved filters in DB if sensitive, allow users to opt-out of instant alerts, aggregate digest emails, and rate-limit alerts per user to prevent metadata leakage.\",\n      \"applicable_controls\": [\n        \"ACLs\",\n        \"Encryption of User Metadata\",\n        \"User Privacy Controls\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    }\n  ],\n  \"risk_summary\": \"The most critical threats are account compromise (THR-006), XSS and client-side attacks (THR-001), exposure of PII/location data via storage or third-party integrations (THR-008, THR-012, THR-027), and payment-related fraud or token manipulation (THR-015). Attackers can enter via credential stuffing, injection vectors, third-party API key leakage, misconfigured cloud services, or by exploiting moderation gaps. Availability risks (DDoS against search/messaging \u2014 THR-004) also present high business impact. Priority controls: enforce strong authentication/MFA and centralized RBAC for admin functions; server-side input validation and parameterized queries; encryption-at-rest and field-level encryption for PII; strict handling of geolocation (server-side obfuscation and minimal sharing with map providers); implement WAF and API Gateway rate-limiting; use PCI-compliant payment tokenization and webhook verification; use layered moderation (ML + human review) and content sanitization; and operational controls such as least-privilege IAM, CSPM, immutible audit logging, and incident detection/response with SIEM. Overall risk posture is moderate-high: multiple high-impact vectors exist but can be materially reduced by implementing the above prioritized controls. Immediate attention should focus on account and admin protection (MFA, SSO hardening, RBAC), preventing PII leakage (encryption, obfuscation, third-party minimization), secure payment integration, and robust moderation and anti-abuse measures.\" }",
+      "pydantic": {
+        "methodology": "STRIDE",
+        "threats": [
+          {
+            "threat_id": "THR-001",
+            "component": "Frontend Layer",
+            "threat_category": "Information Disclosure",
+            "description": "Reflected or stored Cross-Site Scripting (XSS) via user-supplied advert content, favourites, or saved searches causing session token theft, account takeover, or exfiltration of PII from pages rendered in other users' browsers.",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Apply strict output encoding/escaping for all user content, use a secure templating engine, implement Content Security Policy (CSP) restricting script sources, sanitize HTML with a safe whitelist or disallow HTML, mark session cookies HttpOnly and SameSite=strict; conduct automated and manual security testing (SAST/DAST).",
+            "applicable_controls": [
+              "CSP",
+              "Input Validation",
+              "Output Encoding",
+              "HttpOnly/SameSite Cookies",
+              "SAST/DAST"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-002",
+            "component": "Frontend Layer",
+            "threat_category": "Tampering",
+            "description": "Client-side manipulation of UI (e.g., modifying JS to change advert metadata, prices, or display premium features) and submitting forged requests that rely on client-side checks (price, entitlements).",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce server-side authorization and validation for all business-critical operations (price changes, entitlement checks). Sign client-visible configuration where needed, validate inputs on server, and log suspicious client-side anomalies.",
+            "applicable_controls": [
+              "Server-side Authorization",
+              "Request Validation",
+              "Integrity Checks"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-003",
+            "component": "Frontend Layer",
+            "threat_category": "Spoofing",
+            "description": "UI-level phishing via malicious adverts or profiles that mimic platform branding to trick users into revealing credentials or off-platform contact details.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Restrict HTML/branding in adverts, enforce a platform watermark and verified-badge UI for verified advertisers, run automated moderation for suspicious branding, user education and reporting flow, and block off-platform contact until verification.",
+            "applicable_controls": [
+              "Automated Moderation",
+              "Verified Badges",
+              "User Reporting"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-004",
+            "component": "Edge Layer (CDN/WAF/API Gateway)",
+            "threat_category": "Denial of Service",
+            "description": "Layer 7 volumetric or application-layer DDoS targeting search, messaging, or advert submission endpoints to degrade availability and impact revenue and user confidence.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use CDN + WAF with adaptive rate-limiting and geo-blocking, API Gateway throttling per IP and per-account, autoscaling backend, CAPTCHA for suspicious flows (advert creation), traffic anomaly detection and scrubbing service.",
+            "applicable_controls": [
+              "WAF",
+              "Rate Limiting",
+              "Autoscaling",
+              "DDoS Mitigation Service"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-005",
+            "component": "Edge Layer (API Gateway)",
+            "threat_category": "Spoofing",
+            "description": "Replay attacks or token theft in transit due to inadequate transport security or poor token handling (long-lived tokens, insecure storage on client) leading to account hijacking.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce TLS 1.2+/HSTS, short-lived access tokens with refresh tokens stored securely, require token binding if possible, use OAuth 2.0 best practices, revoke tokens on suspicious activity, secure local storage (avoid persistent tokens in localStorage), implement device/session fingerprinting and MFA for sensitive actions.",
+            "applicable_controls": [
+              "TLS",
+              "OAuth2",
+              "Short-lived Tokens",
+              "MFA"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-006",
+            "component": "Application Services (Auth/RBAC)",
+            "threat_category": "Spoofing",
+            "description": "Credential stuffing, weak password reuse, or brute-force attacks leading to account takeover for advertisers or moderators. Email domain filtering for free-tier may be bypassed using disposable or compromised university addresses.",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Implement rate-limited login attempts, account lockouts with progressive delays, MFA (mandatory for moderators/admins and encouraged for advertisers), password strength policy, monitor for credential stuffing via IP reputation and breached-password checks; verify university domain via domain MX checks and time-limited email verification tokens.",
+            "applicable_controls": [
+              "MFA",
+              "Rate Limiting",
+              "Breached Password Checks",
+              "Email Domain Verification"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-007",
+            "component": "Application Services (Auth/RBAC)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Broken access control allowing privilege escalation (e.g., seeker modifies request to set 'role=moderator' or uses API endpoints reserved for admin to approve adverts).",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce server-side RBAC checks for every sensitive endpoint, implement deny-by-default ACLs, use centralized authorization library, detailed audit logging of role changes, review admin endpoints manually and require MFA/SSO for admin actions.",
+            "applicable_controls": [
+              "RBAC",
+              "Centralized Authorization",
+              "Admin MFA/SSO",
+              "Audit Logging"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-008",
+            "component": "Application Services (Core API/Search/Geo)",
+            "threat_category": "Information Disclosure",
+            "description": "Exposure of exact addresses or PII via search index or API responses (e.g., detailed coordinates leaked in map tile queries or in metadata exposed in API), undermining privacy requirement of approximate locations.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Implement server-side fuzzing/geo-obfuscation before storing/searching; strip exact coordinates from public search results, only store precise addresses encrypted and available to authorized parties, review third-party map integrations so they only receive approximate coordinates, log and monitor access to precise location fields.",
+            "applicable_controls": [
+              "Field-level Encryption",
+              "Geo-obfuscation",
+              "Least Privilege Access",
+              "Third-party Data Minimization"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-009",
+            "component": "Application Services (Moderation Pipeline)",
+            "threat_category": "Tampering",
+            "description": "Adversarial content engineered to bypass automated moderation (image/text obfuscation, alternate language, unicode tricks) leading to publication of spam, scams, or malicious adverts.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Use layered moderation: ML heuristics + deterministic rules + human review for flagged or high-risk adverts; adversarial testing of moderation models; limit feature exposure for new/low-reputation advertisers; rate-limit advert creation.",
+            "applicable_controls": [
+              "Automated Moderation",
+              "Human-in-the-loop",
+              "Adversarial Testing",
+              "Rate Limiting"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-010",
+            "component": "Application Services (Messaging)",
+            "threat_category": "Information Disclosure",
+            "description": "In-app moderated messaging used to exchange PII; messages stored in DB and in transit may be exposed due to weak encryption, improper RBAC, or logging of message bodies to analytics systems.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Encrypt messages at rest with KMS-managed keys, enforce TLS in transit, restrict access to message stores to smallest set of service accounts, redact PII in analytics pipelines, provide ephemeral message retention policies and user-controlled deletion, log only metadata not message contents.",
+            "applicable_controls": [
+              "TLS",
+              "At-rest Encryption (KMS)",
+              "RBAC",
+              "PII Redaction"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-011",
+            "component": "Notifications & Messaging (Email/Push Providers)",
+            "threat_category": "Information Disclosure",
+            "description": "Sensitive information leaked via email digests or push notifications (e.g., full advert addresses, private messages) or email interception due to misconfigured email provider templates exposing PII.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Limit content in notifications to non-sensitive summaries, avoid including PII or exact location in emails/pushes, use secure provider configurations (TLS for SMTP, signed DKIM/SPF), allow users to opt-out of email content sharing, and review templates for accidental leakage.",
+            "applicable_controls": [
+              "Template Review",
+              "TLS for Email",
+              "Notification Content Policy"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-012",
+            "component": "Data Storage (Relational DB / Search Index)",
+            "threat_category": "Information Disclosure",
+            "description": "Unauthorized access to backups, snapshots, or misconfigured search index (Elasticsearch/OpenSearch) exposing full dataset including PII or sensitive adverts.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce network-level access controls (VPC, private endpoints), enable authentication and TLS on search services, encrypt backups at rest, rotate access keys, restrict snapshot exports, and monitor/access alerts for unusual data exports.",
+            "applicable_controls": [
+              "Network ACLs",
+              "Encryption at Rest",
+              "Access Controls",
+              "Monitoring/Alerts"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-013",
+            "component": "Data Storage (Object Storage for Media)",
+            "threat_category": "Information Disclosure",
+            "description": "Publicly accessible S3/Blob containers containing photos that include metadata or people could be exposed due to incorrect ACLs or predictable object URLs.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Use private buckets with signed, time-limited URLs for media access, strip EXIF/GPS metadata from uploaded photos, scan uploads for sensitive content, enforce upload size/content checks, and set least-privilege IAM policies for storage access.",
+            "applicable_controls": [
+              "Signed URLs",
+              "EXIF Stripping",
+              "Private Buckets",
+              "IAM Policies"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-014",
+            "component": "External Services (Maps API)",
+            "threat_category": "Information Disclosure",
+            "description": "Third-party map provider logs or telemetry reveal approximate queries or leak location metadata (e.g., passing exact coords), or attacker abuses API keys embedded in frontend to query map endpoints for data enumeration.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Send only obfuscated/approximate coordinates to map provider, restrict API keys via referer/IP restrictions, avoid embedding privileged keys in client, use server-side map proxy for sensitive queries, review provider's privacy SLA.",
+            "applicable_controls": [
+              "API Key Restriction",
+              "Server-side Proxy",
+              "Coordinate Obfuscation"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-015",
+            "component": "External Services (Payment Gateway)",
+            "threat_category": "Tampering",
+            "description": "Payment flow manipulation or token interception causing fraudulent premium listings, subscription status manipulation, or chargeback/fraud against the platform.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use PCI-compliant gateway with tokenization (never store raw card data), validate webhooks with signatures, verify payment notification origins, reconcile subscription state server-side, implement fraud detection and anomaly monitoring, require 3DS where supported.",
+            "applicable_controls": [
+              "PCI-DSS Payment Gateway",
+              "Webhook Signing",
+              "Server-side Reconciliation",
+              "Fraud Detection"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-016",
+            "component": "Payments & Billing",
+            "threat_category": "Repudiation",
+            "description": "Advertisers dispute charges or claim service not delivered; lack of reliable invoice/transaction audit trail hinders dispute resolution and may lead to financial loss.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Maintain tamper-evident audit logs for billing events, store payment tokenization metadata, send receipts with transaction IDs, enable immutable logs in SIEM, and retain reconciliation records per compliance retention policies.",
+            "applicable_controls": [
+              "Immutable Audit Logs",
+              "Receipt/Invoice Records",
+              "SIEM"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-017",
+            "component": "Admin & Moderation",
+            "threat_category": "Elevation of Privilege",
+            "description": "Compromise of admin/moderator accounts via phishing or weak SSO config leading to mass approval of malicious adverts, deletion or tampering with audit logs, or user bans.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use strong SSO with MFA, enforce least privilege for moderator roles (separation of duties), require justification and second approval for bulk actions, record all admin actions to immutable audit logs, and monitor for anomalous admin activity.",
+            "applicable_controls": [
+              "SSO with MFA",
+              "Least Privilege",
+              "Immutable Audit Logs",
+              "Two-person Review for Critical Actions"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-018",
+            "component": "Admin & Moderation",
+            "threat_category": "Repudiation",
+            "description": "Insufficient or tamperable audit logs allowing admins/moderators to deny or hide actions (e.g., disabling adverts without reason), impacting incident response and compliance.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Use append-only, write-once audit logging (cloud-native immutability), forward logs to SIEM with restricted access, implement logging integrity checks, and enforce log retention/rotation policies for compliance.",
+            "applicable_controls": [
+              "Immutable Logging",
+              "SIEM",
+              "RBAC on Logs"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-019",
+            "component": "Notifications & Messaging (In-app)",
+            "threat_category": "Denial of Service",
+            "description": "Messaging system spam or automated bots overwhelm a user's inbox or notification system causing resource exhaustion and poor UX; attackers may use messaging to send harmful links.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Rate-limit message sending per account/IP, implement reputation scoring for senders, CAPTCHAs on account actions, automated content filtering, allow users to block/report senders, throttle notifications and use backpressure in queueing system.",
+            "applicable_controls": [
+              "Rate Limiting",
+              "Reputation System",
+              "CAPTCHA",
+              "Content Filtering"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-020",
+            "component": "Application Services (Search/Geo)",
+            "threat_category": "Tampering",
+            "description": "Search index poisoning or malicious adverts crafted to manipulate search ranking (e.g., SEO spam, repeated adverts to surface malicious listings), reducing quality and user trust.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Rate-limit advert creation, use deduplication checks, reputation-based ranking and human review for new advertisers, monitor ranking changes, and use anomaly detection in search metrics.",
+            "applicable_controls": [
+              "Rate Limiting",
+              "Reputation-based Ranking",
+              "Index Integrity Checks"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-021",
+            "component": "External Services (Email Provider)",
+            "threat_category": "Information Disclosure",
+            "description": "Compromise or misconfiguration at the email provider leading to leakage of verification emails, digests, or password resets enabling account takeover or exposure of PII.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use reputable ESP with secure contracts, enable TLS and DKIM/SPF/DMARC, minimize sensitive data in emails, send reset links that expire quickly, monitor ESP security advisories, and have incident response plan for ESP compromise.",
+            "applicable_controls": [
+              "TLS",
+              "DKIM/SPF/DMARC",
+              "ESP SLA Review"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-022",
+            "component": "Data Storage (Backups & Logs)",
+            "threat_category": "Information Disclosure",
+            "description": "Backups or audit logs containing historic PII retained longer than necessary, or accessible by excessive staff, leading to compliance violations (GDPR) and data breach risks.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Apply data retention policies and automated deletion, anonymize/pseudonymize PII where possible, restrict access to backups via IAM, encrypt backups, and periodically audit access to retention stores.",
+            "applicable_controls": [
+              "Data Retention Policy",
+              "Encryption",
+              "Access Controls"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-023",
+            "component": "Frontend / Edge (CDN)",
+            "threat_category": "Information Disclosure",
+            "description": "Cache poisoning or sensitive content cached at CDN edge (e.g., user-specific pages cached publicly) exposing PII or private adverts to other users.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use cache-control headers to prevent caching of personalized content, vary cache on headers appropriately, use CDN configuration to strip sensitive cookies/headers, and test CDN caching rules for unintended caching.",
+            "applicable_controls": [
+              "Cache-Control Headers",
+              "CDN Configuration Review"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-024",
+            "component": "Application Services / API",
+            "threat_category": "Tampering",
+            "description": "Injection attacks (SQL injection or NoSQL injection) via poorly validated advert fields or search parameters allowing data tampering, unauthorized data access, or remote code execution via unsafe ORM usage.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use parameterized queries/ORM safe APIs, validate and constrain inputs (length/format), ORM prepared statements, adopt least-privilege DB accounts, run regular SAST/DAST and DB access monitoring, and protect admin endpoints behind stricter controls.",
+            "applicable_controls": [
+              "Parameterized Queries",
+              "Input Validation",
+              "SAST/DAST"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-025",
+            "component": "Application Services (API)",
+            "threat_category": "Spoofing",
+            "description": "API key leakage or abuse (e.g., frontend-embedded keys used to query private endpoints or enumerate adverts), enabling attackers to harvest data or bypass quotas.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Never embed privileged keys in frontend, restrict keys by origin/IP and scope, rotate keys regularly, monitor key usage and set quotas, and require server-side calls for privileged operations.",
+            "applicable_controls": [
+              "Key Rotation",
+              "Key Restrictions",
+              "Monitoring"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-026",
+            "component": "Payments & Billing",
+            "threat_category": "Repudiation",
+            "description": "Lack of immutable proof for subscription entitlement changes leads to disputes where advertisers claim upgrades/downgrades were not applied correctly or were fraudulent.",
+            "likelihood": "Low",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Record subscription lifecycle events immutably with timestamps, require server-side confirmation flows for entitlements, keep audit trails tied to payment gateway transaction IDs, and notify users on entitlement changes.",
+            "applicable_controls": [
+              "Immutable Audit Trail",
+              "Server-side Entitlement Enforcement"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-027",
+            "component": "External Services (Third-party Integrations overall)",
+            "threat_category": "Information Disclosure",
+            "description": "Over-sharing of PII to third-party analytics, logging, or ML moderation providers (sending full message bodies or exact addresses) creating compliance and privacy risk.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Data minimization: pseudonymize or aggregate before sending, use contracts and DPA with providers, vet security posture of providers, encrypt data in transit and at rest, and implement strict access controls on provider integrations.",
+            "applicable_controls": [
+              "Data Minimization",
+              "DPA/Contracts",
+              "Pseudonymization"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-028",
+            "component": "Platform-wide (Account Creation & Email Domain Filtering)",
+            "threat_category": "Spoofing",
+            "description": "Bypass of email-domain verification for free-tier advertisers using disposable university-like addresses or compromised student mailbox leading to fraudulent adverts.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Perform MX record checks and restrict to known university domains list, implement additional checks (SAML/IdP integration with select institutions), manual/automated scrutiny for new advertiser accounts, rate-limit new accounts, and use reputation scoring before granting free-tier privileges.",
+            "applicable_controls": [
+              "MX Verification",
+              "Known Domain Allowlist",
+              "SAML/Institutional SSO"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-029",
+            "component": "Infrastructure / Cloud",
+            "threat_category": "Tampering",
+            "description": "Cloud misconfigurations (open management ports, overly permissive IAM roles, publicly exposed DB or storage) allowing attackers to access or modify data and resources.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Implement IaC with security scanning, enforce least-privilege IAM, use VPC/private endpoints, rotate credentials, use cloud provider security posture management (CSPM), run periodic pen tests and configuration audits, and enable multi-account separation for prod/staging.",
+            "applicable_controls": [
+              "Least-Privilege IAM",
+              "CSPM",
+              "IaC Scanning",
+              "Network Segmentation"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-030",
+            "component": "Platform-wide (Search & Saved Searches / Alerts)",
+            "threat_category": "Information Disclosure",
+            "description": "Saved searches and alert digest emails could be inferred by attackers to profile a user's activity or to stalk users (e.g., frequent queries for a person's name or location patterns).",
+            "likelihood": "Low",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Protect saved search metadata with proper ACLs, encrypt saved filters in DB if sensitive, allow users to opt-out of instant alerts, aggregate digest emails, and rate-limit alerts per user to prevent metadata leakage.",
+            "applicable_controls": [
+              "ACLs",
+              "Encryption of User Metadata",
+              "User Privacy Controls"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          }
+        ],
+        "risk_summary": "The most critical threats are account compromise (THR-006), XSS and client-side attacks (THR-001), exposure of PII/location data via storage or third-party integrations (THR-008, THR-012, THR-027), and payment-related fraud or token manipulation (THR-015). Attackers can enter via credential stuffing, injection vectors, third-party API key leakage, misconfigured cloud services, or by exploiting moderation gaps. Availability risks (DDoS against search/messaging \u2014 THR-004) also present high business impact. Priority controls: enforce strong authentication/MFA and centralized RBAC for admin functions; server-side input validation and parameterized queries; encryption-at-rest and field-level encryption for PII; strict handling of geolocation (server-side obfuscation and minimal sharing with map providers); implement WAF and API Gateway rate-limiting; use PCI-compliant payment tokenization and webhook verification; use layered moderation (ML + human review) and content sanitization; and operational controls such as least-privilege IAM, CSPM, immutible audit logging, and incident detection/response with SIEM. Overall risk posture is moderate-high: multiple high-impact vectors exist but can be materially reduced by implementing the above prioritized controls. Immediate attention should focus on account and admin protection (MFA, SSO hardening, RBAC), preventing PII leakage (encryption, obfuscation, third-party minimization), secure payment integration, and robust moderation and anti-abuse measures."
+      }
+    }
+  ]
+}

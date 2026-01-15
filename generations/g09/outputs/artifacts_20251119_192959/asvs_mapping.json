@@ -1,0 +1,722 @@
+[
+  {
+    "control_id": "V2.1",
+    "standard": "OWASP",
+    "v_category": "Authentication Verification",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Verify new user registrations via email or other out-of-band mechanisms to ensure account ownership."
+  },
+  {
+    "control_id": "AC-2",
+    "standard": "NIST",
+    "v_category": "Account Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization manages information system accounts, including account creation, enablement, modifi"
+  },
+  {
+    "control_id": "A.9.2.1",
+    "standard": "ISO27001",
+    "v_category": "User Access Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "A formal user registration and de-registration process shall be implemented to enable assignment of "
+  },
+  {
+    "control_id": "IA-5",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Manage, distribute, and revoke credentials and authenticators throughout the account lifecycle."
+  },
+  {
+    "control_id": "V2.2",
+    "standard": "OWASP",
+    "v_category": "Authentication Verification",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Support secure authentication including credential-based and federated authentication (OAuth2, OpenI"
+  },
+  {
+    "control_id": "IA-2",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Identify and authenticate organizational users using authenticators and, where appropriate, federate"
+  },
+  {
+    "control_id": "A.9.4.2",
+    "standard": "ISO27001",
+    "v_category": "System and Application Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Secure log-on procedures shall be implemented, where appropriate supporting single sign-on and feder"
+  },
+  {
+    "control_id": "V5.3",
+    "standard": "OWASP",
+    "v_category": "Session Management",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Ensure tokens are validated, scoped, stored securely, and revoked when necessary for SSO and OAuth u"
+  },
+  {
+    "control_id": "V2.3",
+    "standard": "OWASP",
+    "v_category": "Authentication Verification",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Implement secure password reset flows using verified contact channels and protections against accoun"
+  },
+  {
+    "control_id": "IA-5 (5)",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Establish policies and mechanisms for managing password resets and recovery in a manner that resists"
+  },
+  {
+    "control_id": "V5.1",
+    "standard": "OWASP",
+    "v_category": "Session Management",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Recovery tokens and one-time use links must be single-use, short-lived, and protected against replay"
+  },
+  {
+    "control_id": "A.9.2.3",
+    "standard": "ISO27001",
+    "v_category": "User Access Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Ensure controlled management of authentication data and password resets, including policies and proc"
+  },
+  {
+    "control_id": "V4.1",
+    "standard": "OWASP",
+    "v_category": "Access Control Verification",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Enforce role-based access control with least privilege and separation of duties; implement role chec"
+  },
+  {
+    "control_id": "AC-3",
+    "standard": "NIST",
+    "v_category": "Access Enforcement",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Enforce access restrictions and ensure users are granted access only to authorized functions and dat"
+  },
+  {
+    "control_id": "A.9.1.2",
+    "standard": "ISO27001",
+    "v_category": "User Access Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "An access control policy based on business and security requirements shall be established, documente"
+  },
+  {
+    "control_id": "AC-2 (3)",
+    "standard": "NIST",
+    "v_category": "Account Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Automate account status changes (enable/disable) and maintain authoritative account state."
+  },
+  {
+    "control_id": "V4.6",
+    "standard": "OWASP",
+    "v_category": "Access Control Verification",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that updates to user profiles and assignments (e.g., company membership) are protected by ser"
+  },
+  {
+    "control_id": "AC-6",
+    "standard": "NIST",
+    "v_category": "Least Privilege",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Employ least privilege mechanisms for user profile updates and assignment of organizational attribut"
+  },
+  {
+    "control_id": "A.9.2.2",
+    "standard": "ISO27001",
+    "v_category": "User Access Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "A formal process for granting and revoking access rights and attributes should be followed, includin"
+  },
+  {
+    "control_id": "V1.1",
+    "standard": "OWASP",
+    "v_category": "Architecture and Design",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Design systems to maintain clear trust boundaries so profile attributes that determine access are au"
+  },
+  {
+    "control_id": "V14.1",
+    "standard": "OWASP",
+    "v_category": "Multi-Tenancy",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Ensure logical separation of tenant data and enforce access controls to prevent cross-tenant data le"
+  },
+  {
+    "control_id": "SC-7",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Implement controls to separate and protect system components and data flows; apply isolation as nece"
+  },
+  {
+    "control_id": "A.13.2.1",
+    "standard": "ISO27001",
+    "v_category": "Communications Security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information transfer and segregation mechanisms should be defined to protect the exchange and separa"
+  },
+  {
+    "control_id": "AC-6 (10)",
+    "standard": "NIST",
+    "v_category": "Least Privilege",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Apply tenant-specific access restrictions and scoping to limit access to tenant resources."
+  },
+  {
+    "control_id": "V1.3",
+    "standard": "OWASP",
+    "v_category": "Architecture and Design",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Validate business input (e.g., time ranges, required skills) server-side to prevent logic abuse and "
+  },
+  {
+    "control_id": "SI-10",
+    "standard": "NIST",
+    "v_category": "Information Integrity",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Employ integrity checks and input validation to ensure data consistency and correctness."
+  },
+  {
+    "control_id": "A.12.1.2",
+    "standard": "ISO27001",
+    "v_category": "Operational Procedures and Responsibilities",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Changes to systems and data (including configuration of business objects like shift types) should be"
+  },
+  {
+    "control_id": "V6.4",
+    "standard": "OWASP",
+    "v_category": "Business Logic",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Ensure business logic (e.g., required skills per shift type) is enforced server-side and cannot be b"
+  },
+  {
+    "control_id": "V4.4",
+    "standard": "OWASP",
+    "v_category": "Access Control Verification",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Authorize all modification endpoints and verify checks server-side to prevent unauthorized creation,"
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Determine and log auditable events including create, modify, delete operations."
+  },
+  {
+    "control_id": "A.12.4.1",
+    "standard": "ISO27001",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Event logs recording user activities, exceptions, and security events shall be produced and retained"
+  },
+  {
+    "control_id": "AC-6",
+    "standard": "NIST",
+    "v_category": "Least Privilege",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Restrict modify/delete/create operations to roles with explicit permissions."
+  },
+  {
+    "control_id": "AU-6",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Regularly review and analyze audit records for indications of unauthorized activity or changes."
+  },
+  {
+    "control_id": "V10.1",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Ensure logs and status transitions are recorded in tamper-resistant logs and integrity-protected sto"
+  },
+  {
+    "control_id": "A.12.4.3",
+    "standard": "ISO27001",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Administrator and operator activities, including status changes, should be logged and reviewed."
+  },
+  {
+    "control_id": "CM-3",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Control and document changes to system configuration and state transitions."
+  },
+  {
+    "control_id": "V13.1",
+    "standard": "OWASP",
+    "v_category": "API Security",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Securely integrate with third-party APIs using mutual authentication, input/output validation, and s"
+  },
+  {
+    "control_id": "SA-9",
+    "standard": "NIST",
+    "v_category": "System and Services Acquisition",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Ensure that external interfaces are secured and that integration with external systems follows organ"
+  },
+  {
+    "control_id": "A.15.1.1",
+    "standard": "ISO27001",
+    "v_category": "Supplier Relationships",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Establish controls for supplier relationships including security requirements for shared data and in"
+  },
+  {
+    "control_id": "SC-8",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Protect the confidentiality and integrity of information during transmission to external services."
+  },
+  {
+    "control_id": "SC-13",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Use cryptography to protect data in transit and at rest in asynchronous messaging systems."
+  },
+  {
+    "control_id": "V14.3",
+    "standard": "OWASP",
+    "v_category": "Backend and Infrastructure",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Ensure job queues and background processing components enforce authentication, authorization, and me"
+  },
+  {
+    "control_id": "A.12.1.1",
+    "standard": "ISO27001",
+    "v_category": "Operational Procedures",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Operational procedures should define and control background processing and message handling."
+  },
+  {
+    "control_id": "SI-7",
+    "standard": "NIST",
+    "v_category": "Software, Firmware, and Information Integrity",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Implement integrity checks for data processed asynchronously to detect tampering or corruption."
+  },
+  {
+    "control_id": "V11.2",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Log inputs, configuration, and outputs of automated decision algorithms to support auditing and expl"
+  },
+  {
+    "control_id": "PM-22",
+    "standard": "NIST",
+    "v_category": "Planning",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Document and analyze how automated solutions are validated, scored, and how violations are reported."
+  },
+  {
+    "control_id": "A.18.1.4",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Ensure compliance with regulatory requirements for automated processing and provide documentation fo"
+  },
+  {
+    "control_id": "AU-12",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Generate audit records for security-relevant events including algorithm outputs and violations."
+  },
+  {
+    "control_id": "A.18.1.4",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Ensure compliance with regulatory requirements for automated processing and provide documentation fo"
+  },
+  {
+    "control_id": "PL-4",
+    "standard": "NIST",
+    "v_category": "Planning",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Conduct privacy impact assessments for systems processing personal preferences."
+  },
+  {
+    "control_id": "V1.5",
+    "standard": "OWASP",
+    "v_category": "Architecture and Design",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Design systems to minimize collection of personal data and protect user preferences and privacy."
+  },
+  {
+    "control_id": "AC-19",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Protect user attribute data including preferences with appropriate access controls."
+  },
+  {
+    "control_id": "A.18.1.4",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Ensure compliance with regulatory requirements for automated processing and provide documentation fo"
+  },
+  {
+    "control_id": "PL-4",
+    "standard": "NIST",
+    "v_category": "Planning",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Conduct privacy impact assessments when processing sensitive personal data such as health-related le"
+  },
+  {
+    "control_id": "MP-6",
+    "standard": "NIST",
+    "v_category": "Media Protection",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Protect sensitive personal data at rest and in transit, and sanitize when exporting or transferring."
+  },
+  {
+    "control_id": "V1.5",
+    "standard": "OWASP",
+    "v_category": "Architecture and Design",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "Medium",
+    "requirement": "Implement privacy-by-design for sensitive employee data, minimizing collection and ensuring secure s"
+  },
+  {
+    "control_id": "AC-3 (5)",
+    "standard": "NIST",
+    "v_category": "Access Enforcement",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Support attribute-based access control when access decisions depend on attributes such as skills."
+  },
+  {
+    "control_id": "V4.2",
+    "standard": "OWASP",
+    "v_category": "Access Control Verification",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Implement and verify attribute-based authorization where access and matching logic relies on user at"
+  },
+  {
+    "control_id": "A.9.2.2",
+    "standard": "ISO27001",
+    "v_category": "User Access Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Provision access and attributes carefully to ensure accurate assignment of skills and privileges."
+  },
+  {
+    "control_id": "PM-11",
+    "standard": "NIST",
+    "v_category": "Program Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Ensure data used for decision making (e.g., skills) is accurate and maintained."
+  },
+  {
+    "control_id": "MP-6",
+    "standard": "NIST",
+    "v_category": "Media Protection",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Protect sensitive data when exporting; sanitize or redact as required before transfer or export."
+  },
+  {
+    "control_id": "V3.9",
+    "standard": "OWASP",
+    "v_category": "Data Protection",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Implement controls and authorization checks on data export features and ensure exported files do not"
+  },
+  {
+    "control_id": "A.8.2.3",
+    "standard": "ISO27001",
+    "v_category": "Asset Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Procedures for handling and transferring information assets including exports should be implemented."
+  },
+  {
+    "control_id": "AC-17",
+    "standard": "NIST",
+    "v_category": "Remote Access",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Control remote access and transfers including file exports to prevent data exfiltration."
+  },
+  {
+    "control_id": "V13.1",
+    "standard": "OWASP",
+    "v_category": "API Security",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Securely integrate with third-party APIs using mutual authentication, input/output validation, and s"
+  },
+  {
+    "control_id": "SA-9",
+    "standard": "NIST",
+    "v_category": "System and Services Acquisition",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Ensure that external interfaces are secured and that integration with external systems follows organ"
+  },
+  {
+    "control_id": "A.14.2.5",
+    "standard": "ISO27001",
+    "v_category": "System Acquisition, Development and Maintenance",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Security requirements for development and integration of interfaces should be defined and implemente"
+  },
+  {
+    "control_id": "SC-8",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Protect the confidentiality and integrity of information during transmission to external services."
+  },
+  {
+    "control_id": "V9.7",
+    "standard": "OWASP",
+    "v_category": "Internationalization and Encoding",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Properly handle Unicode, normalization, and encoding to prevent injection and XSS vulnerabilities ac"
+  },
+  {
+    "control_id": "SC-17",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Ensure localized data formats and time/date handling do not weaken security mechanisms and are consi"
+  },
+  {
+    "control_id": "A.14.2.5",
+    "standard": "ISO27001",
+    "v_category": "System Acquisition, Development and Maintenance",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Low",
+    "requirement": "Include security requirements for localized applications and data handling in development."
+  },
+  {
+    "control_id": "V9.1",
+    "standard": "OWASP",
+    "v_category": "Input Validation",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "Medium",
+    "requirement": "Validate and canonicalize input considering locale-specific encodings and formats."
+  },
+  {
+    "control_id": "V9.2",
+    "standard": "OWASP",
+    "v_category": "Injection Prevention and XSS",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Encode output and validate input to prevent XSS, especially in tables, filters, and dynamic navigati"
+  },
+  {
+    "control_id": "SI-10",
+    "standard": "NIST",
+    "v_category": "Software Integrity",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Validate input and handle errors gracefully to avoid exposing sensitive information in UI components"
+  },
+  {
+    "control_id": "A.12.2.1",
+    "standard": "ISO27001",
+    "v_category": "Protection from Malware",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Apply secure development and application-level controls to mitigate common application threats."
+  },
+  {
+    "control_id": "V5.4",
+    "standard": "OWASP",
+    "v_category": "Session Management",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Implement CSRF protections for state-changing UI actions like shift creation or accept/reject."
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Determine and log auditable events including user consent and policy acceptance."
+  },
+  {
+    "control_id": "A.18.1.4",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Ensure compliance with privacy requirements and record legal consents and policy acknowledgments."
+  },
+  {
+    "control_id": "V10.3",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Log legal acknowledgements and consent events and ensure integrity of such records."
+  },
+  {
+    "control_id": "PL-2",
+    "standard": "NIST",
+    "v_category": "Planning",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Establish policies for handling legal documents and consent records."
+  }
+]

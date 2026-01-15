@@ -1,0 +1,1143 @@
+{
+  "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"Integration & External Services / Frontend / Application Services (Azure AD SSO tokens)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"An attacker obtains or reuses Azure AD access/refresh tokens (via phishing, token theft, or compromised device) and impersonates employees/managers to submit or approve timesheets, view other users' data, or change configuration.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce strong Azure AD configuration: require MFA/conditional access, short token lifetimes, refresh token rotation, device compliance checks, detect anomalous sign-ins, revoke tokens on suspicious activity. Implement session management and token binding where possible. Monitor and alert on unusual approval activity.\",\n      \"applicable_controls\": [\n        \"Azure AD SSO\",\n        \"MFA\",\n        \"Conditional Access\",\n        \"Session management\",\n        \"Anomaly detection\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Frontend Layer / Application Services (JWT/session handling)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Session fixation or manipulation of client-side tokens (JWT tampering) leading to unauthorized access if signatures aren't verified or token claims aren't validated server-side.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use signed JWTs with server-side validation, short token TTL, secure storage (httpOnly, secure cookies), token revocation lists, refresh token rotation, and reject tokens with tampered claims. Validate token audience/issuer/nonce.\",\n      \"applicable_controls\": [\n        \"JWT signature verification\",\n        \"Secure cookie flags\",\n        \"Token revocation\",\n        \"Server-side validation\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"Timesheet Entry / Frontend & API\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"A malicious user manipulates client-side data (e.g., via browser devtools, intercepted requests, or a scripted client) to submit falsified timesheet hours, change project/task codes, or bypass required-fields checks resulting in fraudulent payroll/exported data.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce all validation and business rules server-side (required fields, min/max hours, project permissions). Implement strong authorization checks for project/task assignment. Log all changes with user identity and timestamps. Use anomaly detection on submitted hours and require manager validation for outliers.\",\n      \"applicable_controls\": [\n        \"Server-side validation\",\n        \"Business rules enforcement\",\n        \"RBAC\",\n        \"Audit logging\",\n        \"Anomaly detection\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Application Services (Approval API)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"An attacker modifies API requests (parameter tampering) to set approval fields (e.g., approved=true) or change timesheet status without proper authorization checks, enabling unauthorized approvals or status changes.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement server-side authorization checks (verify caller identity & role), require explicit manager identity verification for approval endpoints, enforce immutability of submitted timesheets unless a documented reject/amend flow exists, and validate every state transition with business rules.\",\n      \"applicable_controls\": [\n        \"RBAC\",\n        \"Authorization middleware\",\n        \"State transition validation\",\n        \"Audit logs\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Data Storage / Operational Services (Audit logs)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient or modifiable audit logging allows users (or attackers) to deny actions or to remove traces of malicious changes (e.g., approvals, delegation changes) so incidents cannot be proven.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Store audit logs in tamper-evident/immutable storage (WORM), sign logs, use append-only streams, forward logs to an external SIEM, protect log ingestion credentials, and implement strict access control and monitoring for log access.\",\n      \"applicable_controls\": [\n        \"Immutable blob storage (WORM)\",\n        \"SIEM\",\n        \"Append-only logs\",\n        \"Separation of duties\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Integration & External Services (Email notifications)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive timesheet or personnel data is leaked via email notifications (e.g., detailed timesheet contents, manager comments), exposing PII or other sensitive information to unintended recipients or through insecure email transport.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Minimize content in emails (use placeholders and secure links to the app), avoid PII in email bodies, enforce TLS for SMTP/API, redact sensitive fields, and support expiring secure links for details. Document email templates and review for leakage.\",\n      \"applicable_controls\": [\n        \"Secure email (TLS)\",\n        \"Email template review\",\n        \"Redaction\",\n        \"Secure links\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Data Storage (Relational DB / Blobs)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Data stored without proper encryption or network isolation is exposed via cloud console compromise, misconfigured storage ACLs, or stolen backups leading to leakage of user profiles, timesheets, and balances.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt data at rest (managed keys or HSM), enable network isolation (private endpoints, VNet), enforce least-privilege IAM for DB and storage, rotate keys, and regularly scan for publicly exposed buckets/containers.\",\n      \"applicable_controls\": [\n        \"Encryption at rest\",\n        \"Private endpoints\",\n        \"Storage ACLs\",\n        \"Key rotation\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"Application Services (APIs enforcing team hierarchy)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Broken access control or misapplied team hierarchy rules cause the API to return timesheet or holiday data to unauthorized users (e.g., employees viewing other teams' data).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement robust RBAC/ABAC policies, verify team membership server-side on every request, use least privilege, automated access-control unit tests, and perform periodic access reviews and penetration testing focused on horizontal data access.\",\n      \"applicable_controls\": [\n        \"RBAC/ABAC\",\n        \"Authorization tests\",\n        \"Least privilege\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"Application Services / Operational Services (Administrator accounts)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Administrator (or admin API credential) compromise permits system-wide configuration changes (workweek rules, audit log deletion or view), user management abuse, or backdoor creation.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Protect admin accounts with stronger controls: enforced MFA, privileged identity management (just-in-time elevation), segmented admin interfaces, audit of admin actions, and strict approval/workflow for admin changes.\",\n      \"applicable_controls\": [\n        \"Privileged Access Management\",\n        \"MFA\",\n        \"Just-In-Time access\",\n        \"Admin audit trails\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"Edge Layer (CDN/WAF/DDoS)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Volumetric or application-layer DDoS against the CDN/WAF or API gateway causes service disruption preventing users from submitting/approving timesheets or accessing holiday requests.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enable cloud provider DDoS protection, autoscaling, WAF rate rules, geo-blocking for suspicious traffic, traffic scrubbing, and runbook for failover and communication. Test resilience regularly.\",\n      \"applicable_controls\": [\n        \"Cloud DDoS protection\",\n        \"WAF\",\n        \"Autoscaling\",\n        \"Traffic scrubbing\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Application Services / Message Queue\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"API abuse or lack of rate limiting causes queue/backlog storm (notification/reporting jobs), exhausting resources and delaying critical approval or reporting operations.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce API rate limiting and quotas per user/tenant, backpressure and circuit breaker patterns, prioritize critical jobs, and implement monitoring/alerts for queue depths.\",\n      \"applicable_controls\": [\n        \"Rate limiting\",\n        \"API gateway quotas\",\n        \"Circuit breakers\",\n        \"Job prioritization\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"Integration & External Services (Email)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Attackers send spoofed emails resembling system notifications (approval requests or delegation changes) to trick users into clicking malicious links or divulging credentials.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Publish and enforce SPF/DKIM/DMARC for sending domains, include secure link patterns, educate users on phishing, include in-app verification of actions, and consider signed emails or HMACed notification tokens.\",\n      \"applicable_controls\": [\n        \"SPF/DKIM/DMARC\",\n        \"Email signing\",\n        \"User training\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"Frontend Layer (SPA) / Application Services (API responses)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Stored or reflected XSS in the SPA exposes authentication cookies, tokens, or visible sensitive data, allowing account takeover or data leakage.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement output encoding, input validation, Content Security Policy (CSP), use httpOnly and secure cookie flags, sanitize HTML and third-party content, and perform SAST/DAST focused on XSS.\",\n      \"applicable_controls\": [\n        \"Output encoding\",\n        \"CSP\",\n        \"Sanitization\",\n        \"Secure cookie flags\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"Data Storage (Blob attachments)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"An attacker replaces or tampers with uploaded attachments (e.g., receipts, evidence) stored in blob storage, undermining audit integrity or providing falsified evidence.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enable immutable (WORM) storage or versioning for attachments, use signed URLs with narrow time windows, store checksums/hashes in DB, and log upload/replace actions with identity.\",\n      \"applicable_controls\": [\n        \"WORM blob storage\",\n        \"Blob versioning\",\n        \"Signed URLs\",\n        \"Checksum validation\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"Application Services / Operational Services (Audit & Approval)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Manager or delegate claims they did not approve/reject a timesheet because audit trails lack signed identity/timestamp or the system allows anonymous approvals via email links.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Record full identity and context for approvals (user id, auth token claims, IP, device), avoid email-only approval without in-app confirmation, and timestamp + sign approval events. Retain logs in immutable storage and backup.\",\n      \"applicable_controls\": [\n        \"Signed audit records\",\n        \"In-app approval flows\",\n        \"Immutable retention\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"Manager Delegation (Application Services)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"A delegate uses delegated permissions beyond the defined scope or after the delegation expiry (e.g., approving for the wrong team or outside date range).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce delegation scope and start/end validation server-side for every approval attempt, notify original manager and delegate on delegation changes, log all delegated actions, and provide an audit and revoke capability.\",\n      \"applicable_controls\": [\n        \"Scope checks\",\n        \"Delegation expiry enforcement\",\n        \"Notifications\",\n        \"Audit\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"Application Services (Business rules engine)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Misconfiguration or unauthorized modification of business rules (e.g., min/max hours, public holidays) leads to incorrect enforcement, allowing overworked/underworked entries or bypassing holiday application.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Protect configuration change paths with RBAC, require approval and audit for business rule changes, validate rule changes in staging with automated tests, and provide immutable history of rule versions.\",\n      \"applicable_controls\": [\n        \"Change control\",\n        \"RBAC\",\n        \"Testing/CI\",\n        \"Config versioning\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"Operational Services (Monitoring & Logs)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Debug or verbose logs in production include tokens, PII, or timesheet content which are accessible to engineering or third-party monitoring tools, leading to data exposure or leakage.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement logging policy to redact PII and secrets, use structured logging with redaction, restrict access to logs by role, and configure monitoring/third-party integrations to avoid ingesting sensitive data.\",\n      \"applicable_controls\": [\n        \"Logging redaction\",\n        \"Access control for logs\",\n        \"Monitoring policies\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Manager Delegation / Data Storage\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"An attacker modifies delegation records (direct DB write or API tampering) to make themselves or a malicious user a delegate, allowing approvals and access to team timesheets.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Restrict delegation changes to authenticated manager flows with two-factor confirmation for delegation grants, send email/ in-app notifications for delegation creation, enforce server-side validation of who can create delegations, and audit delegation changes.\",\n      \"applicable_controls\": [\n        \"Server-side authorization\",\n        \"Notifications\",\n        \"Audit logging\",\n        \"Two-factor confirmation for sensitive changes\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"Integration & External Services (Public holiday feeds)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"A malicious or compromised public holiday feed provides malformed or malicious data, or leaks organization-specific mappings causing incorrect holiday application or confusion in timesheets.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Low\",\n      \"risk_level\": \"Low\",\n      \"mitigation_strategy\": \"Validate and sanitize external feed data, sandbox import process, apply whitelist rules, and allow administrators to approve feed changes. Monitor for anomalies and fallback to cached known-good data.\",\n      \"applicable_controls\": [\n        \"Feed validation\",\n        \"Sandboxing\",\n        \"Admin approval\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"Application Services (API/DB)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"SQL injection or other injection vulnerabilities in APIs allow attackers to modify or view database entries including timesheets, user data, or audit records.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries/ORM, input validation and whitelisting, enforce least-privilege DB accounts, use WAF signatures as defense-in-depth, and run automated SAST/DAST and regular penetration testing.\",\n      \"applicable_controls\": [\n        \"Parameterized queries\",\n        \"ORM\",\n        \"WAF\",\n        \"SAST/DAST\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Data Storage (Backups / Cloud storage)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Misconfigured backups or snapshots (publicly accessible storage or weak ACLs) expose complete datasets including PII and payroll-relevant timesheet records.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Restrict backup storage to private networks, enforce encryption, audit and monitor storage ACL changes, automate scanning for public buckets, and secure backup management credentials.\",\n      \"applicable_controls\": [\n        \"Private backup endpoints\",\n        \"Backup encryption\",\n        \"ACL monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"Application Services / Notifications (Message Queue)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Maliciously or accidentally triggering large-scale notifications (e.g., mass delegation or submission events) overwhelms the notification service or queue, delaying or dropping critical messages.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement per-user/event rate limiting for notifications, batching, queuing limits, backpressure handling, and monitoring with alerts for queue saturation. Use retry/backoff strategies.\",\n      \"applicable_controls\": [\n        \"Notification rate limiting\",\n        \"Queue throttling\",\n        \"Monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"Application Services (Authorization / RBAC)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken access control (e.g., insecure direct object references or missing checks) allows regular employees to view or approve timesheets for other teams, leading to fraud and privacy breach.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce per-request authorization checks, avoid client-provided identifiers for access decisions, implement ABAC where appropriate, write comprehensive authorization tests, and perform regular access control audits and pentests.\",\n      \"applicable_controls\": [\n        \"Per-request authorization\",\n        \"ABAC/RBAC\",\n        \"Access testing\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Frontend Layer / Application Services (CSRF vector)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Cross-Site Request Forgery (CSRF) allows a remote site to trigger manager actions (e.g., approve a timesheet) if the app relies solely on cookies without CSRF protections.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use anti-CSRF tokens or SameSite=strict cookies, require double-submit cookies or origin checks for state-changing requests, and avoid unsafe methods with cookie-based auth for sensitive operations.\",\n      \"applicable_controls\": [\n        \"CSRF tokens\",\n        \"SameSite cookies\",\n        \"Origin checks\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Edge Layer / Frontend (CDN delivered JS)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Compromise of CDN or supply chain leads to malicious JavaScript being served to clients, enabling credential theft, XSS, or DOM-based manipulation of timesheet data.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use Subresource Integrity (SRI), pin dependencies, host critical JS from trusted origins or inline critical code, monitor CDN integrity, enable automated dependency scanning, and employ CSP to limit impacts.\",\n      \"applicable_controls\": [\n        \"SRI\",\n        \"Dependency pinning\",\n        \"CSP\",\n        \"Vendor risk management\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"Edge Layer / Application Services (TLS termination)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Weak or misconfigured TLS (old ciphers, expired certs, no HSTS) allows man-in-the-middle attacks to intercept tokens or timesheet data in transit.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce TLS 1.2+ (prefer 1.3), disable weak ciphers, implement HSTS, use managed certificate services, monitor certificate expiry, and encrypt internal service-to-service traffic.\",\n      \"applicable_controls\": [\n        \"TLS 1.2+/1.3\",\n        \"HSTS\",\n        \"Managed certs\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Integration & External Services (Transactional Email provider)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Transactional email provider fails to provide reliable delivery receipts or manipulates logs, creating gaps that make it difficult to prove notifications were sent or received.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Keep local audit logs of notification events, store delivery statuses from the provider, choose reputable providers with immutable logs/features, and have fallback notification channels (in-app/SM S).\",\n      \"applicable_controls\": [\n        \"Local notification audit\",\n        \"Provider logging\",\n        \"Fallback channels\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-029\",\n      \"component\": \"Operational Services / Data Storage (Insider threat)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Insider (malicious or compromised admin) deletes or rolls back audit logs, backups, or critical configuration leading to loss of integrity or availability of forensic evidence.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use immutable backups/WORM for audit logs, enforce separation of duties, restrict admin operations via privileged access management, alert on mass deletes/backup changes, and maintain off-site/offline copies.\",\n      \"applicable_controls\": [\n        \"WORM backups\",\n        \"Separation of duties\",\n        \"PAM (Privileged Access Management)\",\n        \"Offsite backups\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-030\",\n      \"component\": \"Integration & Data Storage (Cloud IAM & managed identities)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Misconfigured cloud IAM roles or overly-permissive managed identities allow services or users to gain higher privileges (e.g., DB admin), leading to data exfiltration or system takeover.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Apply least-privilege IAM policies, use managed identities with limited scopes, periodically review roles and permissions, implement role-approval workflows, and monitor IAM changes with alerts.\",\n      \"applicable_controls\": [\n        \"Least-privilege IAM\",\n        \"Managed identities\",\n        \"Periodic role review\",\n        \"IAM change monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    }\n  ],\n  \"risk_summary\": \"The timesheet application has a moderate-to-high overall risk posture with the most critical threats arising from tampering of timesheet data (THR-003), broken access control and elevation of privilege pathways (THR-004, THR-024, THR-030), injection vulnerabilities (THR-021), and compromise of authentication tokens or high-privilege accounts (THR-001, THR-009). Key attack vectors include compromised or stolen tokens (Azure AD), API endpoints (parameter tampering, SQL injection), client-side attacks (XSS, supply chain via CDN), misconfigured cloud storage/backups, and third-party integrations (email, holiday feeds). Immediate priority controls: enforce server-side validation and strict authorization (RBAC/ABAC) for all APIs, harden Azure AD (MFA, conditional access), implement immutable audit logging and robust monitoring/SIEM, enable encryption and private networking for storage/backups, apply WAF and rate-limiting at the edge, and remediate secure coding issues (parameterized queries, XSS defenses). Secondary priorities include delegation scope enforcement, secure notification design (no sensitive data in emails), supply chain protections (SRI/dependency pinning), and regular permission reviews. Many high risks can be materially reduced by these controls (server-side checks, RBAC, strong Azure AD configuration, WORM logs, and encryption); residual medium risks remain where human factors or complex integrations exist and should be addressed via process controls, monitoring, and periodic audits.\"\n}",
+  "pydantic": {
+    "methodology": "STRIDE",
+    "threats": [
+      {
+        "threat_id": "THR-001",
+        "component": "Integration & External Services / Frontend / Application Services (Azure AD SSO tokens)",
+        "threat_category": "Spoofing",
+        "description": "An attacker obtains or reuses Azure AD access/refresh tokens (via phishing, token theft, or compromised device) and impersonates employees/managers to submit or approve timesheets, view other users' data, or change configuration.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce strong Azure AD configuration: require MFA/conditional access, short token lifetimes, refresh token rotation, device compliance checks, detect anomalous sign-ins, revoke tokens on suspicious activity. Implement session management and token binding where possible. Monitor and alert on unusual approval activity.",
+        "applicable_controls": [
+          "Azure AD SSO",
+          "MFA",
+          "Conditional Access",
+          "Session management",
+          "Anomaly detection"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-002",
+        "component": "Frontend Layer / Application Services (JWT/session handling)",
+        "threat_category": "Spoofing",
+        "description": "Session fixation or manipulation of client-side tokens (JWT tampering) leading to unauthorized access if signatures aren't verified or token claims aren't validated server-side.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Use signed JWTs with server-side validation, short token TTL, secure storage (httpOnly, secure cookies), token revocation lists, refresh token rotation, and reject tokens with tampered claims. Validate token audience/issuer/nonce.",
+        "applicable_controls": [
+          "JWT signature verification",
+          "Secure cookie flags",
+          "Token revocation",
+          "Server-side validation"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-003",
+        "component": "Timesheet Entry / Frontend & API",
+        "threat_category": "Tampering",
+        "description": "A malicious user manipulates client-side data (e.g., via browser devtools, intercepted requests, or a scripted client) to submit falsified timesheet hours, change project/task codes, or bypass required-fields checks resulting in fraudulent payroll/exported data.",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Enforce all validation and business rules server-side (required fields, min/max hours, project permissions). Implement strong authorization checks for project/task assignment. Log all changes with user identity and timestamps. Use anomaly detection on submitted hours and require manager validation for outliers.",
+        "applicable_controls": [
+          "Server-side validation",
+          "Business rules enforcement",
+          "RBAC",
+          "Audit logging",
+          "Anomaly detection"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-004",
+        "component": "Application Services (Approval API)",
+        "threat_category": "Tampering",
+        "description": "An attacker modifies API requests (parameter tampering) to set approval fields (e.g., approved=true) or change timesheet status without proper authorization checks, enabling unauthorized approvals or status changes.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Implement server-side authorization checks (verify caller identity & role), require explicit manager identity verification for approval endpoints, enforce immutability of submitted timesheets unless a documented reject/amend flow exists, and validate every state transition with business rules.",
+        "applicable_controls": [
+          "RBAC",
+          "Authorization middleware",
+          "State transition validation",
+          "Audit logs"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-005",
+        "component": "Data Storage / Operational Services (Audit logs)",
+        "threat_category": "Repudiation",
+        "description": "Insufficient or modifiable audit logging allows users (or attackers) to deny actions or to remove traces of malicious changes (e.g., approvals, delegation changes) so incidents cannot be proven.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Store audit logs in tamper-evident/immutable storage (WORM), sign logs, use append-only streams, forward logs to an external SIEM, protect log ingestion credentials, and implement strict access control and monitoring for log access.",
+        "applicable_controls": [
+          "Immutable blob storage (WORM)",
+          "SIEM",
+          "Append-only logs",
+          "Separation of duties"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-006",
+        "component": "Integration & External Services (Email notifications)",
+        "threat_category": "Information Disclosure",
+        "description": "Sensitive timesheet or personnel data is leaked via email notifications (e.g., detailed timesheet contents, manager comments), exposing PII or other sensitive information to unintended recipients or through insecure email transport.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Minimize content in emails (use placeholders and secure links to the app), avoid PII in email bodies, enforce TLS for SMTP/API, redact sensitive fields, and support expiring secure links for details. Document email templates and review for leakage.",
+        "applicable_controls": [
+          "Secure email (TLS)",
+          "Email template review",
+          "Redaction",
+          "Secure links"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-007",
+        "component": "Data Storage (Relational DB / Blobs)",
+        "threat_category": "Information Disclosure",
+        "description": "Data stored without proper encryption or network isolation is exposed via cloud console compromise, misconfigured storage ACLs, or stolen backups leading to leakage of user profiles, timesheets, and balances.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Encrypt data at rest (managed keys or HSM), enable network isolation (private endpoints, VNet), enforce least-privilege IAM for DB and storage, rotate keys, and regularly scan for publicly exposed buckets/containers.",
+        "applicable_controls": [
+          "Encryption at rest",
+          "Private endpoints",
+          "Storage ACLs",
+          "Key rotation"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-008",
+        "component": "Application Services (APIs enforcing team hierarchy)",
+        "threat_category": "Information Disclosure",
+        "description": "Broken access control or misapplied team hierarchy rules cause the API to return timesheet or holiday data to unauthorized users (e.g., employees viewing other teams' data).",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Implement robust RBAC/ABAC policies, verify team membership server-side on every request, use least privilege, automated access-control unit tests, and perform periodic access reviews and penetration testing focused on horizontal data access.",
+        "applicable_controls": [
+          "RBAC/ABAC",
+          "Authorization tests",
+          "Least privilege"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-009",
+        "component": "Application Services / Operational Services (Administrator accounts)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Administrator (or admin API credential) compromise permits system-wide configuration changes (workweek rules, audit log deletion or view), user management abuse, or backdoor creation.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Protect admin accounts with stronger controls: enforced MFA, privileged identity management (just-in-time elevation), segmented admin interfaces, audit of admin actions, and strict approval/workflow for admin changes.",
+        "applicable_controls": [
+          "Privileged Access Management",
+          "MFA",
+          "Just-In-Time access",
+          "Admin audit trails"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-010",
+        "component": "Edge Layer (CDN/WAF/DDoS)",
+        "threat_category": "Denial of Service",
+        "description": "Volumetric or application-layer DDoS against the CDN/WAF or API gateway causes service disruption preventing users from submitting/approving timesheets or accessing holiday requests.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enable cloud provider DDoS protection, autoscaling, WAF rate rules, geo-blocking for suspicious traffic, traffic scrubbing, and runbook for failover and communication. Test resilience regularly.",
+        "applicable_controls": [
+          "Cloud DDoS protection",
+          "WAF",
+          "Autoscaling",
+          "Traffic scrubbing"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-011",
+        "component": "Application Services / Message Queue",
+        "threat_category": "Denial of Service",
+        "description": "API abuse or lack of rate limiting causes queue/backlog storm (notification/reporting jobs), exhausting resources and delaying critical approval or reporting operations.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Enforce API rate limiting and quotas per user/tenant, backpressure and circuit breaker patterns, prioritize critical jobs, and implement monitoring/alerts for queue depths.",
+        "applicable_controls": [
+          "Rate limiting",
+          "API gateway quotas",
+          "Circuit breakers",
+          "Job prioritization"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-012",
+        "component": "Integration & External Services (Email)",
+        "threat_category": "Spoofing",
+        "description": "Attackers send spoofed emails resembling system notifications (approval requests or delegation changes) to trick users into clicking malicious links or divulging credentials.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Publish and enforce SPF/DKIM/DMARC for sending domains, include secure link patterns, educate users on phishing, include in-app verification of actions, and consider signed emails or HMACed notification tokens.",
+        "applicable_controls": [
+          "SPF/DKIM/DMARC",
+          "Email signing",
+          "User training"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-013",
+        "component": "Frontend Layer (SPA) / Application Services (API responses)",
+        "threat_category": "Information Disclosure",
+        "description": "Stored or reflected XSS in the SPA exposes authentication cookies, tokens, or visible sensitive data, allowing account takeover or data leakage.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Implement output encoding, input validation, Content Security Policy (CSP), use httpOnly and secure cookie flags, sanitize HTML and third-party content, and perform SAST/DAST focused on XSS.",
+        "applicable_controls": [
+          "Output encoding",
+          "CSP",
+          "Sanitization",
+          "Secure cookie flags"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-014",
+        "component": "Data Storage (Blob attachments)",
+        "threat_category": "Tampering",
+        "description": "An attacker replaces or tampers with uploaded attachments (e.g., receipts, evidence) stored in blob storage, undermining audit integrity or providing falsified evidence.",
+        "likelihood": "Low",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Enable immutable (WORM) storage or versioning for attachments, use signed URLs with narrow time windows, store checksums/hashes in DB, and log upload/replace actions with identity.",
+        "applicable_controls": [
+          "WORM blob storage",
+          "Blob versioning",
+          "Signed URLs",
+          "Checksum validation"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-015",
+        "component": "Application Services / Operational Services (Audit & Approval)",
+        "threat_category": "Repudiation",
+        "description": "Manager or delegate claims they did not approve/reject a timesheet because audit trails lack signed identity/timestamp or the system allows anonymous approvals via email links.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Record full identity and context for approvals (user id, auth token claims, IP, device), avoid email-only approval without in-app confirmation, and timestamp + sign approval events. Retain logs in immutable storage and backup.",
+        "applicable_controls": [
+          "Signed audit records",
+          "In-app approval flows",
+          "Immutable retention"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-016",
+        "component": "Manager Delegation (Application Services)",
+        "threat_category": "Elevation of Privilege",
+        "description": "A delegate uses delegated permissions beyond the defined scope or after the delegation expiry (e.g., approving for the wrong team or outside date range).",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Enforce delegation scope and start/end validation server-side for every approval attempt, notify original manager and delegate on delegation changes, log all delegated actions, and provide an audit and revoke capability.",
+        "applicable_controls": [
+          "Scope checks",
+          "Delegation expiry enforcement",
+          "Notifications",
+          "Audit"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-017",
+        "component": "Application Services (Business rules engine)",
+        "threat_category": "Tampering",
+        "description": "Misconfiguration or unauthorized modification of business rules (e.g., min/max hours, public holidays) leads to incorrect enforcement, allowing overworked/underworked entries or bypassing holiday application.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Protect configuration change paths with RBAC, require approval and audit for business rule changes, validate rule changes in staging with automated tests, and provide immutable history of rule versions.",
+        "applicable_controls": [
+          "Change control",
+          "RBAC",
+          "Testing/CI",
+          "Config versioning"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-018",
+        "component": "Operational Services (Monitoring & Logs)",
+        "threat_category": "Information Disclosure",
+        "description": "Debug or verbose logs in production include tokens, PII, or timesheet content which are accessible to engineering or third-party monitoring tools, leading to data exposure or leakage.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Implement logging policy to redact PII and secrets, use structured logging with redaction, restrict access to logs by role, and configure monitoring/third-party integrations to avoid ingesting sensitive data.",
+        "applicable_controls": [
+          "Logging redaction",
+          "Access control for logs",
+          "Monitoring policies"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-019",
+        "component": "Manager Delegation / Data Storage",
+        "threat_category": "Spoofing",
+        "description": "An attacker modifies delegation records (direct DB write or API tampering) to make themselves or a malicious user a delegate, allowing approvals and access to team timesheets.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Restrict delegation changes to authenticated manager flows with two-factor confirmation for delegation grants, send email/ in-app notifications for delegation creation, enforce server-side validation of who can create delegations, and audit delegation changes.",
+        "applicable_controls": [
+          "Server-side authorization",
+          "Notifications",
+          "Audit logging",
+          "Two-factor confirmation for sensitive changes"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-020",
+        "component": "Integration & External Services (Public holiday feeds)",
+        "threat_category": "Information Disclosure",
+        "description": "A malicious or compromised public holiday feed provides malformed or malicious data, or leaks organization-specific mappings causing incorrect holiday application or confusion in timesheets.",
+        "likelihood": "Low",
+        "impact": "Low",
+        "risk_level": "Low",
+        "mitigation_strategy": "Validate and sanitize external feed data, sandbox import process, apply whitelist rules, and allow administrators to approve feed changes. Monitor for anomalies and fallback to cached known-good data.",
+        "applicable_controls": [
+          "Feed validation",
+          "Sandboxing",
+          "Admin approval"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-021",
+        "component": "Application Services (API/DB)",
+        "threat_category": "Tampering",
+        "description": "SQL injection or other injection vulnerabilities in APIs allow attackers to modify or view database entries including timesheets, user data, or audit records.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use parameterized queries/ORM, input validation and whitelisting, enforce least-privilege DB accounts, use WAF signatures as defense-in-depth, and run automated SAST/DAST and regular penetration testing.",
+        "applicable_controls": [
+          "Parameterized queries",
+          "ORM",
+          "WAF",
+          "SAST/DAST"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-022",
+        "component": "Data Storage (Backups / Cloud storage)",
+        "threat_category": "Information Disclosure",
+        "description": "Misconfigured backups or snapshots (publicly accessible storage or weak ACLs) expose complete datasets including PII and payroll-relevant timesheet records.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Restrict backup storage to private networks, enforce encryption, audit and monitor storage ACL changes, automate scanning for public buckets, and secure backup management credentials.",
+        "applicable_controls": [
+          "Private backup endpoints",
+          "Backup encryption",
+          "ACL monitoring"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-023",
+        "component": "Application Services / Notifications (Message Queue)",
+        "threat_category": "Denial of Service",
+        "description": "Maliciously or accidentally triggering large-scale notifications (e.g., mass delegation or submission events) overwhelms the notification service or queue, delaying or dropping critical messages.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Implement per-user/event rate limiting for notifications, batching, queuing limits, backpressure handling, and monitoring with alerts for queue saturation. Use retry/backoff strategies.",
+        "applicable_controls": [
+          "Notification rate limiting",
+          "Queue throttling",
+          "Monitoring"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-024",
+        "component": "Application Services (Authorization / RBAC)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Broken access control (e.g., insecure direct object references or missing checks) allows regular employees to view or approve timesheets for other teams, leading to fraud and privacy breach.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce per-request authorization checks, avoid client-provided identifiers for access decisions, implement ABAC where appropriate, write comprehensive authorization tests, and perform regular access control audits and pentests.",
+        "applicable_controls": [
+          "Per-request authorization",
+          "ABAC/RBAC",
+          "Access testing"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-025",
+        "component": "Frontend Layer / Application Services (CSRF vector)",
+        "threat_category": "Tampering",
+        "description": "Cross-Site Request Forgery (CSRF) allows a remote site to trigger manager actions (e.g., approve a timesheet) if the app relies solely on cookies without CSRF protections.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Use anti-CSRF tokens or SameSite=strict cookies, require double-submit cookies or origin checks for state-changing requests, and avoid unsafe methods with cookie-based auth for sensitive operations.",
+        "applicable_controls": [
+          "CSRF tokens",
+          "SameSite cookies",
+          "Origin checks"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-026",
+        "component": "Edge Layer / Frontend (CDN delivered JS)",
+        "threat_category": "Tampering",
+        "description": "Compromise of CDN or supply chain leads to malicious JavaScript being served to clients, enabling credential theft, XSS, or DOM-based manipulation of timesheet data.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use Subresource Integrity (SRI), pin dependencies, host critical JS from trusted origins or inline critical code, monitor CDN integrity, enable automated dependency scanning, and employ CSP to limit impacts.",
+        "applicable_controls": [
+          "SRI",
+          "Dependency pinning",
+          "CSP",
+          "Vendor risk management"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-027",
+        "component": "Edge Layer / Application Services (TLS termination)",
+        "threat_category": "Information Disclosure",
+        "description": "Weak or misconfigured TLS (old ciphers, expired certs, no HSTS) allows man-in-the-middle attacks to intercept tokens or timesheet data in transit.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce TLS 1.2+ (prefer 1.3), disable weak ciphers, implement HSTS, use managed certificate services, monitor certificate expiry, and encrypt internal service-to-service traffic.",
+        "applicable_controls": [
+          "TLS 1.2+/1.3",
+          "HSTS",
+          "Managed certs"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-028",
+        "component": "Integration & External Services (Transactional Email provider)",
+        "threat_category": "Repudiation",
+        "description": "Transactional email provider fails to provide reliable delivery receipts or manipulates logs, creating gaps that make it difficult to prove notifications were sent or received.",
+        "likelihood": "Low",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Keep local audit logs of notification events, store delivery statuses from the provider, choose reputable providers with immutable logs/features, and have fallback notification channels (in-app/SM S).",
+        "applicable_controls": [
+          "Local notification audit",
+          "Provider logging",
+          "Fallback channels"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-029",
+        "component": "Operational Services / Data Storage (Insider threat)",
+        "threat_category": "Denial of Service",
+        "description": "Insider (malicious or compromised admin) deletes or rolls back audit logs, backups, or critical configuration leading to loss of integrity or availability of forensic evidence.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use immutable backups/WORM for audit logs, enforce separation of duties, restrict admin operations via privileged access management, alert on mass deletes/backup changes, and maintain off-site/offline copies.",
+        "applicable_controls": [
+          "WORM backups",
+          "Separation of duties",
+          "PAM (Privileged Access Management)",
+          "Offsite backups"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-030",
+        "component": "Integration & Data Storage (Cloud IAM & managed identities)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Misconfigured cloud IAM roles or overly-permissive managed identities allow services or users to gain higher privileges (e.g., DB admin), leading to data exfiltration or system takeover.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Apply least-privilege IAM policies, use managed identities with limited scopes, periodically review roles and permissions, implement role-approval workflows, and monitor IAM changes with alerts.",
+        "applicable_controls": [
+          "Least-privilege IAM",
+          "Managed identities",
+          "Periodic role review",
+          "IAM change monitoring"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      }
+    ],
+    "risk_summary": "The timesheet application has a moderate-to-high overall risk posture with the most critical threats arising from tampering of timesheet data (THR-003), broken access control and elevation of privilege pathways (THR-004, THR-024, THR-030), injection vulnerabilities (THR-021), and compromise of authentication tokens or high-privilege accounts (THR-001, THR-009). Key attack vectors include compromised or stolen tokens (Azure AD), API endpoints (parameter tampering, SQL injection), client-side attacks (XSS, supply chain via CDN), misconfigured cloud storage/backups, and third-party integrations (email, holiday feeds). Immediate priority controls: enforce server-side validation and strict authorization (RBAC/ABAC) for all APIs, harden Azure AD (MFA, conditional access), implement immutable audit logging and robust monitoring/SIEM, enable encryption and private networking for storage/backups, apply WAF and rate-limiting at the edge, and remediate secure coding issues (parameterized queries, XSS defenses). Secondary priorities include delegation scope enforcement, secure notification design (no sensitive data in emails), supply chain protections (SRI/dependency pinning), and regular permission reviews. Many high risks can be materially reduced by these controls (server-side checks, RBAC, strong Azure AD configuration, WORM logs, and encryption); residual medium risks remain where human factors or complex integrations exist and should be addressed via process controls, monitoring, and periodic audits."
+  },
+  "tasks": [
+    {
+      "name": "perform_threat_modeling",
+      "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"Integration & External Services / Frontend / Application Services (Azure AD SSO tokens)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"An attacker obtains or reuses Azure AD access/refresh tokens (via phishing, token theft, or compromised device) and impersonates employees/managers to submit or approve timesheets, view other users' data, or change configuration.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce strong Azure AD configuration: require MFA/conditional access, short token lifetimes, refresh token rotation, device compliance checks, detect anomalous sign-ins, revoke tokens on suspicious activity. Implement session management and token binding where possible. Monitor and alert on unusual approval activity.\",\n      \"applicable_controls\": [\n        \"Azure AD SSO\",\n        \"MFA\",\n        \"Conditional Access\",\n        \"Session management\",\n        \"Anomaly detection\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Frontend Layer / Application Services (JWT/session handling)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Session fixation or manipulation of client-side tokens (JWT tampering) leading to unauthorized access if signatures aren't verified or token claims aren't validated server-side.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use signed JWTs with server-side validation, short token TTL, secure storage (httpOnly, secure cookies), token revocation lists, refresh token rotation, and reject tokens with tampered claims. Validate token audience/issuer/nonce.\",\n      \"applicable_controls\": [\n        \"JWT signature verification\",\n        \"Secure cookie flags\",\n        \"Token revocation\",\n        \"Server-side validation\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"Timesheet Entry / Frontend & API\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"A malicious user manipulates client-side data (e.g., via browser devtools, intercepted requests, or a scripted client) to submit falsified timesheet hours, change project/task codes, or bypass required-fields checks resulting in fraudulent payroll/exported data.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce all validation and business rules server-side (required fields, min/max hours, project permissions). Implement strong authorization checks for project/task assignment. Log all changes with user identity and timestamps. Use anomaly detection on submitted hours and require manager validation for outliers.\",\n      \"applicable_controls\": [\n        \"Server-side validation\",\n        \"Business rules enforcement\",\n        \"RBAC\",\n        \"Audit logging\",\n        \"Anomaly detection\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Application Services (Approval API)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"An attacker modifies API requests (parameter tampering) to set approval fields (e.g., approved=true) or change timesheet status without proper authorization checks, enabling unauthorized approvals or status changes.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement server-side authorization checks (verify caller identity & role), require explicit manager identity verification for approval endpoints, enforce immutability of submitted timesheets unless a documented reject/amend flow exists, and validate every state transition with business rules.\",\n      \"applicable_controls\": [\n        \"RBAC\",\n        \"Authorization middleware\",\n        \"State transition validation\",\n        \"Audit logs\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Data Storage / Operational Services (Audit logs)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient or modifiable audit logging allows users (or attackers) to deny actions or to remove traces of malicious changes (e.g., approvals, delegation changes) so incidents cannot be proven.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Store audit logs in tamper-evident/immutable storage (WORM), sign logs, use append-only streams, forward logs to an external SIEM, protect log ingestion credentials, and implement strict access control and monitoring for log access.\",\n      \"applicable_controls\": [\n        \"Immutable blob storage (WORM)\",\n        \"SIEM\",\n        \"Append-only logs\",\n        \"Separation of duties\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Integration & External Services (Email notifications)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive timesheet or personnel data is leaked via email notifications (e.g., detailed timesheet contents, manager comments), exposing PII or other sensitive information to unintended recipients or through insecure email transport.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Minimize content in emails (use placeholders and secure links to the app), avoid PII in email bodies, enforce TLS for SMTP/API, redact sensitive fields, and support expiring secure links for details. Document email templates and review for leakage.\",\n      \"applicable_controls\": [\n        \"Secure email (TLS)\",\n        \"Email template review\",\n        \"Redaction\",\n        \"Secure links\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Data Storage (Relational DB / Blobs)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Data stored without proper encryption or network isolation is exposed via cloud console compromise, misconfigured storage ACLs, or stolen backups leading to leakage of user profiles, timesheets, and balances.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt data at rest (managed keys or HSM), enable network isolation (private endpoints, VNet), enforce least-privilege IAM for DB and storage, rotate keys, and regularly scan for publicly exposed buckets/containers.\",\n      \"applicable_controls\": [\n        \"Encryption at rest\",\n        \"Private endpoints\",\n        \"Storage ACLs\",\n        \"Key rotation\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"Application Services (APIs enforcing team hierarchy)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Broken access control or misapplied team hierarchy rules cause the API to return timesheet or holiday data to unauthorized users (e.g., employees viewing other teams' data).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement robust RBAC/ABAC policies, verify team membership server-side on every request, use least privilege, automated access-control unit tests, and perform periodic access reviews and penetration testing focused on horizontal data access.\",\n      \"applicable_controls\": [\n        \"RBAC/ABAC\",\n        \"Authorization tests\",\n        \"Least privilege\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"Application Services / Operational Services (Administrator accounts)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Administrator (or admin API credential) compromise permits system-wide configuration changes (workweek rules, audit log deletion or view), user management abuse, or backdoor creation.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Protect admin accounts with stronger controls: enforced MFA, privileged identity management (just-in-time elevation), segmented admin interfaces, audit of admin actions, and strict approval/workflow for admin changes.\",\n      \"applicable_controls\": [\n        \"Privileged Access Management\",\n        \"MFA\",\n        \"Just-In-Time access\",\n        \"Admin audit trails\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"Edge Layer (CDN/WAF/DDoS)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Volumetric or application-layer DDoS against the CDN/WAF or API gateway causes service disruption preventing users from submitting/approving timesheets or accessing holiday requests.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enable cloud provider DDoS protection, autoscaling, WAF rate rules, geo-blocking for suspicious traffic, traffic scrubbing, and runbook for failover and communication. Test resilience regularly.\",\n      \"applicable_controls\": [\n        \"Cloud DDoS protection\",\n        \"WAF\",\n        \"Autoscaling\",\n        \"Traffic scrubbing\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Application Services / Message Queue\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"API abuse or lack of rate limiting causes queue/backlog storm (notification/reporting jobs), exhausting resources and delaying critical approval or reporting operations.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce API rate limiting and quotas per user/tenant, backpressure and circuit breaker patterns, prioritize critical jobs, and implement monitoring/alerts for queue depths.\",\n      \"applicable_controls\": [\n        \"Rate limiting\",\n        \"API gateway quotas\",\n        \"Circuit breakers\",\n        \"Job prioritization\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"Integration & External Services (Email)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Attackers send spoofed emails resembling system notifications (approval requests or delegation changes) to trick users into clicking malicious links or divulging credentials.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Publish and enforce SPF/DKIM/DMARC for sending domains, include secure link patterns, educate users on phishing, include in-app verification of actions, and consider signed emails or HMACed notification tokens.\",\n      \"applicable_controls\": [\n        \"SPF/DKIM/DMARC\",\n        \"Email signing\",\n        \"User training\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"Frontend Layer (SPA) / Application Services (API responses)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Stored or reflected XSS in the SPA exposes authentication cookies, tokens, or visible sensitive data, allowing account takeover or data leakage.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement output encoding, input validation, Content Security Policy (CSP), use httpOnly and secure cookie flags, sanitize HTML and third-party content, and perform SAST/DAST focused on XSS.\",\n      \"applicable_controls\": [\n        \"Output encoding\",\n        \"CSP\",\n        \"Sanitization\",\n        \"Secure cookie flags\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"Data Storage (Blob attachments)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"An attacker replaces or tampers with uploaded attachments (e.g., receipts, evidence) stored in blob storage, undermining audit integrity or providing falsified evidence.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enable immutable (WORM) storage or versioning for attachments, use signed URLs with narrow time windows, store checksums/hashes in DB, and log upload/replace actions with identity.\",\n      \"applicable_controls\": [\n        \"WORM blob storage\",\n        \"Blob versioning\",\n        \"Signed URLs\",\n        \"Checksum validation\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"Application Services / Operational Services (Audit & Approval)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Manager or delegate claims they did not approve/reject a timesheet because audit trails lack signed identity/timestamp or the system allows anonymous approvals via email links.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Record full identity and context for approvals (user id, auth token claims, IP, device), avoid email-only approval without in-app confirmation, and timestamp + sign approval events. Retain logs in immutable storage and backup.\",\n      \"applicable_controls\": [\n        \"Signed audit records\",\n        \"In-app approval flows\",\n        \"Immutable retention\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"Manager Delegation (Application Services)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"A delegate uses delegated permissions beyond the defined scope or after the delegation expiry (e.g., approving for the wrong team or outside date range).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce delegation scope and start/end validation server-side for every approval attempt, notify original manager and delegate on delegation changes, log all delegated actions, and provide an audit and revoke capability.\",\n      \"applicable_controls\": [\n        \"Scope checks\",\n        \"Delegation expiry enforcement\",\n        \"Notifications\",\n        \"Audit\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"Application Services (Business rules engine)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Misconfiguration or unauthorized modification of business rules (e.g., min/max hours, public holidays) leads to incorrect enforcement, allowing overworked/underworked entries or bypassing holiday application.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Protect configuration change paths with RBAC, require approval and audit for business rule changes, validate rule changes in staging with automated tests, and provide immutable history of rule versions.\",\n      \"applicable_controls\": [\n        \"Change control\",\n        \"RBAC\",\n        \"Testing/CI\",\n        \"Config versioning\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"Operational Services (Monitoring & Logs)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Debug or verbose logs in production include tokens, PII, or timesheet content which are accessible to engineering or third-party monitoring tools, leading to data exposure or leakage.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement logging policy to redact PII and secrets, use structured logging with redaction, restrict access to logs by role, and configure monitoring/third-party integrations to avoid ingesting sensitive data.\",\n      \"applicable_controls\": [\n        \"Logging redaction\",\n        \"Access control for logs\",\n        \"Monitoring policies\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Manager Delegation / Data Storage\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"An attacker modifies delegation records (direct DB write or API tampering) to make themselves or a malicious user a delegate, allowing approvals and access to team timesheets.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Restrict delegation changes to authenticated manager flows with two-factor confirmation for delegation grants, send email/ in-app notifications for delegation creation, enforce server-side validation of who can create delegations, and audit delegation changes.\",\n      \"applicable_controls\": [\n        \"Server-side authorization\",\n        \"Notifications\",\n        \"Audit logging\",\n        \"Two-factor confirmation for sensitive changes\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"Integration & External Services (Public holiday feeds)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"A malicious or compromised public holiday feed provides malformed or malicious data, or leaks organization-specific mappings causing incorrect holiday application or confusion in timesheets.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Low\",\n      \"risk_level\": \"Low\",\n      \"mitigation_strategy\": \"Validate and sanitize external feed data, sandbox import process, apply whitelist rules, and allow administrators to approve feed changes. Monitor for anomalies and fallback to cached known-good data.\",\n      \"applicable_controls\": [\n        \"Feed validation\",\n        \"Sandboxing\",\n        \"Admin approval\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"Application Services (API/DB)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"SQL injection or other injection vulnerabilities in APIs allow attackers to modify or view database entries including timesheets, user data, or audit records.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries/ORM, input validation and whitelisting, enforce least-privilege DB accounts, use WAF signatures as defense-in-depth, and run automated SAST/DAST and regular penetration testing.\",\n      \"applicable_controls\": [\n        \"Parameterized queries\",\n        \"ORM\",\n        \"WAF\",\n        \"SAST/DAST\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Data Storage (Backups / Cloud storage)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Misconfigured backups or snapshots (publicly accessible storage or weak ACLs) expose complete datasets including PII and payroll-relevant timesheet records.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Restrict backup storage to private networks, enforce encryption, audit and monitor storage ACL changes, automate scanning for public buckets, and secure backup management credentials.\",\n      \"applicable_controls\": [\n        \"Private backup endpoints\",\n        \"Backup encryption\",\n        \"ACL monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"Application Services / Notifications (Message Queue)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Maliciously or accidentally triggering large-scale notifications (e.g., mass delegation or submission events) overwhelms the notification service or queue, delaying or dropping critical messages.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement per-user/event rate limiting for notifications, batching, queuing limits, backpressure handling, and monitoring with alerts for queue saturation. Use retry/backoff strategies.\",\n      \"applicable_controls\": [\n        \"Notification rate limiting\",\n        \"Queue throttling\",\n        \"Monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"Application Services (Authorization / RBAC)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken access control (e.g., insecure direct object references or missing checks) allows regular employees to view or approve timesheets for other teams, leading to fraud and privacy breach.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce per-request authorization checks, avoid client-provided identifiers for access decisions, implement ABAC where appropriate, write comprehensive authorization tests, and perform regular access control audits and pentests.\",\n      \"applicable_controls\": [\n        \"Per-request authorization\",\n        \"ABAC/RBAC\",\n        \"Access testing\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Frontend Layer / Application Services (CSRF vector)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Cross-Site Request Forgery (CSRF) allows a remote site to trigger manager actions (e.g., approve a timesheet) if the app relies solely on cookies without CSRF protections.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use anti-CSRF tokens or SameSite=strict cookies, require double-submit cookies or origin checks for state-changing requests, and avoid unsafe methods with cookie-based auth for sensitive operations.\",\n      \"applicable_controls\": [\n        \"CSRF tokens\",\n        \"SameSite cookies\",\n        \"Origin checks\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Edge Layer / Frontend (CDN delivered JS)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Compromise of CDN or supply chain leads to malicious JavaScript being served to clients, enabling credential theft, XSS, or DOM-based manipulation of timesheet data.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use Subresource Integrity (SRI), pin dependencies, host critical JS from trusted origins or inline critical code, monitor CDN integrity, enable automated dependency scanning, and employ CSP to limit impacts.\",\n      \"applicable_controls\": [\n        \"SRI\",\n        \"Dependency pinning\",\n        \"CSP\",\n        \"Vendor risk management\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"Edge Layer / Application Services (TLS termination)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Weak or misconfigured TLS (old ciphers, expired certs, no HSTS) allows man-in-the-middle attacks to intercept tokens or timesheet data in transit.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce TLS 1.2+ (prefer 1.3), disable weak ciphers, implement HSTS, use managed certificate services, monitor certificate expiry, and encrypt internal service-to-service traffic.\",\n      \"applicable_controls\": [\n        \"TLS 1.2+/1.3\",\n        \"HSTS\",\n        \"Managed certs\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Integration & External Services (Transactional Email provider)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Transactional email provider fails to provide reliable delivery receipts or manipulates logs, creating gaps that make it difficult to prove notifications were sent or received.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Keep local audit logs of notification events, store delivery statuses from the provider, choose reputable providers with immutable logs/features, and have fallback notification channels (in-app/SM S).\",\n      \"applicable_controls\": [\n        \"Local notification audit\",\n        \"Provider logging\",\n        \"Fallback channels\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-029\",\n      \"component\": \"Operational Services / Data Storage (Insider threat)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Insider (malicious or compromised admin) deletes or rolls back audit logs, backups, or critical configuration leading to loss of integrity or availability of forensic evidence.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use immutable backups/WORM for audit logs, enforce separation of duties, restrict admin operations via privileged access management, alert on mass deletes/backup changes, and maintain off-site/offline copies.\",\n      \"applicable_controls\": [\n        \"WORM backups\",\n        \"Separation of duties\",\n        \"PAM (Privileged Access Management)\",\n        \"Offsite backups\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-030\",\n      \"component\": \"Integration & Data Storage (Cloud IAM & managed identities)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Misconfigured cloud IAM roles or overly-permissive managed identities allow services or users to gain higher privileges (e.g., DB admin), leading to data exfiltration or system takeover.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Apply least-privilege IAM policies, use managed identities with limited scopes, periodically review roles and permissions, implement role-approval workflows, and monitor IAM changes with alerts.\",\n      \"applicable_controls\": [\n        \"Least-privilege IAM\",\n        \"Managed identities\",\n        \"Periodic role review\",\n        \"IAM change monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    }\n  ],\n  \"risk_summary\": \"The timesheet application has a moderate-to-high overall risk posture with the most critical threats arising from tampering of timesheet data (THR-003), broken access control and elevation of privilege pathways (THR-004, THR-024, THR-030), injection vulnerabilities (THR-021), and compromise of authentication tokens or high-privilege accounts (THR-001, THR-009). Key attack vectors include compromised or stolen tokens (Azure AD), API endpoints (parameter tampering, SQL injection), client-side attacks (XSS, supply chain via CDN), misconfigured cloud storage/backups, and third-party integrations (email, holiday feeds). Immediate priority controls: enforce server-side validation and strict authorization (RBAC/ABAC) for all APIs, harden Azure AD (MFA, conditional access), implement immutable audit logging and robust monitoring/SIEM, enable encryption and private networking for storage/backups, apply WAF and rate-limiting at the edge, and remediate secure coding issues (parameterized queries, XSS defenses). Secondary priorities include delegation scope enforcement, secure notification design (no sensitive data in emails), supply chain protections (SRI/dependency pinning), and regular permission reviews. Many high risks can be materially reduced by these controls (server-side checks, RBAC, strong Azure AD configuration, WORM logs, and encryption); residual medium risks remain where human factors or complex integrations exist and should be addressed via process controls, monitoring, and periodic audits.\"\n}",
+      "pydantic": {
+        "methodology": "STRIDE",
+        "threats": [
+          {
+            "threat_id": "THR-001",
+            "component": "Integration & External Services / Frontend / Application Services (Azure AD SSO tokens)",
+            "threat_category": "Spoofing",
+            "description": "An attacker obtains or reuses Azure AD access/refresh tokens (via phishing, token theft, or compromised device) and impersonates employees/managers to submit or approve timesheets, view other users' data, or change configuration.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce strong Azure AD configuration: require MFA/conditional access, short token lifetimes, refresh token rotation, device compliance checks, detect anomalous sign-ins, revoke tokens on suspicious activity. Implement session management and token binding where possible. Monitor and alert on unusual approval activity.",
+            "applicable_controls": [
+              "Azure AD SSO",
+              "MFA",
+              "Conditional Access",
+              "Session management",
+              "Anomaly detection"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-002",
+            "component": "Frontend Layer / Application Services (JWT/session handling)",
+            "threat_category": "Spoofing",
+            "description": "Session fixation or manipulation of client-side tokens (JWT tampering) leading to unauthorized access if signatures aren't verified or token claims aren't validated server-side.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Use signed JWTs with server-side validation, short token TTL, secure storage (httpOnly, secure cookies), token revocation lists, refresh token rotation, and reject tokens with tampered claims. Validate token audience/issuer/nonce.",
+            "applicable_controls": [
+              "JWT signature verification",
+              "Secure cookie flags",
+              "Token revocation",
+              "Server-side validation"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-003",
+            "component": "Timesheet Entry / Frontend & API",
+            "threat_category": "Tampering",
+            "description": "A malicious user manipulates client-side data (e.g., via browser devtools, intercepted requests, or a scripted client) to submit falsified timesheet hours, change project/task codes, or bypass required-fields checks resulting in fraudulent payroll/exported data.",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Enforce all validation and business rules server-side (required fields, min/max hours, project permissions). Implement strong authorization checks for project/task assignment. Log all changes with user identity and timestamps. Use anomaly detection on submitted hours and require manager validation for outliers.",
+            "applicable_controls": [
+              "Server-side validation",
+              "Business rules enforcement",
+              "RBAC",
+              "Audit logging",
+              "Anomaly detection"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-004",
+            "component": "Application Services (Approval API)",
+            "threat_category": "Tampering",
+            "description": "An attacker modifies API requests (parameter tampering) to set approval fields (e.g., approved=true) or change timesheet status without proper authorization checks, enabling unauthorized approvals or status changes.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Implement server-side authorization checks (verify caller identity & role), require explicit manager identity verification for approval endpoints, enforce immutability of submitted timesheets unless a documented reject/amend flow exists, and validate every state transition with business rules.",
+            "applicable_controls": [
+              "RBAC",
+              "Authorization middleware",
+              "State transition validation",
+              "Audit logs"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-005",
+            "component": "Data Storage / Operational Services (Audit logs)",
+            "threat_category": "Repudiation",
+            "description": "Insufficient or modifiable audit logging allows users (or attackers) to deny actions or to remove traces of malicious changes (e.g., approvals, delegation changes) so incidents cannot be proven.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Store audit logs in tamper-evident/immutable storage (WORM), sign logs, use append-only streams, forward logs to an external SIEM, protect log ingestion credentials, and implement strict access control and monitoring for log access.",
+            "applicable_controls": [
+              "Immutable blob storage (WORM)",
+              "SIEM",
+              "Append-only logs",
+              "Separation of duties"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-006",
+            "component": "Integration & External Services (Email notifications)",
+            "threat_category": "Information Disclosure",
+            "description": "Sensitive timesheet or personnel data is leaked via email notifications (e.g., detailed timesheet contents, manager comments), exposing PII or other sensitive information to unintended recipients or through insecure email transport.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Minimize content in emails (use placeholders and secure links to the app), avoid PII in email bodies, enforce TLS for SMTP/API, redact sensitive fields, and support expiring secure links for details. Document email templates and review for leakage.",
+            "applicable_controls": [
+              "Secure email (TLS)",
+              "Email template review",
+              "Redaction",
+              "Secure links"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-007",
+            "component": "Data Storage (Relational DB / Blobs)",
+            "threat_category": "Information Disclosure",
+            "description": "Data stored without proper encryption or network isolation is exposed via cloud console compromise, misconfigured storage ACLs, or stolen backups leading to leakage of user profiles, timesheets, and balances.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Encrypt data at rest (managed keys or HSM), enable network isolation (private endpoints, VNet), enforce least-privilege IAM for DB and storage, rotate keys, and regularly scan for publicly exposed buckets/containers.",
+            "applicable_controls": [
+              "Encryption at rest",
+              "Private endpoints",
+              "Storage ACLs",
+              "Key rotation"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-008",
+            "component": "Application Services (APIs enforcing team hierarchy)",
+            "threat_category": "Information Disclosure",
+            "description": "Broken access control or misapplied team hierarchy rules cause the API to return timesheet or holiday data to unauthorized users (e.g., employees viewing other teams' data).",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Implement robust RBAC/ABAC policies, verify team membership server-side on every request, use least privilege, automated access-control unit tests, and perform periodic access reviews and penetration testing focused on horizontal data access.",
+            "applicable_controls": [
+              "RBAC/ABAC",
+              "Authorization tests",
+              "Least privilege"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-009",
+            "component": "Application Services / Operational Services (Administrator accounts)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Administrator (or admin API credential) compromise permits system-wide configuration changes (workweek rules, audit log deletion or view), user management abuse, or backdoor creation.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Protect admin accounts with stronger controls: enforced MFA, privileged identity management (just-in-time elevation), segmented admin interfaces, audit of admin actions, and strict approval/workflow for admin changes.",
+            "applicable_controls": [
+              "Privileged Access Management",
+              "MFA",
+              "Just-In-Time access",
+              "Admin audit trails"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-010",
+            "component": "Edge Layer (CDN/WAF/DDoS)",
+            "threat_category": "Denial of Service",
+            "description": "Volumetric or application-layer DDoS against the CDN/WAF or API gateway causes service disruption preventing users from submitting/approving timesheets or accessing holiday requests.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enable cloud provider DDoS protection, autoscaling, WAF rate rules, geo-blocking for suspicious traffic, traffic scrubbing, and runbook for failover and communication. Test resilience regularly.",
+            "applicable_controls": [
+              "Cloud DDoS protection",
+              "WAF",
+              "Autoscaling",
+              "Traffic scrubbing"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-011",
+            "component": "Application Services / Message Queue",
+            "threat_category": "Denial of Service",
+            "description": "API abuse or lack of rate limiting causes queue/backlog storm (notification/reporting jobs), exhausting resources and delaying critical approval or reporting operations.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Enforce API rate limiting and quotas per user/tenant, backpressure and circuit breaker patterns, prioritize critical jobs, and implement monitoring/alerts for queue depths.",
+            "applicable_controls": [
+              "Rate limiting",
+              "API gateway quotas",
+              "Circuit breakers",
+              "Job prioritization"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-012",
+            "component": "Integration & External Services (Email)",
+            "threat_category": "Spoofing",
+            "description": "Attackers send spoofed emails resembling system notifications (approval requests or delegation changes) to trick users into clicking malicious links or divulging credentials.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Publish and enforce SPF/DKIM/DMARC for sending domains, include secure link patterns, educate users on phishing, include in-app verification of actions, and consider signed emails or HMACed notification tokens.",
+            "applicable_controls": [
+              "SPF/DKIM/DMARC",
+              "Email signing",
+              "User training"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-013",
+            "component": "Frontend Layer (SPA) / Application Services (API responses)",
+            "threat_category": "Information Disclosure",
+            "description": "Stored or reflected XSS in the SPA exposes authentication cookies, tokens, or visible sensitive data, allowing account takeover or data leakage.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Implement output encoding, input validation, Content Security Policy (CSP), use httpOnly and secure cookie flags, sanitize HTML and third-party content, and perform SAST/DAST focused on XSS.",
+            "applicable_controls": [
+              "Output encoding",
+              "CSP",
+              "Sanitization",
+              "Secure cookie flags"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-014",
+            "component": "Data Storage (Blob attachments)",
+            "threat_category": "Tampering",
+            "description": "An attacker replaces or tampers with uploaded attachments (e.g., receipts, evidence) stored in blob storage, undermining audit integrity or providing falsified evidence.",
+            "likelihood": "Low",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Enable immutable (WORM) storage or versioning for attachments, use signed URLs with narrow time windows, store checksums/hashes in DB, and log upload/replace actions with identity.",
+            "applicable_controls": [
+              "WORM blob storage",
+              "Blob versioning",
+              "Signed URLs",
+              "Checksum validation"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-015",
+            "component": "Application Services / Operational Services (Audit & Approval)",
+            "threat_category": "Repudiation",
+            "description": "Manager or delegate claims they did not approve/reject a timesheet because audit trails lack signed identity/timestamp or the system allows anonymous approvals via email links.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Record full identity and context for approvals (user id, auth token claims, IP, device), avoid email-only approval without in-app confirmation, and timestamp + sign approval events. Retain logs in immutable storage and backup.",
+            "applicable_controls": [
+              "Signed audit records",
+              "In-app approval flows",
+              "Immutable retention"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-016",
+            "component": "Manager Delegation (Application Services)",
+            "threat_category": "Elevation of Privilege",
+            "description": "A delegate uses delegated permissions beyond the defined scope or after the delegation expiry (e.g., approving for the wrong team or outside date range).",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Enforce delegation scope and start/end validation server-side for every approval attempt, notify original manager and delegate on delegation changes, log all delegated actions, and provide an audit and revoke capability.",
+            "applicable_controls": [
+              "Scope checks",
+              "Delegation expiry enforcement",
+              "Notifications",
+              "Audit"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-017",
+            "component": "Application Services (Business rules engine)",
+            "threat_category": "Tampering",
+            "description": "Misconfiguration or unauthorized modification of business rules (e.g., min/max hours, public holidays) leads to incorrect enforcement, allowing overworked/underworked entries or bypassing holiday application.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Protect configuration change paths with RBAC, require approval and audit for business rule changes, validate rule changes in staging with automated tests, and provide immutable history of rule versions.",
+            "applicable_controls": [
+              "Change control",
+              "RBAC",
+              "Testing/CI",
+              "Config versioning"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-018",
+            "component": "Operational Services (Monitoring & Logs)",
+            "threat_category": "Information Disclosure",
+            "description": "Debug or verbose logs in production include tokens, PII, or timesheet content which are accessible to engineering or third-party monitoring tools, leading to data exposure or leakage.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Implement logging policy to redact PII and secrets, use structured logging with redaction, restrict access to logs by role, and configure monitoring/third-party integrations to avoid ingesting sensitive data.",
+            "applicable_controls": [
+              "Logging redaction",
+              "Access control for logs",
+              "Monitoring policies"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-019",
+            "component": "Manager Delegation / Data Storage",
+            "threat_category": "Spoofing",
+            "description": "An attacker modifies delegation records (direct DB write or API tampering) to make themselves or a malicious user a delegate, allowing approvals and access to team timesheets.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Restrict delegation changes to authenticated manager flows with two-factor confirmation for delegation grants, send email/ in-app notifications for delegation creation, enforce server-side validation of who can create delegations, and audit delegation changes.",
+            "applicable_controls": [
+              "Server-side authorization",
+              "Notifications",
+              "Audit logging",
+              "Two-factor confirmation for sensitive changes"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-020",
+            "component": "Integration & External Services (Public holiday feeds)",
+            "threat_category": "Information Disclosure",
+            "description": "A malicious or compromised public holiday feed provides malformed or malicious data, or leaks organization-specific mappings causing incorrect holiday application or confusion in timesheets.",
+            "likelihood": "Low",
+            "impact": "Low",
+            "risk_level": "Low",
+            "mitigation_strategy": "Validate and sanitize external feed data, sandbox import process, apply whitelist rules, and allow administrators to approve feed changes. Monitor for anomalies and fallback to cached known-good data.",
+            "applicable_controls": [
+              "Feed validation",
+              "Sandboxing",
+              "Admin approval"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-021",
+            "component": "Application Services (API/DB)",
+            "threat_category": "Tampering",
+            "description": "SQL injection or other injection vulnerabilities in APIs allow attackers to modify or view database entries including timesheets, user data, or audit records.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use parameterized queries/ORM, input validation and whitelisting, enforce least-privilege DB accounts, use WAF signatures as defense-in-depth, and run automated SAST/DAST and regular penetration testing.",
+            "applicable_controls": [
+              "Parameterized queries",
+              "ORM",
+              "WAF",
+              "SAST/DAST"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-022",
+            "component": "Data Storage (Backups / Cloud storage)",
+            "threat_category": "Information Disclosure",
+            "description": "Misconfigured backups or snapshots (publicly accessible storage or weak ACLs) expose complete datasets including PII and payroll-relevant timesheet records.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Restrict backup storage to private networks, enforce encryption, audit and monitor storage ACL changes, automate scanning for public buckets, and secure backup management credentials.",
+            "applicable_controls": [
+              "Private backup endpoints",
+              "Backup encryption",
+              "ACL monitoring"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-023",
+            "component": "Application Services / Notifications (Message Queue)",
+            "threat_category": "Denial of Service",
+            "description": "Maliciously or accidentally triggering large-scale notifications (e.g., mass delegation or submission events) overwhelms the notification service or queue, delaying or dropping critical messages.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Implement per-user/event rate limiting for notifications, batching, queuing limits, backpressure handling, and monitoring with alerts for queue saturation. Use retry/backoff strategies.",
+            "applicable_controls": [
+              "Notification rate limiting",
+              "Queue throttling",
+              "Monitoring"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-024",
+            "component": "Application Services (Authorization / RBAC)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Broken access control (e.g., insecure direct object references or missing checks) allows regular employees to view or approve timesheets for other teams, leading to fraud and privacy breach.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce per-request authorization checks, avoid client-provided identifiers for access decisions, implement ABAC where appropriate, write comprehensive authorization tests, and perform regular access control audits and pentests.",
+            "applicable_controls": [
+              "Per-request authorization",
+              "ABAC/RBAC",
+              "Access testing"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-025",
+            "component": "Frontend Layer / Application Services (CSRF vector)",
+            "threat_category": "Tampering",
+            "description": "Cross-Site Request Forgery (CSRF) allows a remote site to trigger manager actions (e.g., approve a timesheet) if the app relies solely on cookies without CSRF protections.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Use anti-CSRF tokens or SameSite=strict cookies, require double-submit cookies or origin checks for state-changing requests, and avoid unsafe methods with cookie-based auth for sensitive operations.",
+            "applicable_controls": [
+              "CSRF tokens",
+              "SameSite cookies",
+              "Origin checks"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-026",
+            "component": "Edge Layer / Frontend (CDN delivered JS)",
+            "threat_category": "Tampering",
+            "description": "Compromise of CDN or supply chain leads to malicious JavaScript being served to clients, enabling credential theft, XSS, or DOM-based manipulation of timesheet data.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use Subresource Integrity (SRI), pin dependencies, host critical JS from trusted origins or inline critical code, monitor CDN integrity, enable automated dependency scanning, and employ CSP to limit impacts.",
+            "applicable_controls": [
+              "SRI",
+              "Dependency pinning",
+              "CSP",
+              "Vendor risk management"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-027",
+            "component": "Edge Layer / Application Services (TLS termination)",
+            "threat_category": "Information Disclosure",
+            "description": "Weak or misconfigured TLS (old ciphers, expired certs, no HSTS) allows man-in-the-middle attacks to intercept tokens or timesheet data in transit.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce TLS 1.2+ (prefer 1.3), disable weak ciphers, implement HSTS, use managed certificate services, monitor certificate expiry, and encrypt internal service-to-service traffic.",
+            "applicable_controls": [
+              "TLS 1.2+/1.3",
+              "HSTS",
+              "Managed certs"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-028",
+            "component": "Integration & External Services (Transactional Email provider)",
+            "threat_category": "Repudiation",
+            "description": "Transactional email provider fails to provide reliable delivery receipts or manipulates logs, creating gaps that make it difficult to prove notifications were sent or received.",
+            "likelihood": "Low",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Keep local audit logs of notification events, store delivery statuses from the provider, choose reputable providers with immutable logs/features, and have fallback notification channels (in-app/SM S).",
+            "applicable_controls": [
+              "Local notification audit",
+              "Provider logging",
+              "Fallback channels"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-029",
+            "component": "Operational Services / Data Storage (Insider threat)",
+            "threat_category": "Denial of Service",
+            "description": "Insider (malicious or compromised admin) deletes or rolls back audit logs, backups, or critical configuration leading to loss of integrity or availability of forensic evidence.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use immutable backups/WORM for audit logs, enforce separation of duties, restrict admin operations via privileged access management, alert on mass deletes/backup changes, and maintain off-site/offline copies.",
+            "applicable_controls": [
+              "WORM backups",
+              "Separation of duties",
+              "PAM (Privileged Access Management)",
+              "Offsite backups"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-030",
+            "component": "Integration & Data Storage (Cloud IAM & managed identities)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Misconfigured cloud IAM roles or overly-permissive managed identities allow services or users to gain higher privileges (e.g., DB admin), leading to data exfiltration or system takeover.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Apply least-privilege IAM policies, use managed identities with limited scopes, periodically review roles and permissions, implement role-approval workflows, and monitor IAM changes with alerts.",
+            "applicable_controls": [
+              "Least-privilege IAM",
+              "Managed identities",
+              "Periodic role review",
+              "IAM change monitoring"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          }
+        ],
+        "risk_summary": "The timesheet application has a moderate-to-high overall risk posture with the most critical threats arising from tampering of timesheet data (THR-003), broken access control and elevation of privilege pathways (THR-004, THR-024, THR-030), injection vulnerabilities (THR-021), and compromise of authentication tokens or high-privilege accounts (THR-001, THR-009). Key attack vectors include compromised or stolen tokens (Azure AD), API endpoints (parameter tampering, SQL injection), client-side attacks (XSS, supply chain via CDN), misconfigured cloud storage/backups, and third-party integrations (email, holiday feeds). Immediate priority controls: enforce server-side validation and strict authorization (RBAC/ABAC) for all APIs, harden Azure AD (MFA, conditional access), implement immutable audit logging and robust monitoring/SIEM, enable encryption and private networking for storage/backups, apply WAF and rate-limiting at the edge, and remediate secure coding issues (parameterized queries, XSS defenses). Secondary priorities include delegation scope enforcement, secure notification design (no sensitive data in emails), supply chain protections (SRI/dependency pinning), and regular permission reviews. Many high risks can be materially reduced by these controls (server-side checks, RBAC, strong Azure AD configuration, WORM logs, and encryption); residual medium risks remain where human factors or complex integrations exist and should be addressed via process controls, monitoring, and periodic audits."
+      }
+    }
+  ]
+}

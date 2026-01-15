@@ -1,0 +1,1105 @@
+{
+  "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"Edge & Auth (SSO/OAuth flows, Auth tokens)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"An attacker forges or replays authentication tokens (JWT/OAuth tokens) or exploits weak SSO/OAuth configuration to impersonate a legitimate user and gain access to boards and organization resources.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce strong token validation (signature, issuer, audience), short token TTLs, token revocation/rotation, PKCE for OAuth flows, require MFA for high-privilege roles, monitor for anomalous token usage and reuse, enforce SAML/OIDC best practices including audience and recipient checks.\",\n      \"applicable_controls\": [\n        \"MFA\",\n        \"OAuth PKCE/SAML best practices\",\n        \"JWT signature & claim validation\",\n        \"Token revocation/rotation\",\n        \"Anomaly detection/logging\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Frontend Layer (web clients)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Client-side JavaScript or local cached board deltas are tampered with (local modification of deltas or replay) to inject malicious deltas or corrupt board content that then syncs to other users.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Sign/validate deltas on the server side (operation-level HMAC or signatures), implement server-side authoritative validation of operations, limit client trust, use secure local storage mechanisms, and include operation sequencing / nonce checks.\",\n      \"applicable_controls\": [\n        \"Server-side operation validation\",\n        \"HMAC-signed deltas\",\n        \"Local storage protections (encryption & integrity checks)\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"Application Services (Realtime Sync / CRDT/OT)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Users or attackers perform malicious edits (delete or alter board history) and later deny actions; without proper immutable logging, attribution is lost and actions cannot be proven.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Write all operations to append-only audit/log store with tamper-evident techniques, include user ids and timestamps, maintain versioned board history, enable cryptographic signing of audit entries, and preserve backups for legal/forensics.\",\n      \"applicable_controls\": [\n        \"Append-only audit logs\",\n        \"Cryptographic signing of logs\",\n        \"Versioned board history & backups\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Frontend Layer (web/embedded content)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Cross-site scripting (XSS) via user-supplied text boxes, sticky notes, embedded links or comments leads to session theft, credential exposure, or data exfiltration for other users viewing the board.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Strong output encoding/escaping on all rendered user content, enforce Content Security Policy (CSP), use well-sanitized rich text libraries, server-side input validation, and sanitize embedded HTML/iframes; treat embedded external content as untrusted with sandboxing.\",\n      \"applicable_controls\": [\n        \"Contextual output encoding\",\n        \"CSP\",\n        \"Rich text sanitization\",\n        \"Sandboxing iframes\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Application Services (Core API)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"API endpoints vulnerable to injection (SQL/NoSQL/command injection) allow attackers to modify database records, board content, or permissions.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries/ORMs, input validation and whitelisting, least-privilege DB accounts, prepared statements, WAF rules for injection patterns, regular code review and dependency scanning.\",\n      \"applicable_controls\": [\n        \"Parameterized queries/ORM\",\n        \"Input validation/whitelisting\",\n        \"WAF\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Frontend Layer & API (CSRF attack surface)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Cross-Site Request Forgery causes authenticated users' browsers to execute state-changing API calls (e.g., change sharing settings, invite users, transfer ownership) without their intent.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use anti-CSRF tokens for state-changing APIs or require same-site cookies and ensure APIs require Authorization headers (not relying solely on cookies), enforce double-submit, validate Origin/Referrer headers for sensitive operations.\",\n      \"applicable_controls\": [\n        \"CSRF tokens/SameSite cookies\",\n        \"Require auth headers\",\n        \"Origin/Referrer validation\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Data Layer (object storage for assets)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Misconfigured object storage (public buckets, insecure signed URL expiry) exposes uploaded assets or board exports to unauthorized users or search engines.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce private-by-default storage policies, use short-lived signed URLs, bucket policies with least privilege, audit storage ACLs regularly, and implement malware scanning on upload.\",\n      \"applicable_controls\": [\n        \"Private-by-default storage\",\n        \"Short-lived signed URLs\",\n        \"Bucket IAM policies\",\n        \"Malware scanning on upload\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"External Services (third-party integrations)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Compromised third-party integration (e.g., Jira, Google Drive) or leaked integration tokens allow an attacker to access, modify, or exfiltrate organization data via integrations.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use least-privilege scopes for OAuth tokens, store integration credentials encrypted in KMS, provide tenant-scoped tokens, implement token rotation and revocation, allow admins to audit and revoke integrations, and implement backpressure for unusual integration activity.\",\n      \"applicable_controls\": [\n        \"Encrypted token storage (KMS)\",\n        \"Least-privilege OAuth scopes\",\n        \"Token rotation and revocation\",\n        \"Admin audit & revoke\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"Realtime Sync / Presence / PubSub\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"An attacker floods the realtime sync channels with bogus operations or presence signals, causing high CPU/network usage, increased latencies or resource exhaustion affecting collaboration for many users.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Apply rate limiting per connection/user, quota operations, validate operation sizes and shapes server-side, implement backpressure and sharding, use WAF/DDoS protection at edge, and monitor anomalous realtime traffic patterns.\",\n      \"applicable_controls\": [\n        \"Rate limiting/quota\",\n        \"WAF & DDoS protection\",\n        \"Operation size validation\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"Application Services (Media/AV processing)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Malicious media (audio/video) or crafted files cause remote code execution or memory corruption in media processing pipelines or third-party SDKs used for conferencing.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Run media processing in isolated sandboxes/containers with strict resource limits, keep codecs and SDKs updated, perform input validation, use third-party CVE monitoring, and scan files for known exploit patterns before processing.\",\n      \"applicable_controls\": [\n        \"Sandboxed media processing\",\n        \"Regular patching/CVE monitoring\",\n        \"Malware scanning\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Notifications & Integrations (webhooks)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"An attacker spoofs webhook events or forges callbacks (from Slack/Jira/etc.) to trigger unauthorized actions or inject content into boards and activity streams.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Validate webhook signatures (HMAC), use mutual TLS where possible, verify sender IP ranges or tokens, and implement replay protection and strict parsing of incoming webhook payloads.\",\n      \"applicable_controls\": [\n        \"Webhook signature validation\",\n        \"Replay protection\",\n        \"Mutual TLS for critical integrations\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"File Management (uploads)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Uploaded files contain sensitive data (PII, secrets) that are stored without encryption or leaked via export features, public links, or backups.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt files at rest using KMS, enforce DLP/malware scanning on upload, prevent exporting of sensitive file types without admin consent, audit exports, and support tenant-level data residency controls.\",\n      \"applicable_controls\": [\n        \"KMS encryption at rest\",\n        \"Malware/DLP scanning\",\n        \"Export auditing & admin controls\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"Access Control (RBAC, ownership transfer)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken access control or logic flaws allow users to escalate privileges (e.g., Member -> Admin, transfer ownership, access private boards of other teams).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce server-side authorization checks on every operation (deny-by-default), implement fine-grained RBAC with ABAC where needed, adopt least privilege for roles, require multi-step verification for ownership transfers, and perform authorization testing (fuzzing & automated checks).\",\n      \"applicable_controls\": [\n        \"Server-side RBAC enforcement\",\n        \"Least privilege model\",\n        \"Multi-step confirmation for ownership changes\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"Frontend Layer & API (Insecure Direct Object References)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Predictable or sequential identifiers for boards/assets allow attackers to enumerate and access resources (insecure direct object references) via unauthenticated or insufficiently authorized requests.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use non-guessable IDs (UUIDs, random tokens), enforce per-request authorization checks, signed URLs for assets, and audit access patterns to detect enumeration attempts.\",\n      \"applicable_controls\": [\n        \"Unpredictable object identifiers\",\n        \"Per-request auth checks\",\n        \"Signed asset URLs\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"Application Services (API layer)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Abuse of API endpoints (mass board creation, large file uploads, repeated export requests) leads to resource exhaustion impacting availability.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Implement per-tenant and per-user rate limits, quotas for uploads and exports, circuit breakers, async processing for heavy tasks with capacity controls, and monitoring/alerting for unusual spikes.\",\n      \"applicable_controls\": [\n        \"Rate limiting & quotas\",\n        \"Async job queues & circuit breakers\",\n        \"Monitoring & alerting\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"External Services (SSO/Identity Providers)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Compromise or misconfiguration of an external IdP (or compromised enterprise IdP account) leads to disclosure or unauthorized access across multiple tenants via SSO.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Support federation guards (restrict IdPs per tenant), require proof of domain ownership for enterprise SSO, enable SCIM provisioning auditing, and provide admin controls to unlink compromised IdPs and force re-authentication.\",\n      \"applicable_controls\": [\n        \"Tenant-specific IdP restrictions\",\n        \"SCIM audit trails\",\n        \"Forced re-authentication & session revocation\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"Frontend Layer (Embedded external content)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Embedded content (iframes, links) from external sites can leak user data or metadata (referrer, cookies) to third-party sites or enable clickjacking.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Sandbox embedded iframes, strip/refine referrer headers, use rel='noopener' for links, require user confirmation before embedding external content, and render previews server-side to neutralize active content.\",\n      \"applicable_controls\": [\n        \"Iframe sandboxing\",\n        \"Referrer policy\",\n        \"Server-side content preview/sanitization\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"Application Services (Integrations & OAuth tokens storage)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Stored integration tokens (Jira/Slack/Drive) are exfiltrated from databases or logs, allowing attackers to access external services and data.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt integration tokens with KMS, avoid logging secrets, rotate tokens periodically, implement strict DB access controls and monitoring, and provide least-privilege scopes for integrations.\",\n      \"applicable_controls\": [\n        \"KMS-encrypted credential store\",\n        \"No-secret logging policies\",\n        \"Token rotation & scope limitations\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Data Layer (relational/document DBs)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"An attacker or compromised process modifies board version history, RBAC metadata, or audit logs in the primary databases to cover tracks or change permissions.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use database-level auditing, append-only audit store for critical events, restrict DB admin operations to a few privileged roles, use immutable backups and multi-region replication, and monitor for unauthorized schema/data changes.\",\n      \"applicable_controls\": [\n        \"DB auditing\",\n        \"Append-only audit store\",\n        \"Immutable backups & replication\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"Frontend Layer & API (Clickjacking / UI redress)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"An attacker frames the application or uses hidden UI overlays to trick users into performing sensitive actions (e.g., changing access, exporting data).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use X-Frame-Options or CSP frame-ancestors headers, require re-authentication (or confirm dialogues) for sensitive operations, and implement UI anti-automation checks for critical flows.\",\n      \"applicable_controls\": [\n        \"X-Frame-Options/CSP frame-ancestors\",\n        \"Re-auth for critical ops\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"Application Services (API layer)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"API clients use stolen API keys or reused tokens to impersonate service clients (server-to-server integrations) and perform unauthorized API calls.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Issue scoped API keys with least privilege and rotation, require mutual TLS for server-to-server integrations, implement granular permissions and allow admins to revoke keys, implement usage monitoring and anomaly detection.\",\n      \"applicable_controls\": [\n        \"Scoped API keys & rotation\",\n        \"Mutual TLS for critical integrations\",\n        \"Anomaly detection\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Frontend Layer (client-side plugins/widgets)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Client-side telemetry or local caches accidentally include sensitive board content or PII and are leaked via browser-sync or telemetry endpoints.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Minimize telemetry collection (opt-in), anonymize/aggregate telemetry, encrypt local caches and scope cached content, and provide clear retention policies and controls for local data.\",\n      \"applicable_controls\": [\n        \"Telemetry opt-in & anonymization\",\n        \"Encrypted local cache\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"Data Layer (audit/log store)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Admin or attacker with elevated privileges alters or deletes audit logs to erase evidence of malicious activity.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use append-only tamper-evident log stores, replicate logs to separate write-only storage/region, use cryptographic signing, and restrict access to logs to a limited set of roles with out-of-band alerting on log modifications.\",\n      \"applicable_controls\": [\n        \"Append-only/tamper-evident logs\",\n        \"Replication to separate write-only storage\",\n        \"Cryptographic signing\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"External Services (cloud storage integrations)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Integration with third-party cloud storage results in unintentional sharing of organization documents (e.g., Drive link made public), leaking sensitive business information.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Request minimal scopes, allow admins to restrict which cloud providers or scopes are allowed, surface link-sharing risks to users, and scan metadata for public/shared flags and alert admins.\",\n      \"applicable_controls\": [\n        \"Scope minimization\",\n        \"Admin controls for integrations\",\n        \"Share-state scanning & alerts\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Application Services (export/PDF/image generation)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Board exports (PDF/PNG) are generated with embedded metadata (emails, internal URLs) that leak internal information when shared externally.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Scrub sensitive metadata from exports, allow admins to disable exports, present clear warnings when sharing exports publicly, and maintain audit logs of exports per user/board.\",\n      \"applicable_controls\": [\n        \"Metadata scrubbing\",\n        \"Export auditing & admin controls\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Frontend Layer & Chat/Commenting\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"@mentions, threaded comments or chat may be used to spam or leak data (e.g., mention external email to exfiltrate content), or to phish other users via malicious links in chat.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Rate limit mentions/messages, sanitize and rewrite links (e.g., safe redirector), warn/scan for suspicious links, allow users to block/unsubscribe, and provide link previews that verify destination safety.\",\n      \"applicable_controls\": [\n        \"Link scanning/safe redirector\",\n        \"Rate limiting on messaging\",\n        \"Message sanitization\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"Performance & Scalability (CDN, Realtime gateway)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Large boards with many objects or many simultaneous collaborators lead to performance degradation; an attacker may intentionally craft large documents to cause high memory/cpu on rendering and sync.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce size limits per board/object, paginate or chunk operations, lazy-load canvas regions, use CDN caching for static assets, and autoscale realtime services with admission control for overloaded tenants.\",\n      \"applicable_controls\": [\n        \"Size/complexity quotas\",\n        \"Lazy-loading & chunking\",\n        \"Autoscaling & admission control\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Integrations/API (SSRF via file import or URL fetch)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Attackers supply URLs or files causing the backend to fetch internal metadata or access internal resources (SSRF), enabling discovery of internal services or exfiltration.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Validate and restrict outbound fetch domains, use allowlists, perform server-side URL parsing and block private IP ranges, fetch via isolated proxies with egress controls, and scan file contents rather than fetching remote content when possible.\",\n      \"applicable_controls\": [\n        \"Outbound fetch allowlist/proxy\",\n        \"Private IP blocking\",\n        \"Isolated fetch workers\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-029\",\n      \"component\": \"Frontend Layer & Invitation System\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Invitation system is abused to send phishing invites or an attacker forges invitation emails to trick users into visiting malicious links or handing over credentials.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Sign outbound emails with DMARC/DKIM/SPF, include clear app branding and context-aware invite pages, require recipients to authenticate via provider (SSO) and show inviter identity, and rate limit invite sending; provide admin-level controls for external invites.\",\n      \"applicable_controls\": [\n        \"DMARC/DKIM/SPF\",\n        \"Invite rate limiting\",\n        \"Branding & context on invite pages\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-030\",\n      \"component\": \"Supply Chain (third-party SDKs used in frontend/backends)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Compromised or malicious third-party libraries (npm packages, SDKs) introduce backdoors or escalations allowing attackers to run arbitrary code or access secrets.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Pin dependency versions, use SCA tooling (software composition analysis), prefer vetted/enterprise packages, apply runtime restrictions (CSP, subresource integrity for web), scan for malicious packages, and perform periodic dependency audits.\",\n      \"applicable_controls\": [\n        \"Dependency pinning & SCA\",\n        \"Subresource Integrity (SRI)\",\n        \"Runtime restrictions (CSP)\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    }\n  ],\n  \"risk_summary\": \"The most critical threats center on authentication/authorization failures, client-side code and content handling (XSS, injection, insecure embedding), and availability/abuse of realtime and API services. High-risk scenarios include token/SSO compromise (THR-001, THR-016), critical injection/tampering of backend APIs and media processing (THR-005, THR-010), and large-scale DoS or abuse of realtime channels and API endpoints (THR-009, THR-015). Key attack vectors are: SSO/OAuth token misuse, XSS via board content and embedded items, insecure direct object references and misconfigured object storage, malicious third-party integrations and compromised tokens, SSRF via URL imports, and supply-chain compromises in third-party libraries. The system appears to have important security controls available (TLS termination, WAF/DDoS providers, RBAC, KMS, append-only logs, and malware scanning) but many threats still require prioritized attention: 1) Harden authentication and session/token lifecycle (MFA, PKCE, short TTLs, token revocation), 2) Eliminate client-sourced trust (server-side validation and signed operations), 3) Prevent content-based XSS and unsafe embedding (CSP, sanitization, sandboxing), 4) Enforce strict access controls and object storage policies (non-guessable IDs, signed URLs, encryption), and 5) Implement robust rate limiting/quota and monitoring for realtime and API layers. Immediate remediation should focus on XSS/content sanitization, authorization checks for all APIs, secure storage/rotation of integration tokens, strong telemetry/logging/audit trails, and DDoS/rate-limit protections. Overall posture is moderate-to-high risk until these priority controls are fully implemented and verified through testing (authz fuzzing, pentests, SCA, dependency audits, and resiliency testing).\"\n}",
+  "pydantic": {
+    "methodology": "STRIDE",
+    "threats": [
+      {
+        "threat_id": "THR-001",
+        "component": "Edge & Auth (SSO/OAuth flows, Auth tokens)",
+        "threat_category": "Spoofing",
+        "description": "An attacker forges or replays authentication tokens (JWT/OAuth tokens) or exploits weak SSO/OAuth configuration to impersonate a legitimate user and gain access to boards and organization resources.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce strong token validation (signature, issuer, audience), short token TTLs, token revocation/rotation, PKCE for OAuth flows, require MFA for high-privilege roles, monitor for anomalous token usage and reuse, enforce SAML/OIDC best practices including audience and recipient checks.",
+        "applicable_controls": [
+          "MFA",
+          "OAuth PKCE/SAML best practices",
+          "JWT signature & claim validation",
+          "Token revocation/rotation",
+          "Anomaly detection/logging"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-002",
+        "component": "Frontend Layer (web clients)",
+        "threat_category": "Tampering",
+        "description": "Client-side JavaScript or local cached board deltas are tampered with (local modification of deltas or replay) to inject malicious deltas or corrupt board content that then syncs to other users.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Sign/validate deltas on the server side (operation-level HMAC or signatures), implement server-side authoritative validation of operations, limit client trust, use secure local storage mechanisms, and include operation sequencing / nonce checks.",
+        "applicable_controls": [
+          "Server-side operation validation",
+          "HMAC-signed deltas",
+          "Local storage protections (encryption & integrity checks)"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-003",
+        "component": "Application Services (Realtime Sync / CRDT/OT)",
+        "threat_category": "Repudiation",
+        "description": "Users or attackers perform malicious edits (delete or alter board history) and later deny actions; without proper immutable logging, attribution is lost and actions cannot be proven.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Write all operations to append-only audit/log store with tamper-evident techniques, include user ids and timestamps, maintain versioned board history, enable cryptographic signing of audit entries, and preserve backups for legal/forensics.",
+        "applicable_controls": [
+          "Append-only audit logs",
+          "Cryptographic signing of logs",
+          "Versioned board history & backups"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-004",
+        "component": "Frontend Layer (web/embedded content)",
+        "threat_category": "Information Disclosure",
+        "description": "Cross-site scripting (XSS) via user-supplied text boxes, sticky notes, embedded links or comments leads to session theft, credential exposure, or data exfiltration for other users viewing the board.",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Strong output encoding/escaping on all rendered user content, enforce Content Security Policy (CSP), use well-sanitized rich text libraries, server-side input validation, and sanitize embedded HTML/iframes; treat embedded external content as untrusted with sandboxing.",
+        "applicable_controls": [
+          "Contextual output encoding",
+          "CSP",
+          "Rich text sanitization",
+          "Sandboxing iframes"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-005",
+        "component": "Application Services (Core API)",
+        "threat_category": "Tampering",
+        "description": "API endpoints vulnerable to injection (SQL/NoSQL/command injection) allow attackers to modify database records, board content, or permissions.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use parameterized queries/ORMs, input validation and whitelisting, least-privilege DB accounts, prepared statements, WAF rules for injection patterns, regular code review and dependency scanning.",
+        "applicable_controls": [
+          "Parameterized queries/ORM",
+          "Input validation/whitelisting",
+          "WAF"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-006",
+        "component": "Frontend Layer & API (CSRF attack surface)",
+        "threat_category": "Tampering",
+        "description": "Cross-Site Request Forgery causes authenticated users' browsers to execute state-changing API calls (e.g., change sharing settings, invite users, transfer ownership) without their intent.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use anti-CSRF tokens for state-changing APIs or require same-site cookies and ensure APIs require Authorization headers (not relying solely on cookies), enforce double-submit, validate Origin/Referrer headers for sensitive operations.",
+        "applicable_controls": [
+          "CSRF tokens/SameSite cookies",
+          "Require auth headers",
+          "Origin/Referrer validation"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-007",
+        "component": "Data Layer (object storage for assets)",
+        "threat_category": "Information Disclosure",
+        "description": "Misconfigured object storage (public buckets, insecure signed URL expiry) exposes uploaded assets or board exports to unauthorized users or search engines.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce private-by-default storage policies, use short-lived signed URLs, bucket policies with least privilege, audit storage ACLs regularly, and implement malware scanning on upload.",
+        "applicable_controls": [
+          "Private-by-default storage",
+          "Short-lived signed URLs",
+          "Bucket IAM policies",
+          "Malware scanning on upload"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-008",
+        "component": "External Services (third-party integrations)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Compromised third-party integration (e.g., Jira, Google Drive) or leaked integration tokens allow an attacker to access, modify, or exfiltrate organization data via integrations.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use least-privilege scopes for OAuth tokens, store integration credentials encrypted in KMS, provide tenant-scoped tokens, implement token rotation and revocation, allow admins to audit and revoke integrations, and implement backpressure for unusual integration activity.",
+        "applicable_controls": [
+          "Encrypted token storage (KMS)",
+          "Least-privilege OAuth scopes",
+          "Token rotation and revocation",
+          "Admin audit & revoke"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-009",
+        "component": "Realtime Sync / Presence / PubSub",
+        "threat_category": "Denial of Service",
+        "description": "An attacker floods the realtime sync channels with bogus operations or presence signals, causing high CPU/network usage, increased latencies or resource exhaustion affecting collaboration for many users.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Apply rate limiting per connection/user, quota operations, validate operation sizes and shapes server-side, implement backpressure and sharding, use WAF/DDoS protection at edge, and monitor anomalous realtime traffic patterns.",
+        "applicable_controls": [
+          "Rate limiting/quota",
+          "WAF & DDoS protection",
+          "Operation size validation"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-010",
+        "component": "Application Services (Media/AV processing)",
+        "threat_category": "Tampering",
+        "description": "Malicious media (audio/video) or crafted files cause remote code execution or memory corruption in media processing pipelines or third-party SDKs used for conferencing.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Run media processing in isolated sandboxes/containers with strict resource limits, keep codecs and SDKs updated, perform input validation, use third-party CVE monitoring, and scan files for known exploit patterns before processing.",
+        "applicable_controls": [
+          "Sandboxed media processing",
+          "Regular patching/CVE monitoring",
+          "Malware scanning"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-011",
+        "component": "Notifications & Integrations (webhooks)",
+        "threat_category": "Spoofing",
+        "description": "An attacker spoofs webhook events or forges callbacks (from Slack/Jira/etc.) to trigger unauthorized actions or inject content into boards and activity streams.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Validate webhook signatures (HMAC), use mutual TLS where possible, verify sender IP ranges or tokens, and implement replay protection and strict parsing of incoming webhook payloads.",
+        "applicable_controls": [
+          "Webhook signature validation",
+          "Replay protection",
+          "Mutual TLS for critical integrations"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-012",
+        "component": "File Management (uploads)",
+        "threat_category": "Information Disclosure",
+        "description": "Uploaded files contain sensitive data (PII, secrets) that are stored without encryption or leaked via export features, public links, or backups.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Encrypt files at rest using KMS, enforce DLP/malware scanning on upload, prevent exporting of sensitive file types without admin consent, audit exports, and support tenant-level data residency controls.",
+        "applicable_controls": [
+          "KMS encryption at rest",
+          "Malware/DLP scanning",
+          "Export auditing & admin controls"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-013",
+        "component": "Access Control (RBAC, ownership transfer)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Broken access control or logic flaws allow users to escalate privileges (e.g., Member -> Admin, transfer ownership, access private boards of other teams).",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce server-side authorization checks on every operation (deny-by-default), implement fine-grained RBAC with ABAC where needed, adopt least privilege for roles, require multi-step verification for ownership transfers, and perform authorization testing (fuzzing & automated checks).",
+        "applicable_controls": [
+          "Server-side RBAC enforcement",
+          "Least privilege model",
+          "Multi-step confirmation for ownership changes"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-014",
+        "component": "Frontend Layer & API (Insecure Direct Object References)",
+        "threat_category": "Information Disclosure",
+        "description": "Predictable or sequential identifiers for boards/assets allow attackers to enumerate and access resources (insecure direct object references) via unauthenticated or insufficiently authorized requests.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use non-guessable IDs (UUIDs, random tokens), enforce per-request authorization checks, signed URLs for assets, and audit access patterns to detect enumeration attempts.",
+        "applicable_controls": [
+          "Unpredictable object identifiers",
+          "Per-request auth checks",
+          "Signed asset URLs"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-015",
+        "component": "Application Services (API layer)",
+        "threat_category": "Denial of Service",
+        "description": "Abuse of API endpoints (mass board creation, large file uploads, repeated export requests) leads to resource exhaustion impacting availability.",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Implement per-tenant and per-user rate limits, quotas for uploads and exports, circuit breakers, async processing for heavy tasks with capacity controls, and monitoring/alerting for unusual spikes.",
+        "applicable_controls": [
+          "Rate limiting & quotas",
+          "Async job queues & circuit breakers",
+          "Monitoring & alerting"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-016",
+        "component": "External Services (SSO/Identity Providers)",
+        "threat_category": "Information Disclosure",
+        "description": "Compromise or misconfiguration of an external IdP (or compromised enterprise IdP account) leads to disclosure or unauthorized access across multiple tenants via SSO.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Support federation guards (restrict IdPs per tenant), require proof of domain ownership for enterprise SSO, enable SCIM provisioning auditing, and provide admin controls to unlink compromised IdPs and force re-authentication.",
+        "applicable_controls": [
+          "Tenant-specific IdP restrictions",
+          "SCIM audit trails",
+          "Forced re-authentication & session revocation"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-017",
+        "component": "Frontend Layer (Embedded external content)",
+        "threat_category": "Information Disclosure",
+        "description": "Embedded content (iframes, links) from external sites can leak user data or metadata (referrer, cookies) to third-party sites or enable clickjacking.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Sandbox embedded iframes, strip/refine referrer headers, use rel='noopener' for links, require user confirmation before embedding external content, and render previews server-side to neutralize active content.",
+        "applicable_controls": [
+          "Iframe sandboxing",
+          "Referrer policy",
+          "Server-side content preview/sanitization"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-018",
+        "component": "Application Services (Integrations & OAuth tokens storage)",
+        "threat_category": "Information Disclosure",
+        "description": "Stored integration tokens (Jira/Slack/Drive) are exfiltrated from databases or logs, allowing attackers to access external services and data.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Encrypt integration tokens with KMS, avoid logging secrets, rotate tokens periodically, implement strict DB access controls and monitoring, and provide least-privilege scopes for integrations.",
+        "applicable_controls": [
+          "KMS-encrypted credential store",
+          "No-secret logging policies",
+          "Token rotation & scope limitations"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-019",
+        "component": "Data Layer (relational/document DBs)",
+        "threat_category": "Tampering",
+        "description": "An attacker or compromised process modifies board version history, RBAC metadata, or audit logs in the primary databases to cover tracks or change permissions.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use database-level auditing, append-only audit store for critical events, restrict DB admin operations to a few privileged roles, use immutable backups and multi-region replication, and monitor for unauthorized schema/data changes.",
+        "applicable_controls": [
+          "DB auditing",
+          "Append-only audit store",
+          "Immutable backups & replication"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-020",
+        "component": "Frontend Layer & API (Clickjacking / UI redress)",
+        "threat_category": "Tampering",
+        "description": "An attacker frames the application or uses hidden UI overlays to trick users into performing sensitive actions (e.g., changing access, exporting data).",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Use X-Frame-Options or CSP frame-ancestors headers, require re-authentication (or confirm dialogues) for sensitive operations, and implement UI anti-automation checks for critical flows.",
+        "applicable_controls": [
+          "X-Frame-Options/CSP frame-ancestors",
+          "Re-auth for critical ops"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-021",
+        "component": "Application Services (API layer)",
+        "threat_category": "Spoofing",
+        "description": "API clients use stolen API keys or reused tokens to impersonate service clients (server-to-server integrations) and perform unauthorized API calls.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Issue scoped API keys with least privilege and rotation, require mutual TLS for server-to-server integrations, implement granular permissions and allow admins to revoke keys, implement usage monitoring and anomaly detection.",
+        "applicable_controls": [
+          "Scoped API keys & rotation",
+          "Mutual TLS for critical integrations",
+          "Anomaly detection"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-022",
+        "component": "Frontend Layer (client-side plugins/widgets)",
+        "threat_category": "Information Disclosure",
+        "description": "Client-side telemetry or local caches accidentally include sensitive board content or PII and are leaked via browser-sync or telemetry endpoints.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Minimize telemetry collection (opt-in), anonymize/aggregate telemetry, encrypt local caches and scope cached content, and provide clear retention policies and controls for local data.",
+        "applicable_controls": [
+          "Telemetry opt-in & anonymization",
+          "Encrypted local cache"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-023",
+        "component": "Data Layer (audit/log store)",
+        "threat_category": "Tampering",
+        "description": "Admin or attacker with elevated privileges alters or deletes audit logs to erase evidence of malicious activity.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use append-only tamper-evident log stores, replicate logs to separate write-only storage/region, use cryptographic signing, and restrict access to logs to a limited set of roles with out-of-band alerting on log modifications.",
+        "applicable_controls": [
+          "Append-only/tamper-evident logs",
+          "Replication to separate write-only storage",
+          "Cryptographic signing"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-024",
+        "component": "External Services (cloud storage integrations)",
+        "threat_category": "Information Disclosure",
+        "description": "Integration with third-party cloud storage results in unintentional sharing of organization documents (e.g., Drive link made public), leaking sensitive business information.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Request minimal scopes, allow admins to restrict which cloud providers or scopes are allowed, surface link-sharing risks to users, and scan metadata for public/shared flags and alert admins.",
+        "applicable_controls": [
+          "Scope minimization",
+          "Admin controls for integrations",
+          "Share-state scanning & alerts"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-025",
+        "component": "Application Services (export/PDF/image generation)",
+        "threat_category": "Information Disclosure",
+        "description": "Board exports (PDF/PNG) are generated with embedded metadata (emails, internal URLs) that leak internal information when shared externally.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Scrub sensitive metadata from exports, allow admins to disable exports, present clear warnings when sharing exports publicly, and maintain audit logs of exports per user/board.",
+        "applicable_controls": [
+          "Metadata scrubbing",
+          "Export auditing & admin controls"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-026",
+        "component": "Frontend Layer & Chat/Commenting",
+        "threat_category": "Information Disclosure",
+        "description": "@mentions, threaded comments or chat may be used to spam or leak data (e.g., mention external email to exfiltrate content), or to phish other users via malicious links in chat.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Rate limit mentions/messages, sanitize and rewrite links (e.g., safe redirector), warn/scan for suspicious links, allow users to block/unsubscribe, and provide link previews that verify destination safety.",
+        "applicable_controls": [
+          "Link scanning/safe redirector",
+          "Rate limiting on messaging",
+          "Message sanitization"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-027",
+        "component": "Performance & Scalability (CDN, Realtime gateway)",
+        "threat_category": "Denial of Service",
+        "description": "Large boards with many objects or many simultaneous collaborators lead to performance degradation; an attacker may intentionally craft large documents to cause high memory/cpu on rendering and sync.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Enforce size limits per board/object, paginate or chunk operations, lazy-load canvas regions, use CDN caching for static assets, and autoscale realtime services with admission control for overloaded tenants.",
+        "applicable_controls": [
+          "Size/complexity quotas",
+          "Lazy-loading & chunking",
+          "Autoscaling & admission control"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-028",
+        "component": "Integrations/API (SSRF via file import or URL fetch)",
+        "threat_category": "Tampering",
+        "description": "Attackers supply URLs or files causing the backend to fetch internal metadata or access internal resources (SSRF), enabling discovery of internal services or exfiltration.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Validate and restrict outbound fetch domains, use allowlists, perform server-side URL parsing and block private IP ranges, fetch via isolated proxies with egress controls, and scan file contents rather than fetching remote content when possible.",
+        "applicable_controls": [
+          "Outbound fetch allowlist/proxy",
+          "Private IP blocking",
+          "Isolated fetch workers"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-029",
+        "component": "Frontend Layer & Invitation System",
+        "threat_category": "Spoofing",
+        "description": "Invitation system is abused to send phishing invites or an attacker forges invitation emails to trick users into visiting malicious links or handing over credentials.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Sign outbound emails with DMARC/DKIM/SPF, include clear app branding and context-aware invite pages, require recipients to authenticate via provider (SSO) and show inviter identity, and rate limit invite sending; provide admin-level controls for external invites.",
+        "applicable_controls": [
+          "DMARC/DKIM/SPF",
+          "Invite rate limiting",
+          "Branding & context on invite pages"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-030",
+        "component": "Supply Chain (third-party SDKs used in frontend/backends)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Compromised or malicious third-party libraries (npm packages, SDKs) introduce backdoors or escalations allowing attackers to run arbitrary code or access secrets.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Pin dependency versions, use SCA tooling (software composition analysis), prefer vetted/enterprise packages, apply runtime restrictions (CSP, subresource integrity for web), scan for malicious packages, and perform periodic dependency audits.",
+        "applicable_controls": [
+          "Dependency pinning & SCA",
+          "Subresource Integrity (SRI)",
+          "Runtime restrictions (CSP)"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      }
+    ],
+    "risk_summary": "The most critical threats center on authentication/authorization failures, client-side code and content handling (XSS, injection, insecure embedding), and availability/abuse of realtime and API services. High-risk scenarios include token/SSO compromise (THR-001, THR-016), critical injection/tampering of backend APIs and media processing (THR-005, THR-010), and large-scale DoS or abuse of realtime channels and API endpoints (THR-009, THR-015). Key attack vectors are: SSO/OAuth token misuse, XSS via board content and embedded items, insecure direct object references and misconfigured object storage, malicious third-party integrations and compromised tokens, SSRF via URL imports, and supply-chain compromises in third-party libraries. The system appears to have important security controls available (TLS termination, WAF/DDoS providers, RBAC, KMS, append-only logs, and malware scanning) but many threats still require prioritized attention: 1) Harden authentication and session/token lifecycle (MFA, PKCE, short TTLs, token revocation), 2) Eliminate client-sourced trust (server-side validation and signed operations), 3) Prevent content-based XSS and unsafe embedding (CSP, sanitization, sandboxing), 4) Enforce strict access controls and object storage policies (non-guessable IDs, signed URLs, encryption), and 5) Implement robust rate limiting/quota and monitoring for realtime and API layers. Immediate remediation should focus on XSS/content sanitization, authorization checks for all APIs, secure storage/rotation of integration tokens, strong telemetry/logging/audit trails, and DDoS/rate-limit protections. Overall posture is moderate-to-high risk until these priority controls are fully implemented and verified through testing (authz fuzzing, pentests, SCA, dependency audits, and resiliency testing)."
+  },
+  "tasks": [
+    {
+      "name": "perform_threat_modeling",
+      "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"Edge & Auth (SSO/OAuth flows, Auth tokens)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"An attacker forges or replays authentication tokens (JWT/OAuth tokens) or exploits weak SSO/OAuth configuration to impersonate a legitimate user and gain access to boards and organization resources.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce strong token validation (signature, issuer, audience), short token TTLs, token revocation/rotation, PKCE for OAuth flows, require MFA for high-privilege roles, monitor for anomalous token usage and reuse, enforce SAML/OIDC best practices including audience and recipient checks.\",\n      \"applicable_controls\": [\n        \"MFA\",\n        \"OAuth PKCE/SAML best practices\",\n        \"JWT signature & claim validation\",\n        \"Token revocation/rotation\",\n        \"Anomaly detection/logging\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Frontend Layer (web clients)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Client-side JavaScript or local cached board deltas are tampered with (local modification of deltas or replay) to inject malicious deltas or corrupt board content that then syncs to other users.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Sign/validate deltas on the server side (operation-level HMAC or signatures), implement server-side authoritative validation of operations, limit client trust, use secure local storage mechanisms, and include operation sequencing / nonce checks.\",\n      \"applicable_controls\": [\n        \"Server-side operation validation\",\n        \"HMAC-signed deltas\",\n        \"Local storage protections (encryption & integrity checks)\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"Application Services (Realtime Sync / CRDT/OT)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Users or attackers perform malicious edits (delete or alter board history) and later deny actions; without proper immutable logging, attribution is lost and actions cannot be proven.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Write all operations to append-only audit/log store with tamper-evident techniques, include user ids and timestamps, maintain versioned board history, enable cryptographic signing of audit entries, and preserve backups for legal/forensics.\",\n      \"applicable_controls\": [\n        \"Append-only audit logs\",\n        \"Cryptographic signing of logs\",\n        \"Versioned board history & backups\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Frontend Layer (web/embedded content)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Cross-site scripting (XSS) via user-supplied text boxes, sticky notes, embedded links or comments leads to session theft, credential exposure, or data exfiltration for other users viewing the board.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Strong output encoding/escaping on all rendered user content, enforce Content Security Policy (CSP), use well-sanitized rich text libraries, server-side input validation, and sanitize embedded HTML/iframes; treat embedded external content as untrusted with sandboxing.\",\n      \"applicable_controls\": [\n        \"Contextual output encoding\",\n        \"CSP\",\n        \"Rich text sanitization\",\n        \"Sandboxing iframes\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Application Services (Core API)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"API endpoints vulnerable to injection (SQL/NoSQL/command injection) allow attackers to modify database records, board content, or permissions.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries/ORMs, input validation and whitelisting, least-privilege DB accounts, prepared statements, WAF rules for injection patterns, regular code review and dependency scanning.\",\n      \"applicable_controls\": [\n        \"Parameterized queries/ORM\",\n        \"Input validation/whitelisting\",\n        \"WAF\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Frontend Layer & API (CSRF attack surface)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Cross-Site Request Forgery causes authenticated users' browsers to execute state-changing API calls (e.g., change sharing settings, invite users, transfer ownership) without their intent.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use anti-CSRF tokens for state-changing APIs or require same-site cookies and ensure APIs require Authorization headers (not relying solely on cookies), enforce double-submit, validate Origin/Referrer headers for sensitive operations.\",\n      \"applicable_controls\": [\n        \"CSRF tokens/SameSite cookies\",\n        \"Require auth headers\",\n        \"Origin/Referrer validation\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Data Layer (object storage for assets)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Misconfigured object storage (public buckets, insecure signed URL expiry) exposes uploaded assets or board exports to unauthorized users or search engines.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce private-by-default storage policies, use short-lived signed URLs, bucket policies with least privilege, audit storage ACLs regularly, and implement malware scanning on upload.\",\n      \"applicable_controls\": [\n        \"Private-by-default storage\",\n        \"Short-lived signed URLs\",\n        \"Bucket IAM policies\",\n        \"Malware scanning on upload\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"External Services (third-party integrations)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Compromised third-party integration (e.g., Jira, Google Drive) or leaked integration tokens allow an attacker to access, modify, or exfiltrate organization data via integrations.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use least-privilege scopes for OAuth tokens, store integration credentials encrypted in KMS, provide tenant-scoped tokens, implement token rotation and revocation, allow admins to audit and revoke integrations, and implement backpressure for unusual integration activity.\",\n      \"applicable_controls\": [\n        \"Encrypted token storage (KMS)\",\n        \"Least-privilege OAuth scopes\",\n        \"Token rotation and revocation\",\n        \"Admin audit & revoke\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"Realtime Sync / Presence / PubSub\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"An attacker floods the realtime sync channels with bogus operations or presence signals, causing high CPU/network usage, increased latencies or resource exhaustion affecting collaboration for many users.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Apply rate limiting per connection/user, quota operations, validate operation sizes and shapes server-side, implement backpressure and sharding, use WAF/DDoS protection at edge, and monitor anomalous realtime traffic patterns.\",\n      \"applicable_controls\": [\n        \"Rate limiting/quota\",\n        \"WAF & DDoS protection\",\n        \"Operation size validation\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"Application Services (Media/AV processing)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Malicious media (audio/video) or crafted files cause remote code execution or memory corruption in media processing pipelines or third-party SDKs used for conferencing.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Run media processing in isolated sandboxes/containers with strict resource limits, keep codecs and SDKs updated, perform input validation, use third-party CVE monitoring, and scan files for known exploit patterns before processing.\",\n      \"applicable_controls\": [\n        \"Sandboxed media processing\",\n        \"Regular patching/CVE monitoring\",\n        \"Malware scanning\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Notifications & Integrations (webhooks)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"An attacker spoofs webhook events or forges callbacks (from Slack/Jira/etc.) to trigger unauthorized actions or inject content into boards and activity streams.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Validate webhook signatures (HMAC), use mutual TLS where possible, verify sender IP ranges or tokens, and implement replay protection and strict parsing of incoming webhook payloads.\",\n      \"applicable_controls\": [\n        \"Webhook signature validation\",\n        \"Replay protection\",\n        \"Mutual TLS for critical integrations\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"File Management (uploads)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Uploaded files contain sensitive data (PII, secrets) that are stored without encryption or leaked via export features, public links, or backups.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt files at rest using KMS, enforce DLP/malware scanning on upload, prevent exporting of sensitive file types without admin consent, audit exports, and support tenant-level data residency controls.\",\n      \"applicable_controls\": [\n        \"KMS encryption at rest\",\n        \"Malware/DLP scanning\",\n        \"Export auditing & admin controls\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"Access Control (RBAC, ownership transfer)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken access control or logic flaws allow users to escalate privileges (e.g., Member -> Admin, transfer ownership, access private boards of other teams).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce server-side authorization checks on every operation (deny-by-default), implement fine-grained RBAC with ABAC where needed, adopt least privilege for roles, require multi-step verification for ownership transfers, and perform authorization testing (fuzzing & automated checks).\",\n      \"applicable_controls\": [\n        \"Server-side RBAC enforcement\",\n        \"Least privilege model\",\n        \"Multi-step confirmation for ownership changes\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"Frontend Layer & API (Insecure Direct Object References)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Predictable or sequential identifiers for boards/assets allow attackers to enumerate and access resources (insecure direct object references) via unauthenticated or insufficiently authorized requests.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use non-guessable IDs (UUIDs, random tokens), enforce per-request authorization checks, signed URLs for assets, and audit access patterns to detect enumeration attempts.\",\n      \"applicable_controls\": [\n        \"Unpredictable object identifiers\",\n        \"Per-request auth checks\",\n        \"Signed asset URLs\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"Application Services (API layer)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Abuse of API endpoints (mass board creation, large file uploads, repeated export requests) leads to resource exhaustion impacting availability.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Implement per-tenant and per-user rate limits, quotas for uploads and exports, circuit breakers, async processing for heavy tasks with capacity controls, and monitoring/alerting for unusual spikes.\",\n      \"applicable_controls\": [\n        \"Rate limiting & quotas\",\n        \"Async job queues & circuit breakers\",\n        \"Monitoring & alerting\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"External Services (SSO/Identity Providers)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Compromise or misconfiguration of an external IdP (or compromised enterprise IdP account) leads to disclosure or unauthorized access across multiple tenants via SSO.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Support federation guards (restrict IdPs per tenant), require proof of domain ownership for enterprise SSO, enable SCIM provisioning auditing, and provide admin controls to unlink compromised IdPs and force re-authentication.\",\n      \"applicable_controls\": [\n        \"Tenant-specific IdP restrictions\",\n        \"SCIM audit trails\",\n        \"Forced re-authentication & session revocation\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"Frontend Layer (Embedded external content)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Embedded content (iframes, links) from external sites can leak user data or metadata (referrer, cookies) to third-party sites or enable clickjacking.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Sandbox embedded iframes, strip/refine referrer headers, use rel='noopener' for links, require user confirmation before embedding external content, and render previews server-side to neutralize active content.\",\n      \"applicable_controls\": [\n        \"Iframe sandboxing\",\n        \"Referrer policy\",\n        \"Server-side content preview/sanitization\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"Application Services (Integrations & OAuth tokens storage)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Stored integration tokens (Jira/Slack/Drive) are exfiltrated from databases or logs, allowing attackers to access external services and data.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt integration tokens with KMS, avoid logging secrets, rotate tokens periodically, implement strict DB access controls and monitoring, and provide least-privilege scopes for integrations.\",\n      \"applicable_controls\": [\n        \"KMS-encrypted credential store\",\n        \"No-secret logging policies\",\n        \"Token rotation & scope limitations\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Data Layer (relational/document DBs)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"An attacker or compromised process modifies board version history, RBAC metadata, or audit logs in the primary databases to cover tracks or change permissions.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use database-level auditing, append-only audit store for critical events, restrict DB admin operations to a few privileged roles, use immutable backups and multi-region replication, and monitor for unauthorized schema/data changes.\",\n      \"applicable_controls\": [\n        \"DB auditing\",\n        \"Append-only audit store\",\n        \"Immutable backups & replication\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"Frontend Layer & API (Clickjacking / UI redress)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"An attacker frames the application or uses hidden UI overlays to trick users into performing sensitive actions (e.g., changing access, exporting data).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use X-Frame-Options or CSP frame-ancestors headers, require re-authentication (or confirm dialogues) for sensitive operations, and implement UI anti-automation checks for critical flows.\",\n      \"applicable_controls\": [\n        \"X-Frame-Options/CSP frame-ancestors\",\n        \"Re-auth for critical ops\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"Application Services (API layer)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"API clients use stolen API keys or reused tokens to impersonate service clients (server-to-server integrations) and perform unauthorized API calls.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Issue scoped API keys with least privilege and rotation, require mutual TLS for server-to-server integrations, implement granular permissions and allow admins to revoke keys, implement usage monitoring and anomaly detection.\",\n      \"applicable_controls\": [\n        \"Scoped API keys & rotation\",\n        \"Mutual TLS for critical integrations\",\n        \"Anomaly detection\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Frontend Layer (client-side plugins/widgets)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Client-side telemetry or local caches accidentally include sensitive board content or PII and are leaked via browser-sync or telemetry endpoints.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Minimize telemetry collection (opt-in), anonymize/aggregate telemetry, encrypt local caches and scope cached content, and provide clear retention policies and controls for local data.\",\n      \"applicable_controls\": [\n        \"Telemetry opt-in & anonymization\",\n        \"Encrypted local cache\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"Data Layer (audit/log store)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Admin or attacker with elevated privileges alters or deletes audit logs to erase evidence of malicious activity.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use append-only tamper-evident log stores, replicate logs to separate write-only storage/region, use cryptographic signing, and restrict access to logs to a limited set of roles with out-of-band alerting on log modifications.\",\n      \"applicable_controls\": [\n        \"Append-only/tamper-evident logs\",\n        \"Replication to separate write-only storage\",\n        \"Cryptographic signing\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"External Services (cloud storage integrations)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Integration with third-party cloud storage results in unintentional sharing of organization documents (e.g., Drive link made public), leaking sensitive business information.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Request minimal scopes, allow admins to restrict which cloud providers or scopes are allowed, surface link-sharing risks to users, and scan metadata for public/shared flags and alert admins.\",\n      \"applicable_controls\": [\n        \"Scope minimization\",\n        \"Admin controls for integrations\",\n        \"Share-state scanning & alerts\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Application Services (export/PDF/image generation)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Board exports (PDF/PNG) are generated with embedded metadata (emails, internal URLs) that leak internal information when shared externally.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Scrub sensitive metadata from exports, allow admins to disable exports, present clear warnings when sharing exports publicly, and maintain audit logs of exports per user/board.\",\n      \"applicable_controls\": [\n        \"Metadata scrubbing\",\n        \"Export auditing & admin controls\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Frontend Layer & Chat/Commenting\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"@mentions, threaded comments or chat may be used to spam or leak data (e.g., mention external email to exfiltrate content), or to phish other users via malicious links in chat.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Rate limit mentions/messages, sanitize and rewrite links (e.g., safe redirector), warn/scan for suspicious links, allow users to block/unsubscribe, and provide link previews that verify destination safety.\",\n      \"applicable_controls\": [\n        \"Link scanning/safe redirector\",\n        \"Rate limiting on messaging\",\n        \"Message sanitization\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"Performance & Scalability (CDN, Realtime gateway)\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Large boards with many objects or many simultaneous collaborators lead to performance degradation; an attacker may intentionally craft large documents to cause high memory/cpu on rendering and sync.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce size limits per board/object, paginate or chunk operations, lazy-load canvas regions, use CDN caching for static assets, and autoscale realtime services with admission control for overloaded tenants.\",\n      \"applicable_controls\": [\n        \"Size/complexity quotas\",\n        \"Lazy-loading & chunking\",\n        \"Autoscaling & admission control\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Integrations/API (SSRF via file import or URL fetch)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Attackers supply URLs or files causing the backend to fetch internal metadata or access internal resources (SSRF), enabling discovery of internal services or exfiltration.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Validate and restrict outbound fetch domains, use allowlists, perform server-side URL parsing and block private IP ranges, fetch via isolated proxies with egress controls, and scan file contents rather than fetching remote content when possible.\",\n      \"applicable_controls\": [\n        \"Outbound fetch allowlist/proxy\",\n        \"Private IP blocking\",\n        \"Isolated fetch workers\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-029\",\n      \"component\": \"Frontend Layer & Invitation System\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Invitation system is abused to send phishing invites or an attacker forges invitation emails to trick users into visiting malicious links or handing over credentials.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Sign outbound emails with DMARC/DKIM/SPF, include clear app branding and context-aware invite pages, require recipients to authenticate via provider (SSO) and show inviter identity, and rate limit invite sending; provide admin-level controls for external invites.\",\n      \"applicable_controls\": [\n        \"DMARC/DKIM/SPF\",\n        \"Invite rate limiting\",\n        \"Branding & context on invite pages\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-030\",\n      \"component\": \"Supply Chain (third-party SDKs used in frontend/backends)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Compromised or malicious third-party libraries (npm packages, SDKs) introduce backdoors or escalations allowing attackers to run arbitrary code or access secrets.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Pin dependency versions, use SCA tooling (software composition analysis), prefer vetted/enterprise packages, apply runtime restrictions (CSP, subresource integrity for web), scan for malicious packages, and perform periodic dependency audits.\",\n      \"applicable_controls\": [\n        \"Dependency pinning & SCA\",\n        \"Subresource Integrity (SRI)\",\n        \"Runtime restrictions (CSP)\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    }\n  ],\n  \"risk_summary\": \"The most critical threats center on authentication/authorization failures, client-side code and content handling (XSS, injection, insecure embedding), and availability/abuse of realtime and API services. High-risk scenarios include token/SSO compromise (THR-001, THR-016), critical injection/tampering of backend APIs and media processing (THR-005, THR-010), and large-scale DoS or abuse of realtime channels and API endpoints (THR-009, THR-015). Key attack vectors are: SSO/OAuth token misuse, XSS via board content and embedded items, insecure direct object references and misconfigured object storage, malicious third-party integrations and compromised tokens, SSRF via URL imports, and supply-chain compromises in third-party libraries. The system appears to have important security controls available (TLS termination, WAF/DDoS providers, RBAC, KMS, append-only logs, and malware scanning) but many threats still require prioritized attention: 1) Harden authentication and session/token lifecycle (MFA, PKCE, short TTLs, token revocation), 2) Eliminate client-sourced trust (server-side validation and signed operations), 3) Prevent content-based XSS and unsafe embedding (CSP, sanitization, sandboxing), 4) Enforce strict access controls and object storage policies (non-guessable IDs, signed URLs, encryption), and 5) Implement robust rate limiting/quota and monitoring for realtime and API layers. Immediate remediation should focus on XSS/content sanitization, authorization checks for all APIs, secure storage/rotation of integration tokens, strong telemetry/logging/audit trails, and DDoS/rate-limit protections. Overall posture is moderate-to-high risk until these priority controls are fully implemented and verified through testing (authz fuzzing, pentests, SCA, dependency audits, and resiliency testing).\"\n}",
+      "pydantic": {
+        "methodology": "STRIDE",
+        "threats": [
+          {
+            "threat_id": "THR-001",
+            "component": "Edge & Auth (SSO/OAuth flows, Auth tokens)",
+            "threat_category": "Spoofing",
+            "description": "An attacker forges or replays authentication tokens (JWT/OAuth tokens) or exploits weak SSO/OAuth configuration to impersonate a legitimate user and gain access to boards and organization resources.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce strong token validation (signature, issuer, audience), short token TTLs, token revocation/rotation, PKCE for OAuth flows, require MFA for high-privilege roles, monitor for anomalous token usage and reuse, enforce SAML/OIDC best practices including audience and recipient checks.",
+            "applicable_controls": [
+              "MFA",
+              "OAuth PKCE/SAML best practices",
+              "JWT signature & claim validation",
+              "Token revocation/rotation",
+              "Anomaly detection/logging"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-002",
+            "component": "Frontend Layer (web clients)",
+            "threat_category": "Tampering",
+            "description": "Client-side JavaScript or local cached board deltas are tampered with (local modification of deltas or replay) to inject malicious deltas or corrupt board content that then syncs to other users.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Sign/validate deltas on the server side (operation-level HMAC or signatures), implement server-side authoritative validation of operations, limit client trust, use secure local storage mechanisms, and include operation sequencing / nonce checks.",
+            "applicable_controls": [
+              "Server-side operation validation",
+              "HMAC-signed deltas",
+              "Local storage protections (encryption & integrity checks)"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-003",
+            "component": "Application Services (Realtime Sync / CRDT/OT)",
+            "threat_category": "Repudiation",
+            "description": "Users or attackers perform malicious edits (delete or alter board history) and later deny actions; without proper immutable logging, attribution is lost and actions cannot be proven.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Write all operations to append-only audit/log store with tamper-evident techniques, include user ids and timestamps, maintain versioned board history, enable cryptographic signing of audit entries, and preserve backups for legal/forensics.",
+            "applicable_controls": [
+              "Append-only audit logs",
+              "Cryptographic signing of logs",
+              "Versioned board history & backups"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-004",
+            "component": "Frontend Layer (web/embedded content)",
+            "threat_category": "Information Disclosure",
+            "description": "Cross-site scripting (XSS) via user-supplied text boxes, sticky notes, embedded links or comments leads to session theft, credential exposure, or data exfiltration for other users viewing the board.",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Strong output encoding/escaping on all rendered user content, enforce Content Security Policy (CSP), use well-sanitized rich text libraries, server-side input validation, and sanitize embedded HTML/iframes; treat embedded external content as untrusted with sandboxing.",
+            "applicable_controls": [
+              "Contextual output encoding",
+              "CSP",
+              "Rich text sanitization",
+              "Sandboxing iframes"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-005",
+            "component": "Application Services (Core API)",
+            "threat_category": "Tampering",
+            "description": "API endpoints vulnerable to injection (SQL/NoSQL/command injection) allow attackers to modify database records, board content, or permissions.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use parameterized queries/ORMs, input validation and whitelisting, least-privilege DB accounts, prepared statements, WAF rules for injection patterns, regular code review and dependency scanning.",
+            "applicable_controls": [
+              "Parameterized queries/ORM",
+              "Input validation/whitelisting",
+              "WAF"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-006",
+            "component": "Frontend Layer & API (CSRF attack surface)",
+            "threat_category": "Tampering",
+            "description": "Cross-Site Request Forgery causes authenticated users' browsers to execute state-changing API calls (e.g., change sharing settings, invite users, transfer ownership) without their intent.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use anti-CSRF tokens for state-changing APIs or require same-site cookies and ensure APIs require Authorization headers (not relying solely on cookies), enforce double-submit, validate Origin/Referrer headers for sensitive operations.",
+            "applicable_controls": [
+              "CSRF tokens/SameSite cookies",
+              "Require auth headers",
+              "Origin/Referrer validation"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-007",
+            "component": "Data Layer (object storage for assets)",
+            "threat_category": "Information Disclosure",
+            "description": "Misconfigured object storage (public buckets, insecure signed URL expiry) exposes uploaded assets or board exports to unauthorized users or search engines.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce private-by-default storage policies, use short-lived signed URLs, bucket policies with least privilege, audit storage ACLs regularly, and implement malware scanning on upload.",
+            "applicable_controls": [
+              "Private-by-default storage",
+              "Short-lived signed URLs",
+              "Bucket IAM policies",
+              "Malware scanning on upload"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-008",
+            "component": "External Services (third-party integrations)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Compromised third-party integration (e.g., Jira, Google Drive) or leaked integration tokens allow an attacker to access, modify, or exfiltrate organization data via integrations.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use least-privilege scopes for OAuth tokens, store integration credentials encrypted in KMS, provide tenant-scoped tokens, implement token rotation and revocation, allow admins to audit and revoke integrations, and implement backpressure for unusual integration activity.",
+            "applicable_controls": [
+              "Encrypted token storage (KMS)",
+              "Least-privilege OAuth scopes",
+              "Token rotation and revocation",
+              "Admin audit & revoke"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-009",
+            "component": "Realtime Sync / Presence / PubSub",
+            "threat_category": "Denial of Service",
+            "description": "An attacker floods the realtime sync channels with bogus operations or presence signals, causing high CPU/network usage, increased latencies or resource exhaustion affecting collaboration for many users.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Apply rate limiting per connection/user, quota operations, validate operation sizes and shapes server-side, implement backpressure and sharding, use WAF/DDoS protection at edge, and monitor anomalous realtime traffic patterns.",
+            "applicable_controls": [
+              "Rate limiting/quota",
+              "WAF & DDoS protection",
+              "Operation size validation"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-010",
+            "component": "Application Services (Media/AV processing)",
+            "threat_category": "Tampering",
+            "description": "Malicious media (audio/video) or crafted files cause remote code execution or memory corruption in media processing pipelines or third-party SDKs used for conferencing.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Run media processing in isolated sandboxes/containers with strict resource limits, keep codecs and SDKs updated, perform input validation, use third-party CVE monitoring, and scan files for known exploit patterns before processing.",
+            "applicable_controls": [
+              "Sandboxed media processing",
+              "Regular patching/CVE monitoring",
+              "Malware scanning"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-011",
+            "component": "Notifications & Integrations (webhooks)",
+            "threat_category": "Spoofing",
+            "description": "An attacker spoofs webhook events or forges callbacks (from Slack/Jira/etc.) to trigger unauthorized actions or inject content into boards and activity streams.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Validate webhook signatures (HMAC), use mutual TLS where possible, verify sender IP ranges or tokens, and implement replay protection and strict parsing of incoming webhook payloads.",
+            "applicable_controls": [
+              "Webhook signature validation",
+              "Replay protection",
+              "Mutual TLS for critical integrations"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-012",
+            "component": "File Management (uploads)",
+            "threat_category": "Information Disclosure",
+            "description": "Uploaded files contain sensitive data (PII, secrets) that are stored without encryption or leaked via export features, public links, or backups.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Encrypt files at rest using KMS, enforce DLP/malware scanning on upload, prevent exporting of sensitive file types without admin consent, audit exports, and support tenant-level data residency controls.",
+            "applicable_controls": [
+              "KMS encryption at rest",
+              "Malware/DLP scanning",
+              "Export auditing & admin controls"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-013",
+            "component": "Access Control (RBAC, ownership transfer)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Broken access control or logic flaws allow users to escalate privileges (e.g., Member -> Admin, transfer ownership, access private boards of other teams).",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce server-side authorization checks on every operation (deny-by-default), implement fine-grained RBAC with ABAC where needed, adopt least privilege for roles, require multi-step verification for ownership transfers, and perform authorization testing (fuzzing & automated checks).",
+            "applicable_controls": [
+              "Server-side RBAC enforcement",
+              "Least privilege model",
+              "Multi-step confirmation for ownership changes"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-014",
+            "component": "Frontend Layer & API (Insecure Direct Object References)",
+            "threat_category": "Information Disclosure",
+            "description": "Predictable or sequential identifiers for boards/assets allow attackers to enumerate and access resources (insecure direct object references) via unauthenticated or insufficiently authorized requests.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use non-guessable IDs (UUIDs, random tokens), enforce per-request authorization checks, signed URLs for assets, and audit access patterns to detect enumeration attempts.",
+            "applicable_controls": [
+              "Unpredictable object identifiers",
+              "Per-request auth checks",
+              "Signed asset URLs"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-015",
+            "component": "Application Services (API layer)",
+            "threat_category": "Denial of Service",
+            "description": "Abuse of API endpoints (mass board creation, large file uploads, repeated export requests) leads to resource exhaustion impacting availability.",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Implement per-tenant and per-user rate limits, quotas for uploads and exports, circuit breakers, async processing for heavy tasks with capacity controls, and monitoring/alerting for unusual spikes.",
+            "applicable_controls": [
+              "Rate limiting & quotas",
+              "Async job queues & circuit breakers",
+              "Monitoring & alerting"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-016",
+            "component": "External Services (SSO/Identity Providers)",
+            "threat_category": "Information Disclosure",
+            "description": "Compromise or misconfiguration of an external IdP (or compromised enterprise IdP account) leads to disclosure or unauthorized access across multiple tenants via SSO.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Support federation guards (restrict IdPs per tenant), require proof of domain ownership for enterprise SSO, enable SCIM provisioning auditing, and provide admin controls to unlink compromised IdPs and force re-authentication.",
+            "applicable_controls": [
+              "Tenant-specific IdP restrictions",
+              "SCIM audit trails",
+              "Forced re-authentication & session revocation"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-017",
+            "component": "Frontend Layer (Embedded external content)",
+            "threat_category": "Information Disclosure",
+            "description": "Embedded content (iframes, links) from external sites can leak user data or metadata (referrer, cookies) to third-party sites or enable clickjacking.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Sandbox embedded iframes, strip/refine referrer headers, use rel='noopener' for links, require user confirmation before embedding external content, and render previews server-side to neutralize active content.",
+            "applicable_controls": [
+              "Iframe sandboxing",
+              "Referrer policy",
+              "Server-side content preview/sanitization"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-018",
+            "component": "Application Services (Integrations & OAuth tokens storage)",
+            "threat_category": "Information Disclosure",
+            "description": "Stored integration tokens (Jira/Slack/Drive) are exfiltrated from databases or logs, allowing attackers to access external services and data.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Encrypt integration tokens with KMS, avoid logging secrets, rotate tokens periodically, implement strict DB access controls and monitoring, and provide least-privilege scopes for integrations.",
+            "applicable_controls": [
+              "KMS-encrypted credential store",
+              "No-secret logging policies",
+              "Token rotation & scope limitations"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-019",
+            "component": "Data Layer (relational/document DBs)",
+            "threat_category": "Tampering",
+            "description": "An attacker or compromised process modifies board version history, RBAC metadata, or audit logs in the primary databases to cover tracks or change permissions.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use database-level auditing, append-only audit store for critical events, restrict DB admin operations to a few privileged roles, use immutable backups and multi-region replication, and monitor for unauthorized schema/data changes.",
+            "applicable_controls": [
+              "DB auditing",
+              "Append-only audit store",
+              "Immutable backups & replication"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-020",
+            "component": "Frontend Layer & API (Clickjacking / UI redress)",
+            "threat_category": "Tampering",
+            "description": "An attacker frames the application or uses hidden UI overlays to trick users into performing sensitive actions (e.g., changing access, exporting data).",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Use X-Frame-Options or CSP frame-ancestors headers, require re-authentication (or confirm dialogues) for sensitive operations, and implement UI anti-automation checks for critical flows.",
+            "applicable_controls": [
+              "X-Frame-Options/CSP frame-ancestors",
+              "Re-auth for critical ops"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-021",
+            "component": "Application Services (API layer)",
+            "threat_category": "Spoofing",
+            "description": "API clients use stolen API keys or reused tokens to impersonate service clients (server-to-server integrations) and perform unauthorized API calls.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Issue scoped API keys with least privilege and rotation, require mutual TLS for server-to-server integrations, implement granular permissions and allow admins to revoke keys, implement usage monitoring and anomaly detection.",
+            "applicable_controls": [
+              "Scoped API keys & rotation",
+              "Mutual TLS for critical integrations",
+              "Anomaly detection"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-022",
+            "component": "Frontend Layer (client-side plugins/widgets)",
+            "threat_category": "Information Disclosure",
+            "description": "Client-side telemetry or local caches accidentally include sensitive board content or PII and are leaked via browser-sync or telemetry endpoints.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Minimize telemetry collection (opt-in), anonymize/aggregate telemetry, encrypt local caches and scope cached content, and provide clear retention policies and controls for local data.",
+            "applicable_controls": [
+              "Telemetry opt-in & anonymization",
+              "Encrypted local cache"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-023",
+            "component": "Data Layer (audit/log store)",
+            "threat_category": "Tampering",
+            "description": "Admin or attacker with elevated privileges alters or deletes audit logs to erase evidence of malicious activity.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use append-only tamper-evident log stores, replicate logs to separate write-only storage/region, use cryptographic signing, and restrict access to logs to a limited set of roles with out-of-band alerting on log modifications.",
+            "applicable_controls": [
+              "Append-only/tamper-evident logs",
+              "Replication to separate write-only storage",
+              "Cryptographic signing"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-024",
+            "component": "External Services (cloud storage integrations)",
+            "threat_category": "Information Disclosure",
+            "description": "Integration with third-party cloud storage results in unintentional sharing of organization documents (e.g., Drive link made public), leaking sensitive business information.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Request minimal scopes, allow admins to restrict which cloud providers or scopes are allowed, surface link-sharing risks to users, and scan metadata for public/shared flags and alert admins.",
+            "applicable_controls": [
+              "Scope minimization",
+              "Admin controls for integrations",
+              "Share-state scanning & alerts"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-025",
+            "component": "Application Services (export/PDF/image generation)",
+            "threat_category": "Information Disclosure",
+            "description": "Board exports (PDF/PNG) are generated with embedded metadata (emails, internal URLs) that leak internal information when shared externally.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Scrub sensitive metadata from exports, allow admins to disable exports, present clear warnings when sharing exports publicly, and maintain audit logs of exports per user/board.",
+            "applicable_controls": [
+              "Metadata scrubbing",
+              "Export auditing & admin controls"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-026",
+            "component": "Frontend Layer & Chat/Commenting",
+            "threat_category": "Information Disclosure",
+            "description": "@mentions, threaded comments or chat may be used to spam or leak data (e.g., mention external email to exfiltrate content), or to phish other users via malicious links in chat.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Rate limit mentions/messages, sanitize and rewrite links (e.g., safe redirector), warn/scan for suspicious links, allow users to block/unsubscribe, and provide link previews that verify destination safety.",
+            "applicable_controls": [
+              "Link scanning/safe redirector",
+              "Rate limiting on messaging",
+              "Message sanitization"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-027",
+            "component": "Performance & Scalability (CDN, Realtime gateway)",
+            "threat_category": "Denial of Service",
+            "description": "Large boards with many objects or many simultaneous collaborators lead to performance degradation; an attacker may intentionally craft large documents to cause high memory/cpu on rendering and sync.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Enforce size limits per board/object, paginate or chunk operations, lazy-load canvas regions, use CDN caching for static assets, and autoscale realtime services with admission control for overloaded tenants.",
+            "applicable_controls": [
+              "Size/complexity quotas",
+              "Lazy-loading & chunking",
+              "Autoscaling & admission control"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-028",
+            "component": "Integrations/API (SSRF via file import or URL fetch)",
+            "threat_category": "Tampering",
+            "description": "Attackers supply URLs or files causing the backend to fetch internal metadata or access internal resources (SSRF), enabling discovery of internal services or exfiltration.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Validate and restrict outbound fetch domains, use allowlists, perform server-side URL parsing and block private IP ranges, fetch via isolated proxies with egress controls, and scan file contents rather than fetching remote content when possible.",
+            "applicable_controls": [
+              "Outbound fetch allowlist/proxy",
+              "Private IP blocking",
+              "Isolated fetch workers"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-029",
+            "component": "Frontend Layer & Invitation System",
+            "threat_category": "Spoofing",
+            "description": "Invitation system is abused to send phishing invites or an attacker forges invitation emails to trick users into visiting malicious links or handing over credentials.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Sign outbound emails with DMARC/DKIM/SPF, include clear app branding and context-aware invite pages, require recipients to authenticate via provider (SSO) and show inviter identity, and rate limit invite sending; provide admin-level controls for external invites.",
+            "applicable_controls": [
+              "DMARC/DKIM/SPF",
+              "Invite rate limiting",
+              "Branding & context on invite pages"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-030",
+            "component": "Supply Chain (third-party SDKs used in frontend/backends)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Compromised or malicious third-party libraries (npm packages, SDKs) introduce backdoors or escalations allowing attackers to run arbitrary code or access secrets.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Pin dependency versions, use SCA tooling (software composition analysis), prefer vetted/enterprise packages, apply runtime restrictions (CSP, subresource integrity for web), scan for malicious packages, and perform periodic dependency audits.",
+            "applicable_controls": [
+              "Dependency pinning & SCA",
+              "Subresource Integrity (SRI)",
+              "Runtime restrictions (CSP)"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          }
+        ],
+        "risk_summary": "The most critical threats center on authentication/authorization failures, client-side code and content handling (XSS, injection, insecure embedding), and availability/abuse of realtime and API services. High-risk scenarios include token/SSO compromise (THR-001, THR-016), critical injection/tampering of backend APIs and media processing (THR-005, THR-010), and large-scale DoS or abuse of realtime channels and API endpoints (THR-009, THR-015). Key attack vectors are: SSO/OAuth token misuse, XSS via board content and embedded items, insecure direct object references and misconfigured object storage, malicious third-party integrations and compromised tokens, SSRF via URL imports, and supply-chain compromises in third-party libraries. The system appears to have important security controls available (TLS termination, WAF/DDoS providers, RBAC, KMS, append-only logs, and malware scanning) but many threats still require prioritized attention: 1) Harden authentication and session/token lifecycle (MFA, PKCE, short TTLs, token revocation), 2) Eliminate client-sourced trust (server-side validation and signed operations), 3) Prevent content-based XSS and unsafe embedding (CSP, sanitization, sandboxing), 4) Enforce strict access controls and object storage policies (non-guessable IDs, signed URLs, encryption), and 5) Implement robust rate limiting/quota and monitoring for realtime and API layers. Immediate remediation should focus on XSS/content sanitization, authorization checks for all APIs, secure storage/rotation of integration tokens, strong telemetry/logging/audit trails, and DDoS/rate-limit protections. Overall posture is moderate-to-high risk until these priority controls are fully implemented and verified through testing (authz fuzzing, pentests, SCA, dependency audits, and resiliency testing)."
+      }
+    }
+  ]
+}

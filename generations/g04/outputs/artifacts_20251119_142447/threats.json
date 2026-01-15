@@ -1,0 +1,272 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Frontend Layer",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "An attacker reuses stolen session tokens or forges authentication cookies to impersonate legitimate users (including Infra Admin) via stolen tokens from browser storage or network interception."
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Application Services (AuthZ & RBAC)",
+    "risk_level": "Critical",
+    "category": "Elevation of Privilege",
+    "description": "Broken access control or misconfigured RBAC allows a user (reader/user) to perform infra-admin or admin actions via API endpoints that lack authorization checks or use client-side enforcement only."
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "SSO/MFA Integration (Integrations & External Services)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromise or misconfiguration of SSO/MFA provider (e.g., compromised IdP token signing keys, misconfigured SAML/OIDC settings) allows attacker to forge assertions and access the platform."
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Frontend Layer / Application Services",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Client-side or API parameter tampering to alter layer sequencing or deadlines (e.g., adjusting JSON payload to mark prerequisite layer as 'approved' or change deadlines)."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Application Services (APIs)",
+    "risk_level": "Critical",
+    "category": "Information Disclosure",
+    "description": "APIs exposing sensitive data (VM access mappings, IP endpoints, firewall rules, handover documents) to unauthorized callers due to broken object-level authorization or verbose error messages."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage (RDBMS, Object Storage)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Unauthorized modification of firewall rules or per-VM policy metadata in the database through SQL injection or compromised credentials, leading to exposure of VM services."
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services / Frontend",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Cross-Site Request Forgery (CSRF) actions causing unauthorized state changes (approvals, handover submissions) when users browse malicious sites."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Cross-Site Scripting (XSS) in the SPA that allows an attacker to steal tokens or perform actions on behalf of users via stored or reflected malicious content in handover documents or comments."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "APIs & Application Services",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "API abuse: unauthenticated or authenticated attackers send crafted requests to manipulate VM inventory mappings, create rogue VM assignments, or alter allowed ports to open backdoors."
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Infrastructure & Access Layer (SSH Bastion, KMS)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Compromise of SSH bastion or KMS, allowing attacker to obtain or misuse SSH keys, sign tokens or decrypt secrets to access VMs or escalate privileges across hosts."
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Artifact & Air-gap Services",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Poisoned or tampered artifacts/images are mirrored into the bare-metal repository (supply chain attack) leading to malware distribution to air-gapped project servers."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Artifact & Air-gap Services",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Exposure of proprietary images or signed artifacts when bare-metal repository is not sufficiently protected, or when mirrored artifacts include sensitive metadata (build secrets, internal endpoints)."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage (Audit Log Store)",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Attackers or malicious insiders tamper with or delete audit logs to cover tracks, disabling post-incident investigation and approvals trail (handover, approvals)."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Notifications (Email/Chat Providers)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Sensitive details in notification payloads (VM IPs, firewall rules, private handover content) are leaked via insecure email or chat integrations, or if provider is compromised."
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Integrations & External Services (IaC Registries)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Credentials for external registries or IaC providers leaked (e.g., in repo or configs), allowing attackers to manipulate infrastructure templates or pull sensitive images."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (Workflow Engine)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Attacker manipulates workflow engine to bypass layer sequencing enforcement (e.g., directly invoking internal APIs to create a dependent layer without prerequisite completion)."
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Task Management / Collaboration",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Insufficient or tamperable approval records enable unauthorized approvals or disallow detection of fraudulent handover approvals (lack of traceable logs / signed approvals)."
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Data Storage (Handover Documents)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Handover documents containing network diagrams, credentials, or internal IP addresses are stored or shared insecurely, exposing sensitive project topology."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Infrastructure & Access Layer (VM access mapping)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Attackers spoof source IPs or stolen user credentials to impersonate authorized users when accessing VMs; weak mapping enables unauthorized VM access."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Management (Firewall/Port Rules)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Unauthorized changes to firewall rules or allowed ingress/egress ports (via compromised API credentials or misconfigured IaC) open services to the internet that should remain internal."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 2,
+    "impact": 3,
+    "component": "Monitoring & Alerting Integrations",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Monitoring integrations leak sensitive metadata or create an attack channel if the monitoring system is compromised, exposing project states, deadlines, or infrastructure details."
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services / API Gateway",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "An attacker launches API floods or abusive calls (e.g., creating many layers, requests to workflow engine) causing resource exhaustion, delays in sequencing, and missed deadlines."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer & Notifications",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Mass notifications or webhook storms (intentional or misconfigured) overwhelm notification providers or users, causing alert fatigue or service degradation."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Data Storage (RDBMS) / Backups",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Ransomware or destructive attacks target DB backups or primary DB, causing loss of project data, audit logs and timelines, interrupting projects."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Integrations & External Services (Email/Chat)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Attackers spoof notification emails or chat messages to trick users into approving handovers or following malicious links, leading to social engineering attacks and credential theft."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services / Workflow Engine",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Internal debug or verbose logs in production leak sensitive fields (IP addresses, keys) to log stores or external monitoring due to insufficient redaction."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Infrastructure & Access Layer (Hypervisor / Cloud APIs)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Excessive cloud permissions or misconfigured IAM roles allow service or user accounts to create privileged resources or exfiltrate data (e.g., admin role misassignment via IaC)."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Artifact & Air-gap Services (Staging server)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Malicious or accidental replacement of staged images (or broken integrity checks) before disconnecting air-gapped environment; later deployed images contain backdoors."
+  },
+  {
+    "id": "THR-029",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer & APIs",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Sensitive configuration or secret leakage through client-side source maps, embedded configs, or misconfigured public S3 buckets used to host static SPA assets."
+  },
+  {
+    "id": "THR-030",
+    "likelihood": 2,
+    "impact": 3,
+    "component": "Task Management / Escalations",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Business logic-level DoS where an attacker or faulty automation creates many overlapping layers or tasks, flooding the workflow engine and preventing legitimate progress tracking and notifications."
+  }
+]

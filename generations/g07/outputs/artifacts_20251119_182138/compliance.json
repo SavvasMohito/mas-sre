@@ -1,0 +1,22 @@
+[
+  {
+    "framework": "GDPR",
+    "status": "In Progress",
+    "next_audit": "TBD"
+  },
+  {
+    "framework": "OWASP ASVS",
+    "status": "In Progress",
+    "next_audit": "N/A"
+  },
+  {
+    "framework": "NIST SP 800-53",
+    "status": "In Progress",
+    "next_audit": "N/A"
+  },
+  {
+    "framework": "ISO 27001",
+    "status": "In Progress",
+    "next_audit": "N/A"
+  }
+]

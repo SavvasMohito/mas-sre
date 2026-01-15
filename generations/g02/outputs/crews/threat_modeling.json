@@ -1,0 +1,1017 @@
+{
+  "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"Frontend Layer - Authentication & Password Recovery\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Credential theft via phishing, reuse, or compromised local storage leading to account takeover (including abuse of password reset flows). Attackers may spoof legitimate users to access PHI and analysis results.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce strong password policies, rate-limit password resets, require MFA (preferably hardware or TOTP), implement phishing-resistant flows, secure session cookies (HttpOnly, Secure, SameSite=strict), avoid storing credentials in local storage, implement account lockout & notification on suspicious activity, monitor for credential stuffing and anomalous logins.\",\n      \"applicable_controls\": [\n        \"MFA enforcement\",\n        \"TLS 1.2+\",\n        \"Secure cookie flags\",\n        \"Password complexity & rate limiting\",\n        \"Auth anomaly detection\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Frontend Layer - Web SPA / Mobile App\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Client-side script manipulation (malicious browser extensions, XSS, or compromised bundle serving) that modifies UI to exfiltrate input data or change upload metadata before submission.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Ensure Content Security Policy (CSP), subresource integrity (SRI) for static assets, minimize inline JS, sign mobile app builds, use code obfuscation and app attestation (e.g., SafetyNet/DeviceCheck), validate all data server-side, and protect CDN origin/integrity.\",\n      \"applicable_controls\": [\n        \"CSP\",\n        \"SRI\",\n        \"Server-side validation\",\n        \"App build signing and attestation\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"Frontend Layer - File Uploads (mobile camera)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive PHI embedded in image EXIF metadata (location, device info) or auto-filled captions being uploaded and stored unintentionally, exposing PII/PHI.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Strip EXIF/metadata on client or immediately on ingest server; present clear consent & preview showing redactions; apply automatic PII detection; educate users on metadata; minimize metadata persisted.\",\n      \"applicable_controls\": [\n        \"Metadata stripping on ingest\",\n        \"User consent screens\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Edge Layer - API Gateway/WAF\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Upload flood or large-file upload spikes (accidental or malicious) causing bandwidth exhaustion or queue/backlog saturation, impacting OCR/AI worker availability and overall service.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce rate limits per IP/user, file size limits, upload quotas, CAPTCHA for suspicious flows, upload throttling and pre-signed upload tokens with short TTLs, autoscaling with backpressure, charge-rate limiting on heavy AI usage.\",\n      \"applicable_controls\": [\n        \"API rate limiting\",\n        \"WAF rules\",\n        \"Pre-signed uploads\",\n        \"Autoscaling + queue backpressure\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Edge Layer - TLS Termination / Gateway\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"TLS termination misconfiguration or acceptance of weak ciphers allows man-in-the-middle (MITM) attacks that can intercept authentication tokens or PHI in transit.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce TLS 1.2+ (prefer 1.3), disable weak ciphers/SSL, enable HSTS, mutual TLS for service-to-service where appropriate, certificate pinning in mobile clients, regular certificate monitoring and automated rotation.\",\n      \"applicable_controls\": [\n        \"TLS 1.3 enforcement\",\n        \"HSTS\",\n        \"Certificate management automation\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Application Services - Authentication & RBAC\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken access control where users can access or modify other users' blood test data (IDOR), or escalate to admin functions via insufficient authorization checks.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Implement least-privilege RBAC with server-side authorization checks on every request, use strong resource-based ACLs, adopt attribute-based access control for sensitive operations, perform automated access control tests and code reviews, enforce separation of duties for admin functions.\",\n      \"applicable_controls\": [\n        \"Server-side RBAC enforcement\",\n        \"Access control testing\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Unacceptable\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Application Services - Input Handling and OCR Pipeline\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Maliciously crafted files (images, PDFs) containing embedded scripts, malformed fonts, or OCI payloads exploit parsing libraries causing arbitrary code execution or tampering with processing results.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Perform strict file type validation, sandbox processing (container isolation, seccomp), run OCR/AI tasks in isolated least-privilege environments, use up-to-date libraries, do content sanitization and enforce time/memory limits, use malware scanning for uploads.\",\n      \"applicable_controls\": [\n        \"Sandboxed processing\",\n        \"File validation & malware scanning\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"Application Services - OCR/AI Integration (Third-party)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive PHI sent to third-party AI/OCR providers without sufficient minimization or redaction leads to data exposure, provider misuse, or non-compliant processing.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Minimize data sent (send redacted images or extracted text only as needed), use DPAs, choose providers with adequate certifications, implement encryption in transit and at-rest, use on-premise/self-hosted inference or private VPC endpoints where possible, apply tokenization or anonymization before sending, maintain audit trails of data shared.\",\n      \"applicable_controls\": [\n        \"DPA contracts\",\n        \"Data minimization\",\n        \"Private network integration with vendors\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"Application Services - Analysis Results & Summaries\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Attackers modify stored analysis results or summaries (either in transit or at rest) to change medical interpretations, causing user harm or misleading clinicians.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Sign analysis outputs (digital signatures), store immutable audit logs, enforce strict RBAC for editing results, apply integrity checks and versioning, perform hashing of stored artifacts with KMS-managed keys.\",\n      \"applicable_controls\": [\n        \"Object and DB encryption + integrity checks\",\n        \"Immutable audit logs\",\n        \"RBAC\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"Application Services - Message Queue / Job Orchestration\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Job queue exhaustion or poisoning via crafted messages causing worker crashes or processing of malicious tasks, interrupting AI pipelines and delaying analyses.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Authenticate and validate queued messages, set strict size and schema validation for queue payloads, use dead-letter queues, rate-limit producer APIs, throttle jobs per-user, and monitor queue lengths with alerting and autoscaling.\",\n      \"applicable_controls\": [\n        \"Message validation\",\n        \"Dead-letter queues\",\n        \"Queue rate limiting\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Data Storage - Object Store (encrypted files)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Misconfigured object storage ACLs or public buckets accidentally expose raw PHI (images/PDFs) to the internet or other tenants.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce private-by-default buckets, block public ACLs, use VPC endpoints, require signed URL with short TTL for access, encrypt objects with KMS, alert on ACL changes, and run periodic configuration scans.\",\n      \"applicable_controls\": [\n        \"Private buckets\",\n        \"KMS encryption\",\n        \"Signed URLs\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"Data Storage - Relational Database\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Unauthorized modification of structured lab results, user profiles, or retention settings via SQL injection or improper DB permissions altering PHI or audit records.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries/ORMs, input validation, least-privilege DB accounts, separation of duties, DB activity monitoring, and regular vulnerability scanning and code review. Harden DB network access using private subnets.\",\n      \"applicable_controls\": [\n        \"Parameterized queries\",\n        \"DB network isolation\",\n        \"DB activity monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"Data Storage - Backups & Archives\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Backups containing PHI are retained beyond policy or stored unencrypted offsite, leading to data leaks during breach or vendor failure.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt backups with KMS-managed keys, enforce backup retention policies, perform secure deletion/overwriting, restrict access to backup keys, and include backup verification and access logging.\",\n      \"applicable_controls\": [\n        \"Encrypted backups\",\n        \"Retention and deletion controls\",\n        \"Access logging\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"Identity & Security Services - External IdP\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Compromise or misconfiguration of a federated identity provider leads to spoofed tokens, allowing unauthorized access to user accounts and PHI.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Prefer enterprise-grade IdPs with strong security posture, validate tokens (signature, issuer, audience, nonce), implement token revocation and short-lived tokens, adopt SCIM provisioning controls, and monitor IdP trust relationships and metadata changes.\",\n      \"applicable_controls\": [\n        \"Token validation\",\n        \"Short token TTL\",\n        \"IdP monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"Identity & Security Services - Key Management Service (KMS)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Compromise or mismanagement of encryption keys leads to decryption of PHI at rest and exposure of historical records and backups.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use managed KMS with HSM-backed keys, enforce strict IAM for key admins, rotate keys periodically, use envelope encryption, separate encryption duties from application admins, monitor key usage and configure key policy with least privilege.\",\n      \"applicable_controls\": [\n        \"Managed KMS/HSM\",\n        \"Key rotation and separation of duties\",\n        \"Key usage logging\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"Application Services - Notifications & Email/SMS Gateways\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Notification payloads (email/SMS) contain PHI or links that leak PHI via insecure channels, interception, or if phone/email is compromised; SMS phishing risk increases if content is not carefully designed.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Avoid including PHI in notifications; send minimal, non-sensitive alerts prompting app login to view results, use secure in-app notifications for PHI, offer opt-in/opt-out controls, use encrypted email if PHI must be included, and ensure vendor contracts enforce confidentiality.\",\n      \"applicable_controls\": [\n        \"Notification content policy\",\n        \"In-app encrypted notifications\",\n        \"DPA with notification vendors\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"External Services - AI/OCR Provider\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Malicious or compromised third-party model alters extracted lab values or reference ranges, resulting in incorrect analysis or false alerts.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Validate vendor outputs through sampling and test datasets, implement output validation rules and plausibility checks, keep an independent verification layer or fallback model, maintain vendor diversity, and include SLA clauses for model integrity.\",\n      \"applicable_controls\": [\n        \"Output validation & plausibility checks\",\n        \"Vendor SLAs and diversity\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"External Services - Email/SMS Provider\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient logging or proof of delivery leading to disputes about whether a user was notified about critical abnormal results (non-repudiation failure).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Keep signed delivery receipts, store notification audit logs with timestamps and content hashes, integrate provider webhooks for delivery status, and retain logs immutable for compliance periods.\",\n      \"applicable_controls\": [\n        \"Notification delivery logging\",\n        \"Immutable audit storage\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Application Services - APIs\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"APIs exposing excessive data via verbose endpoints or misconfigured filters allow attackers to enumerate or bulk-download user PHI (insecure direct object references, over-permissive list endpoints).\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Implement pagination, rate limits, strict server-side authorization, field-level filtering, avoid returning full PHI in lists, require scopes for bulk export, enforce export approvals and audit before large exports.\",\n      \"applicable_controls\": [\n        \"Pagination & rate limits\",\n        \"Field-level authorization\",\n        \"Export approval workflow\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Unacceptable\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"Application Services - Input Validation (Web APIs)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Injection attacks (SQL, NoSQL, OS, command) via unvalidated fields (e.g., lab names, date fields, file metadata) enabling data compromise or lateral movement.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries or ORM, strict schema validation, input sanitization, WAF tuned for injection detection, and security-focused code reviews and fuzz testing.\",\n      \"applicable_controls\": [\n        \"Parameterized queries/ORM\",\n        \"Input schema validation\",\n        \"WAF\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"Frontend & Edge - CSRF & XSS\",\n      \"threat_category\": \"Tampering/Information Disclosure\",\n      \"description\": \"Cross-site scripting allows attackers to capture session tokens or perform actions on behalf of users; CSRF causes unauthorized actions (e.g., changing notification preferences or uploading malicious files).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use anti-CSRF tokens, SameSite cookies, strict input/output encoding, CSP, sanitize user-generated content, adopt secure frameworks and perform periodic frontend security testing.\",\n      \"applicable_controls\": [\n        \"CSP\",\n        \"Anti-CSRF tokens\",\n        \"Output encoding\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Application Services - Audit Logging & Monitoring\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient, mutable, or incomplete audit logs prevent detection of malicious actions or deny accountability (e.g., missing log entries for data exports, consent changes).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement immutable append-only logs, forward logs to a hardened SIEM, ensure logs contain user, timestamp, and context, protect log integrity with KMS-backed signing, and monitor/alert for suspicious patterns.\",\n      \"applicable_controls\": [\n        \"Immutable audit logs\",\n        \"SIEM integration\",\n        \"Log integrity checks\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"Application Services - Export (PDF/CSV) Generation\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Exports containing PHI are generated with insecure filenames or stored in locations with weak permissions, or links are shared without authentication, enabling data leakage.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Require re-authentication or MFA for export, generate exports on-demand with short-lived signed URLs, sanitize filenames, restrict export storage ACLs, and log exports for audit.\",\n      \"applicable_controls\": [\n        \"Signed, short-lived export URLs\",\n        \"Re-authentication for exports\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"External Services - Telemetry & Vendor Logs\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Debugging logs, telemetry or metrics sent to third-party analytics vendors inadvertently contain PHI (e.g., test values, user IDs) and are retained by vendors.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Apply strict data minimization for telemetry, scrub PHI before sending, use hashing or tokenization for identifiers, review vendor retention policies, and include DPAs restricting usage.\",\n      \"applicable_controls\": [\n        \"Telemetry scrubbing\",\n        \"DPA with analytics vendors\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Cloud Infrastructure - IAM & Misconfiguration\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Over-permissive IAM roles or misconfigured cloud services permit lateral movement, privilege escalation, or data access across resources (e.g., storage read access by compute instances that shouldn't have it).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Apply least privilege, regularly audit IAM policies, use role-based access controls with separation of duties, implement resource-level policies, employ cloud configuration scanning (CSPM), and enforce ephemeral credentials for services.\",\n      \"applicable_controls\": [\n        \"Least-privilege IAM\",\n        \"CSPM scanning\",\n        \"Separation of duties\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Application Services - SSRF and SSRF to Internal Services (AI Vendor endpoints)\",\n      \"threat_category\": \"Tampering/Information Disclosure\",\n      \"description\": \"Server-side request forgery where attackers induce the backend to make requests to internal metadata, KMS endpoints, or vendor APIs to leak sensitive data or access internal services.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Validate and whitelist outbound URLs, restrict outbound egress with network controls and VPC service endpoints, perform internal request authorization, and sanitize all user-controllable URLs.\",\n      \"applicable_controls\": [\n        \"Egress filtering\",\n        \"URL allow-listing\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"Application Services - Model & Data Poisoning\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Attackers submit crafted reports to poison training or model adaptation pipelines (if models re-train on user data), degrading model accuracy or causing harmful inferences.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Avoid using raw user data to retrain models without strong vetting, use robust training datasets, apply anomaly detection on training inputs, maintain segregated training environments, and verify model behavior after updates.\",\n      \"applicable_controls\": [\n        \"Training data vetting\",\n        \"Anomaly detection on inputs\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Application Services / Data Storage - Consent & Privacy Preferences\",\n      \"threat_category\": \"Repudiation/Information Disclosure\",\n      \"description\": \"Failure to correctly enforce user consent and privacy preferences (e.g., continued sharing to vendors after revocation) leads to non-compliant data processing and legal exposure.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Store immutable consent records, check consent before any export or vendor call, provide user-facing controls and audit trails, implement consent propagation to vendors, and automate revocation enforcement with job quarantining.\",\n      \"applicable_controls\": [\n        \"Consent records & enforcement\",\n        \"Vendor revocation workflows\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    }\n  ],\n  \"risk_summary\": \"The most critical threats are those that enable unauthorized access to PHI (THR-001 credential theft, THR-006 broken RBAC/privilege escalation, THR-019 excessive API data exposure), large-scale data leakage through misconfigured storage or third-party processing (THR-011 public buckets, THR-008 OCR/AI provider disclosure), and service availability or processing reliability issues (THR-004 upload/processing DoS, THR-010 queue exhaustion). Key attack vectors include authentication endpoints and password recovery, public-facing upload APIs, third-party integration endpoints (AI/OCR and notification providers), and misconfigured cloud IAM/storage. Priority areas: enforce strong authentication (MFA, token hygiene), rigorous server-side authorization and least-privilege IAM, robust input validation and sandboxing for file processing, strict data minimization and DPAs for external vendors, secure storage configurations with KMS-managed encryption, comprehensive audit logging and immutable logs, and network-level protections (WAF, rate limiting, egress whitelists). Overall risk posture is elevated due to sensitive PHI handling and multiple high-impact threat scenarios; mitigations already present in architecture (edge WAF/API gateway, KMS, DPAs) reduce but do not eliminate risk. Immediate remediation should focus on access control hardening, secure upload/processing sandboxes, third-party data flow minimization and contractual safeguards, and hardening object and backup storage configurations.\"\n}",
+  "pydantic": {
+    "methodology": "STRIDE",
+    "threats": [
+      {
+        "threat_id": "THR-001",
+        "component": "Frontend Layer - Authentication & Password Recovery",
+        "threat_category": "Spoofing",
+        "description": "Credential theft via phishing, reuse, or compromised local storage leading to account takeover (including abuse of password reset flows). Attackers may spoof legitimate users to access PHI and analysis results.",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Enforce strong password policies, rate-limit password resets, require MFA (preferably hardware or TOTP), implement phishing-resistant flows, secure session cookies (HttpOnly, Secure, SameSite=strict), avoid storing credentials in local storage, implement account lockout & notification on suspicious activity, monitor for credential stuffing and anomalous logins.",
+        "applicable_controls": [
+          "MFA enforcement",
+          "TLS 1.2+",
+          "Secure cookie flags",
+          "Password complexity & rate limiting",
+          "Auth anomaly detection"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-002",
+        "component": "Frontend Layer - Web SPA / Mobile App",
+        "threat_category": "Tampering",
+        "description": "Client-side script manipulation (malicious browser extensions, XSS, or compromised bundle serving) that modifies UI to exfiltrate input data or change upload metadata before submission.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Ensure Content Security Policy (CSP), subresource integrity (SRI) for static assets, minimize inline JS, sign mobile app builds, use code obfuscation and app attestation (e.g., SafetyNet/DeviceCheck), validate all data server-side, and protect CDN origin/integrity.",
+        "applicable_controls": [
+          "CSP",
+          "SRI",
+          "Server-side validation",
+          "App build signing and attestation"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-003",
+        "component": "Frontend Layer - File Uploads (mobile camera)",
+        "threat_category": "Information Disclosure",
+        "description": "Sensitive PHI embedded in image EXIF metadata (location, device info) or auto-filled captions being uploaded and stored unintentionally, exposing PII/PHI.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Strip EXIF/metadata on client or immediately on ingest server; present clear consent & preview showing redactions; apply automatic PII detection; educate users on metadata; minimize metadata persisted.",
+        "applicable_controls": [
+          "Metadata stripping on ingest",
+          "User consent screens"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-004",
+        "component": "Edge Layer - API Gateway/WAF",
+        "threat_category": "Denial of Service",
+        "description": "Upload flood or large-file upload spikes (accidental or malicious) causing bandwidth exhaustion or queue/backlog saturation, impacting OCR/AI worker availability and overall service.",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Enforce rate limits per IP/user, file size limits, upload quotas, CAPTCHA for suspicious flows, upload throttling and pre-signed upload tokens with short TTLs, autoscaling with backpressure, charge-rate limiting on heavy AI usage.",
+        "applicable_controls": [
+          "API rate limiting",
+          "WAF rules",
+          "Pre-signed uploads",
+          "Autoscaling + queue backpressure"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-005",
+        "component": "Edge Layer - TLS Termination / Gateway",
+        "threat_category": "Spoofing",
+        "description": "TLS termination misconfiguration or acceptance of weak ciphers allows man-in-the-middle (MITM) attacks that can intercept authentication tokens or PHI in transit.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce TLS 1.2+ (prefer 1.3), disable weak ciphers/SSL, enable HSTS, mutual TLS for service-to-service where appropriate, certificate pinning in mobile clients, regular certificate monitoring and automated rotation.",
+        "applicable_controls": [
+          "TLS 1.3 enforcement",
+          "HSTS",
+          "Certificate management automation"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-006",
+        "component": "Application Services - Authentication & RBAC",
+        "threat_category": "Elevation of Privilege",
+        "description": "Broken access control where users can access or modify other users' blood test data (IDOR), or escalate to admin functions via insufficient authorization checks.",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Implement least-privilege RBAC with server-side authorization checks on every request, use strong resource-based ACLs, adopt attribute-based access control for sensitive operations, perform automated access control tests and code reviews, enforce separation of duties for admin functions.",
+        "applicable_controls": [
+          "Server-side RBAC enforcement",
+          "Access control testing"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Unacceptable"
+      },
+      {
+        "threat_id": "THR-007",
+        "component": "Application Services - Input Handling and OCR Pipeline",
+        "threat_category": "Tampering",
+        "description": "Maliciously crafted files (images, PDFs) containing embedded scripts, malformed fonts, or OCI payloads exploit parsing libraries causing arbitrary code execution or tampering with processing results.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Perform strict file type validation, sandbox processing (container isolation, seccomp), run OCR/AI tasks in isolated least-privilege environments, use up-to-date libraries, do content sanitization and enforce time/memory limits, use malware scanning for uploads.",
+        "applicable_controls": [
+          "Sandboxed processing",
+          "File validation & malware scanning"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-008",
+        "component": "Application Services - OCR/AI Integration (Third-party)",
+        "threat_category": "Information Disclosure",
+        "description": "Sensitive PHI sent to third-party AI/OCR providers without sufficient minimization or redaction leads to data exposure, provider misuse, or non-compliant processing.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Minimize data sent (send redacted images or extracted text only as needed), use DPAs, choose providers with adequate certifications, implement encryption in transit and at-rest, use on-premise/self-hosted inference or private VPC endpoints where possible, apply tokenization or anonymization before sending, maintain audit trails of data shared.",
+        "applicable_controls": [
+          "DPA contracts",
+          "Data minimization",
+          "Private network integration with vendors"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-009",
+        "component": "Application Services - Analysis Results & Summaries",
+        "threat_category": "Tampering",
+        "description": "Attackers modify stored analysis results or summaries (either in transit or at rest) to change medical interpretations, causing user harm or misleading clinicians.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Sign analysis outputs (digital signatures), store immutable audit logs, enforce strict RBAC for editing results, apply integrity checks and versioning, perform hashing of stored artifacts with KMS-managed keys.",
+        "applicable_controls": [
+          "Object and DB encryption + integrity checks",
+          "Immutable audit logs",
+          "RBAC"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-010",
+        "component": "Application Services - Message Queue / Job Orchestration",
+        "threat_category": "Denial of Service",
+        "description": "Job queue exhaustion or poisoning via crafted messages causing worker crashes or processing of malicious tasks, interrupting AI pipelines and delaying analyses.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Authenticate and validate queued messages, set strict size and schema validation for queue payloads, use dead-letter queues, rate-limit producer APIs, throttle jobs per-user, and monitor queue lengths with alerting and autoscaling.",
+        "applicable_controls": [
+          "Message validation",
+          "Dead-letter queues",
+          "Queue rate limiting"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-011",
+        "component": "Data Storage - Object Store (encrypted files)",
+        "threat_category": "Information Disclosure",
+        "description": "Misconfigured object storage ACLs or public buckets accidentally expose raw PHI (images/PDFs) to the internet or other tenants.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce private-by-default buckets, block public ACLs, use VPC endpoints, require signed URL with short TTL for access, encrypt objects with KMS, alert on ACL changes, and run periodic configuration scans.",
+        "applicable_controls": [
+          "Private buckets",
+          "KMS encryption",
+          "Signed URLs"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-012",
+        "component": "Data Storage - Relational Database",
+        "threat_category": "Tampering",
+        "description": "Unauthorized modification of structured lab results, user profiles, or retention settings via SQL injection or improper DB permissions altering PHI or audit records.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use parameterized queries/ORMs, input validation, least-privilege DB accounts, separation of duties, DB activity monitoring, and regular vulnerability scanning and code review. Harden DB network access using private subnets.",
+        "applicable_controls": [
+          "Parameterized queries",
+          "DB network isolation",
+          "DB activity monitoring"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-013",
+        "component": "Data Storage - Backups & Archives",
+        "threat_category": "Information Disclosure",
+        "description": "Backups containing PHI are retained beyond policy or stored unencrypted offsite, leading to data leaks during breach or vendor failure.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Encrypt backups with KMS-managed keys, enforce backup retention policies, perform secure deletion/overwriting, restrict access to backup keys, and include backup verification and access logging.",
+        "applicable_controls": [
+          "Encrypted backups",
+          "Retention and deletion controls",
+          "Access logging"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-014",
+        "component": "Identity & Security Services - External IdP",
+        "threat_category": "Spoofing",
+        "description": "Compromise or misconfiguration of a federated identity provider leads to spoofed tokens, allowing unauthorized access to user accounts and PHI.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Prefer enterprise-grade IdPs with strong security posture, validate tokens (signature, issuer, audience, nonce), implement token revocation and short-lived tokens, adopt SCIM provisioning controls, and monitor IdP trust relationships and metadata changes.",
+        "applicable_controls": [
+          "Token validation",
+          "Short token TTL",
+          "IdP monitoring"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-015",
+        "component": "Identity & Security Services - Key Management Service (KMS)",
+        "threat_category": "Information Disclosure",
+        "description": "Compromise or mismanagement of encryption keys leads to decryption of PHI at rest and exposure of historical records and backups.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use managed KMS with HSM-backed keys, enforce strict IAM for key admins, rotate keys periodically, use envelope encryption, separate encryption duties from application admins, monitor key usage and configure key policy with least privilege.",
+        "applicable_controls": [
+          "Managed KMS/HSM",
+          "Key rotation and separation of duties",
+          "Key usage logging"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-016",
+        "component": "Application Services - Notifications & Email/SMS Gateways",
+        "threat_category": "Information Disclosure",
+        "description": "Notification payloads (email/SMS) contain PHI or links that leak PHI via insecure channels, interception, or if phone/email is compromised; SMS phishing risk increases if content is not carefully designed.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Avoid including PHI in notifications; send minimal, non-sensitive alerts prompting app login to view results, use secure in-app notifications for PHI, offer opt-in/opt-out controls, use encrypted email if PHI must be included, and ensure vendor contracts enforce confidentiality.",
+        "applicable_controls": [
+          "Notification content policy",
+          "In-app encrypted notifications",
+          "DPA with notification vendors"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-017",
+        "component": "External Services - AI/OCR Provider",
+        "threat_category": "Tampering",
+        "description": "Malicious or compromised third-party model alters extracted lab values or reference ranges, resulting in incorrect analysis or false alerts.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Validate vendor outputs through sampling and test datasets, implement output validation rules and plausibility checks, keep an independent verification layer or fallback model, maintain vendor diversity, and include SLA clauses for model integrity.",
+        "applicable_controls": [
+          "Output validation & plausibility checks",
+          "Vendor SLAs and diversity"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-018",
+        "component": "External Services - Email/SMS Provider",
+        "threat_category": "Repudiation",
+        "description": "Insufficient logging or proof of delivery leading to disputes about whether a user was notified about critical abnormal results (non-repudiation failure).",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Keep signed delivery receipts, store notification audit logs with timestamps and content hashes, integrate provider webhooks for delivery status, and retain logs immutable for compliance periods.",
+        "applicable_controls": [
+          "Notification delivery logging",
+          "Immutable audit storage"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-019",
+        "component": "Application Services - APIs",
+        "threat_category": "Information Disclosure",
+        "description": "APIs exposing excessive data via verbose endpoints or misconfigured filters allow attackers to enumerate or bulk-download user PHI (insecure direct object references, over-permissive list endpoints).",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Implement pagination, rate limits, strict server-side authorization, field-level filtering, avoid returning full PHI in lists, require scopes for bulk export, enforce export approvals and audit before large exports.",
+        "applicable_controls": [
+          "Pagination & rate limits",
+          "Field-level authorization",
+          "Export approval workflow"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Unacceptable"
+      },
+      {
+        "threat_id": "THR-020",
+        "component": "Application Services - Input Validation (Web APIs)",
+        "threat_category": "Tampering",
+        "description": "Injection attacks (SQL, NoSQL, OS, command) via unvalidated fields (e.g., lab names, date fields, file metadata) enabling data compromise or lateral movement.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use parameterized queries or ORM, strict schema validation, input sanitization, WAF tuned for injection detection, and security-focused code reviews and fuzz testing.",
+        "applicable_controls": [
+          "Parameterized queries/ORM",
+          "Input schema validation",
+          "WAF"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-021",
+        "component": "Frontend & Edge - CSRF & XSS",
+        "threat_category": "Tampering/Information Disclosure",
+        "description": "Cross-site scripting allows attackers to capture session tokens or perform actions on behalf of users; CSRF causes unauthorized actions (e.g., changing notification preferences or uploading malicious files).",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Use anti-CSRF tokens, SameSite cookies, strict input/output encoding, CSP, sanitize user-generated content, adopt secure frameworks and perform periodic frontend security testing.",
+        "applicable_controls": [
+          "CSP",
+          "Anti-CSRF tokens",
+          "Output encoding"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-022",
+        "component": "Application Services - Audit Logging & Monitoring",
+        "threat_category": "Repudiation",
+        "description": "Insufficient, mutable, or incomplete audit logs prevent detection of malicious actions or deny accountability (e.g., missing log entries for data exports, consent changes).",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Implement immutable append-only logs, forward logs to a hardened SIEM, ensure logs contain user, timestamp, and context, protect log integrity with KMS-backed signing, and monitor/alert for suspicious patterns.",
+        "applicable_controls": [
+          "Immutable audit logs",
+          "SIEM integration",
+          "Log integrity checks"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-023",
+        "component": "Application Services - Export (PDF/CSV) Generation",
+        "threat_category": "Information Disclosure",
+        "description": "Exports containing PHI are generated with insecure filenames or stored in locations with weak permissions, or links are shared without authentication, enabling data leakage.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Require re-authentication or MFA for export, generate exports on-demand with short-lived signed URLs, sanitize filenames, restrict export storage ACLs, and log exports for audit.",
+        "applicable_controls": [
+          "Signed, short-lived export URLs",
+          "Re-authentication for exports"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-024",
+        "component": "External Services - Telemetry & Vendor Logs",
+        "threat_category": "Information Disclosure",
+        "description": "Debugging logs, telemetry or metrics sent to third-party analytics vendors inadvertently contain PHI (e.g., test values, user IDs) and are retained by vendors.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Apply strict data minimization for telemetry, scrub PHI before sending, use hashing or tokenization for identifiers, review vendor retention policies, and include DPAs restricting usage.",
+        "applicable_controls": [
+          "Telemetry scrubbing",
+          "DPA with analytics vendors"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-025",
+        "component": "Cloud Infrastructure - IAM & Misconfiguration",
+        "threat_category": "Elevation of Privilege",
+        "description": "Over-permissive IAM roles or misconfigured cloud services permit lateral movement, privilege escalation, or data access across resources (e.g., storage read access by compute instances that shouldn't have it).",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Apply least privilege, regularly audit IAM policies, use role-based access controls with separation of duties, implement resource-level policies, employ cloud configuration scanning (CSPM), and enforce ephemeral credentials for services.",
+        "applicable_controls": [
+          "Least-privilege IAM",
+          "CSPM scanning",
+          "Separation of duties"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-026",
+        "component": "Application Services - SSRF and SSRF to Internal Services (AI Vendor endpoints)",
+        "threat_category": "Tampering/Information Disclosure",
+        "description": "Server-side request forgery where attackers induce the backend to make requests to internal metadata, KMS endpoints, or vendor APIs to leak sensitive data or access internal services.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Validate and whitelist outbound URLs, restrict outbound egress with network controls and VPC service endpoints, perform internal request authorization, and sanitize all user-controllable URLs.",
+        "applicable_controls": [
+          "Egress filtering",
+          "URL allow-listing"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-027",
+        "component": "Application Services - Model & Data Poisoning",
+        "threat_category": "Tampering",
+        "description": "Attackers submit crafted reports to poison training or model adaptation pipelines (if models re-train on user data), degrading model accuracy or causing harmful inferences.",
+        "likelihood": "Low",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Avoid using raw user data to retrain models without strong vetting, use robust training datasets, apply anomaly detection on training inputs, maintain segregated training environments, and verify model behavior after updates.",
+        "applicable_controls": [
+          "Training data vetting",
+          "Anomaly detection on inputs"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-028",
+        "component": "Application Services / Data Storage - Consent & Privacy Preferences",
+        "threat_category": "Repudiation/Information Disclosure",
+        "description": "Failure to correctly enforce user consent and privacy preferences (e.g., continued sharing to vendors after revocation) leads to non-compliant data processing and legal exposure.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Store immutable consent records, check consent before any export or vendor call, provide user-facing controls and audit trails, implement consent propagation to vendors, and automate revocation enforcement with job quarantining.",
+        "applicable_controls": [
+          "Consent records & enforcement",
+          "Vendor revocation workflows"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      }
+    ],
+    "risk_summary": "The most critical threats are those that enable unauthorized access to PHI (THR-001 credential theft, THR-006 broken RBAC/privilege escalation, THR-019 excessive API data exposure), large-scale data leakage through misconfigured storage or third-party processing (THR-011 public buckets, THR-008 OCR/AI provider disclosure), and service availability or processing reliability issues (THR-004 upload/processing DoS, THR-010 queue exhaustion). Key attack vectors include authentication endpoints and password recovery, public-facing upload APIs, third-party integration endpoints (AI/OCR and notification providers), and misconfigured cloud IAM/storage. Priority areas: enforce strong authentication (MFA, token hygiene), rigorous server-side authorization and least-privilege IAM, robust input validation and sandboxing for file processing, strict data minimization and DPAs for external vendors, secure storage configurations with KMS-managed encryption, comprehensive audit logging and immutable logs, and network-level protections (WAF, rate limiting, egress whitelists). Overall risk posture is elevated due to sensitive PHI handling and multiple high-impact threat scenarios; mitigations already present in architecture (edge WAF/API gateway, KMS, DPAs) reduce but do not eliminate risk. Immediate remediation should focus on access control hardening, secure upload/processing sandboxes, third-party data flow minimization and contractual safeguards, and hardening object and backup storage configurations."
+  },
+  "tasks": [
+    {
+      "name": "perform_threat_modeling",
+      "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"Frontend Layer - Authentication & Password Recovery\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Credential theft via phishing, reuse, or compromised local storage leading to account takeover (including abuse of password reset flows). Attackers may spoof legitimate users to access PHI and analysis results.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce strong password policies, rate-limit password resets, require MFA (preferably hardware or TOTP), implement phishing-resistant flows, secure session cookies (HttpOnly, Secure, SameSite=strict), avoid storing credentials in local storage, implement account lockout & notification on suspicious activity, monitor for credential stuffing and anomalous logins.\",\n      \"applicable_controls\": [\n        \"MFA enforcement\",\n        \"TLS 1.2+\",\n        \"Secure cookie flags\",\n        \"Password complexity & rate limiting\",\n        \"Auth anomaly detection\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Frontend Layer - Web SPA / Mobile App\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Client-side script manipulation (malicious browser extensions, XSS, or compromised bundle serving) that modifies UI to exfiltrate input data or change upload metadata before submission.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Ensure Content Security Policy (CSP), subresource integrity (SRI) for static assets, minimize inline JS, sign mobile app builds, use code obfuscation and app attestation (e.g., SafetyNet/DeviceCheck), validate all data server-side, and protect CDN origin/integrity.\",\n      \"applicable_controls\": [\n        \"CSP\",\n        \"SRI\",\n        \"Server-side validation\",\n        \"App build signing and attestation\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"Frontend Layer - File Uploads (mobile camera)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive PHI embedded in image EXIF metadata (location, device info) or auto-filled captions being uploaded and stored unintentionally, exposing PII/PHI.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Strip EXIF/metadata on client or immediately on ingest server; present clear consent & preview showing redactions; apply automatic PII detection; educate users on metadata; minimize metadata persisted.\",\n      \"applicable_controls\": [\n        \"Metadata stripping on ingest\",\n        \"User consent screens\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Edge Layer - API Gateway/WAF\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Upload flood or large-file upload spikes (accidental or malicious) causing bandwidth exhaustion or queue/backlog saturation, impacting OCR/AI worker availability and overall service.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce rate limits per IP/user, file size limits, upload quotas, CAPTCHA for suspicious flows, upload throttling and pre-signed upload tokens with short TTLs, autoscaling with backpressure, charge-rate limiting on heavy AI usage.\",\n      \"applicable_controls\": [\n        \"API rate limiting\",\n        \"WAF rules\",\n        \"Pre-signed uploads\",\n        \"Autoscaling + queue backpressure\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Edge Layer - TLS Termination / Gateway\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"TLS termination misconfiguration or acceptance of weak ciphers allows man-in-the-middle (MITM) attacks that can intercept authentication tokens or PHI in transit.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce TLS 1.2+ (prefer 1.3), disable weak ciphers/SSL, enable HSTS, mutual TLS for service-to-service where appropriate, certificate pinning in mobile clients, regular certificate monitoring and automated rotation.\",\n      \"applicable_controls\": [\n        \"TLS 1.3 enforcement\",\n        \"HSTS\",\n        \"Certificate management automation\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Application Services - Authentication & RBAC\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken access control where users can access or modify other users' blood test data (IDOR), or escalate to admin functions via insufficient authorization checks.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Implement least-privilege RBAC with server-side authorization checks on every request, use strong resource-based ACLs, adopt attribute-based access control for sensitive operations, perform automated access control tests and code reviews, enforce separation of duties for admin functions.\",\n      \"applicable_controls\": [\n        \"Server-side RBAC enforcement\",\n        \"Access control testing\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Unacceptable\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Application Services - Input Handling and OCR Pipeline\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Maliciously crafted files (images, PDFs) containing embedded scripts, malformed fonts, or OCI payloads exploit parsing libraries causing arbitrary code execution or tampering with processing results.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Perform strict file type validation, sandbox processing (container isolation, seccomp), run OCR/AI tasks in isolated least-privilege environments, use up-to-date libraries, do content sanitization and enforce time/memory limits, use malware scanning for uploads.\",\n      \"applicable_controls\": [\n        \"Sandboxed processing\",\n        \"File validation & malware scanning\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"Application Services - OCR/AI Integration (Third-party)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive PHI sent to third-party AI/OCR providers without sufficient minimization or redaction leads to data exposure, provider misuse, or non-compliant processing.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Minimize data sent (send redacted images or extracted text only as needed), use DPAs, choose providers with adequate certifications, implement encryption in transit and at-rest, use on-premise/self-hosted inference or private VPC endpoints where possible, apply tokenization or anonymization before sending, maintain audit trails of data shared.\",\n      \"applicable_controls\": [\n        \"DPA contracts\",\n        \"Data minimization\",\n        \"Private network integration with vendors\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"Application Services - Analysis Results & Summaries\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Attackers modify stored analysis results or summaries (either in transit or at rest) to change medical interpretations, causing user harm or misleading clinicians.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Sign analysis outputs (digital signatures), store immutable audit logs, enforce strict RBAC for editing results, apply integrity checks and versioning, perform hashing of stored artifacts with KMS-managed keys.\",\n      \"applicable_controls\": [\n        \"Object and DB encryption + integrity checks\",\n        \"Immutable audit logs\",\n        \"RBAC\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"Application Services - Message Queue / Job Orchestration\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Job queue exhaustion or poisoning via crafted messages causing worker crashes or processing of malicious tasks, interrupting AI pipelines and delaying analyses.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Authenticate and validate queued messages, set strict size and schema validation for queue payloads, use dead-letter queues, rate-limit producer APIs, throttle jobs per-user, and monitor queue lengths with alerting and autoscaling.\",\n      \"applicable_controls\": [\n        \"Message validation\",\n        \"Dead-letter queues\",\n        \"Queue rate limiting\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Data Storage - Object Store (encrypted files)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Misconfigured object storage ACLs or public buckets accidentally expose raw PHI (images/PDFs) to the internet or other tenants.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce private-by-default buckets, block public ACLs, use VPC endpoints, require signed URL with short TTL for access, encrypt objects with KMS, alert on ACL changes, and run periodic configuration scans.\",\n      \"applicable_controls\": [\n        \"Private buckets\",\n        \"KMS encryption\",\n        \"Signed URLs\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"Data Storage - Relational Database\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Unauthorized modification of structured lab results, user profiles, or retention settings via SQL injection or improper DB permissions altering PHI or audit records.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries/ORMs, input validation, least-privilege DB accounts, separation of duties, DB activity monitoring, and regular vulnerability scanning and code review. Harden DB network access using private subnets.\",\n      \"applicable_controls\": [\n        \"Parameterized queries\",\n        \"DB network isolation\",\n        \"DB activity monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"Data Storage - Backups & Archives\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Backups containing PHI are retained beyond policy or stored unencrypted offsite, leading to data leaks during breach or vendor failure.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt backups with KMS-managed keys, enforce backup retention policies, perform secure deletion/overwriting, restrict access to backup keys, and include backup verification and access logging.\",\n      \"applicable_controls\": [\n        \"Encrypted backups\",\n        \"Retention and deletion controls\",\n        \"Access logging\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"Identity & Security Services - External IdP\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Compromise or misconfiguration of a federated identity provider leads to spoofed tokens, allowing unauthorized access to user accounts and PHI.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Prefer enterprise-grade IdPs with strong security posture, validate tokens (signature, issuer, audience, nonce), implement token revocation and short-lived tokens, adopt SCIM provisioning controls, and monitor IdP trust relationships and metadata changes.\",\n      \"applicable_controls\": [\n        \"Token validation\",\n        \"Short token TTL\",\n        \"IdP monitoring\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"Identity & Security Services - Key Management Service (KMS)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Compromise or mismanagement of encryption keys leads to decryption of PHI at rest and exposure of historical records and backups.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use managed KMS with HSM-backed keys, enforce strict IAM for key admins, rotate keys periodically, use envelope encryption, separate encryption duties from application admins, monitor key usage and configure key policy with least privilege.\",\n      \"applicable_controls\": [\n        \"Managed KMS/HSM\",\n        \"Key rotation and separation of duties\",\n        \"Key usage logging\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"Application Services - Notifications & Email/SMS Gateways\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Notification payloads (email/SMS) contain PHI or links that leak PHI via insecure channels, interception, or if phone/email is compromised; SMS phishing risk increases if content is not carefully designed.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Avoid including PHI in notifications; send minimal, non-sensitive alerts prompting app login to view results, use secure in-app notifications for PHI, offer opt-in/opt-out controls, use encrypted email if PHI must be included, and ensure vendor contracts enforce confidentiality.\",\n      \"applicable_controls\": [\n        \"Notification content policy\",\n        \"In-app encrypted notifications\",\n        \"DPA with notification vendors\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"External Services - AI/OCR Provider\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Malicious or compromised third-party model alters extracted lab values or reference ranges, resulting in incorrect analysis or false alerts.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Validate vendor outputs through sampling and test datasets, implement output validation rules and plausibility checks, keep an independent verification layer or fallback model, maintain vendor diversity, and include SLA clauses for model integrity.\",\n      \"applicable_controls\": [\n        \"Output validation & plausibility checks\",\n        \"Vendor SLAs and diversity\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"External Services - Email/SMS Provider\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient logging or proof of delivery leading to disputes about whether a user was notified about critical abnormal results (non-repudiation failure).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Keep signed delivery receipts, store notification audit logs with timestamps and content hashes, integrate provider webhooks for delivery status, and retain logs immutable for compliance periods.\",\n      \"applicable_controls\": [\n        \"Notification delivery logging\",\n        \"Immutable audit storage\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Application Services - APIs\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"APIs exposing excessive data via verbose endpoints or misconfigured filters allow attackers to enumerate or bulk-download user PHI (insecure direct object references, over-permissive list endpoints).\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Implement pagination, rate limits, strict server-side authorization, field-level filtering, avoid returning full PHI in lists, require scopes for bulk export, enforce export approvals and audit before large exports.\",\n      \"applicable_controls\": [\n        \"Pagination & rate limits\",\n        \"Field-level authorization\",\n        \"Export approval workflow\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Unacceptable\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"Application Services - Input Validation (Web APIs)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Injection attacks (SQL, NoSQL, OS, command) via unvalidated fields (e.g., lab names, date fields, file metadata) enabling data compromise or lateral movement.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries or ORM, strict schema validation, input sanitization, WAF tuned for injection detection, and security-focused code reviews and fuzz testing.\",\n      \"applicable_controls\": [\n        \"Parameterized queries/ORM\",\n        \"Input schema validation\",\n        \"WAF\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"Frontend & Edge - CSRF & XSS\",\n      \"threat_category\": \"Tampering/Information Disclosure\",\n      \"description\": \"Cross-site scripting allows attackers to capture session tokens or perform actions on behalf of users; CSRF causes unauthorized actions (e.g., changing notification preferences or uploading malicious files).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use anti-CSRF tokens, SameSite cookies, strict input/output encoding, CSP, sanitize user-generated content, adopt secure frameworks and perform periodic frontend security testing.\",\n      \"applicable_controls\": [\n        \"CSP\",\n        \"Anti-CSRF tokens\",\n        \"Output encoding\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Application Services - Audit Logging & Monitoring\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient, mutable, or incomplete audit logs prevent detection of malicious actions or deny accountability (e.g., missing log entries for data exports, consent changes).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement immutable append-only logs, forward logs to a hardened SIEM, ensure logs contain user, timestamp, and context, protect log integrity with KMS-backed signing, and monitor/alert for suspicious patterns.\",\n      \"applicable_controls\": [\n        \"Immutable audit logs\",\n        \"SIEM integration\",\n        \"Log integrity checks\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"Application Services - Export (PDF/CSV) Generation\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Exports containing PHI are generated with insecure filenames or stored in locations with weak permissions, or links are shared without authentication, enabling data leakage.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Require re-authentication or MFA for export, generate exports on-demand with short-lived signed URLs, sanitize filenames, restrict export storage ACLs, and log exports for audit.\",\n      \"applicable_controls\": [\n        \"Signed, short-lived export URLs\",\n        \"Re-authentication for exports\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"External Services - Telemetry & Vendor Logs\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Debugging logs, telemetry or metrics sent to third-party analytics vendors inadvertently contain PHI (e.g., test values, user IDs) and are retained by vendors.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Apply strict data minimization for telemetry, scrub PHI before sending, use hashing or tokenization for identifiers, review vendor retention policies, and include DPAs restricting usage.\",\n      \"applicable_controls\": [\n        \"Telemetry scrubbing\",\n        \"DPA with analytics vendors\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Cloud Infrastructure - IAM & Misconfiguration\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Over-permissive IAM roles or misconfigured cloud services permit lateral movement, privilege escalation, or data access across resources (e.g., storage read access by compute instances that shouldn't have it).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Apply least privilege, regularly audit IAM policies, use role-based access controls with separation of duties, implement resource-level policies, employ cloud configuration scanning (CSPM), and enforce ephemeral credentials for services.\",\n      \"applicable_controls\": [\n        \"Least-privilege IAM\",\n        \"CSPM scanning\",\n        \"Separation of duties\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Application Services - SSRF and SSRF to Internal Services (AI Vendor endpoints)\",\n      \"threat_category\": \"Tampering/Information Disclosure\",\n      \"description\": \"Server-side request forgery where attackers induce the backend to make requests to internal metadata, KMS endpoints, or vendor APIs to leak sensitive data or access internal services.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Validate and whitelist outbound URLs, restrict outbound egress with network controls and VPC service endpoints, perform internal request authorization, and sanitize all user-controllable URLs.\",\n      \"applicable_controls\": [\n        \"Egress filtering\",\n        \"URL allow-listing\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"Application Services - Model & Data Poisoning\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Attackers submit crafted reports to poison training or model adaptation pipelines (if models re-train on user data), degrading model accuracy or causing harmful inferences.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Avoid using raw user data to retrain models without strong vetting, use robust training datasets, apply anomaly detection on training inputs, maintain segregated training environments, and verify model behavior after updates.\",\n      \"applicable_controls\": [\n        \"Training data vetting\",\n        \"Anomaly detection on inputs\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Application Services / Data Storage - Consent & Privacy Preferences\",\n      \"threat_category\": \"Repudiation/Information Disclosure\",\n      \"description\": \"Failure to correctly enforce user consent and privacy preferences (e.g., continued sharing to vendors after revocation) leads to non-compliant data processing and legal exposure.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Store immutable consent records, check consent before any export or vendor call, provide user-facing controls and audit trails, implement consent propagation to vendors, and automate revocation enforcement with job quarantining.\",\n      \"applicable_controls\": [\n        \"Consent records & enforcement\",\n        \"Vendor revocation workflows\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    }\n  ],\n  \"risk_summary\": \"The most critical threats are those that enable unauthorized access to PHI (THR-001 credential theft, THR-006 broken RBAC/privilege escalation, THR-019 excessive API data exposure), large-scale data leakage through misconfigured storage or third-party processing (THR-011 public buckets, THR-008 OCR/AI provider disclosure), and service availability or processing reliability issues (THR-004 upload/processing DoS, THR-010 queue exhaustion). Key attack vectors include authentication endpoints and password recovery, public-facing upload APIs, third-party integration endpoints (AI/OCR and notification providers), and misconfigured cloud IAM/storage. Priority areas: enforce strong authentication (MFA, token hygiene), rigorous server-side authorization and least-privilege IAM, robust input validation and sandboxing for file processing, strict data minimization and DPAs for external vendors, secure storage configurations with KMS-managed encryption, comprehensive audit logging and immutable logs, and network-level protections (WAF, rate limiting, egress whitelists). Overall risk posture is elevated due to sensitive PHI handling and multiple high-impact threat scenarios; mitigations already present in architecture (edge WAF/API gateway, KMS, DPAs) reduce but do not eliminate risk. Immediate remediation should focus on access control hardening, secure upload/processing sandboxes, third-party data flow minimization and contractual safeguards, and hardening object and backup storage configurations.\"\n}",
+      "pydantic": {
+        "methodology": "STRIDE",
+        "threats": [
+          {
+            "threat_id": "THR-001",
+            "component": "Frontend Layer - Authentication & Password Recovery",
+            "threat_category": "Spoofing",
+            "description": "Credential theft via phishing, reuse, or compromised local storage leading to account takeover (including abuse of password reset flows). Attackers may spoof legitimate users to access PHI and analysis results.",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Enforce strong password policies, rate-limit password resets, require MFA (preferably hardware or TOTP), implement phishing-resistant flows, secure session cookies (HttpOnly, Secure, SameSite=strict), avoid storing credentials in local storage, implement account lockout & notification on suspicious activity, monitor for credential stuffing and anomalous logins.",
+            "applicable_controls": [
+              "MFA enforcement",
+              "TLS 1.2+",
+              "Secure cookie flags",
+              "Password complexity & rate limiting",
+              "Auth anomaly detection"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-002",
+            "component": "Frontend Layer - Web SPA / Mobile App",
+            "threat_category": "Tampering",
+            "description": "Client-side script manipulation (malicious browser extensions, XSS, or compromised bundle serving) that modifies UI to exfiltrate input data or change upload metadata before submission.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Ensure Content Security Policy (CSP), subresource integrity (SRI) for static assets, minimize inline JS, sign mobile app builds, use code obfuscation and app attestation (e.g., SafetyNet/DeviceCheck), validate all data server-side, and protect CDN origin/integrity.",
+            "applicable_controls": [
+              "CSP",
+              "SRI",
+              "Server-side validation",
+              "App build signing and attestation"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-003",
+            "component": "Frontend Layer - File Uploads (mobile camera)",
+            "threat_category": "Information Disclosure",
+            "description": "Sensitive PHI embedded in image EXIF metadata (location, device info) or auto-filled captions being uploaded and stored unintentionally, exposing PII/PHI.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Strip EXIF/metadata on client or immediately on ingest server; present clear consent & preview showing redactions; apply automatic PII detection; educate users on metadata; minimize metadata persisted.",
+            "applicable_controls": [
+              "Metadata stripping on ingest",
+              "User consent screens"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-004",
+            "component": "Edge Layer - API Gateway/WAF",
+            "threat_category": "Denial of Service",
+            "description": "Upload flood or large-file upload spikes (accidental or malicious) causing bandwidth exhaustion or queue/backlog saturation, impacting OCR/AI worker availability and overall service.",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Enforce rate limits per IP/user, file size limits, upload quotas, CAPTCHA for suspicious flows, upload throttling and pre-signed upload tokens with short TTLs, autoscaling with backpressure, charge-rate limiting on heavy AI usage.",
+            "applicable_controls": [
+              "API rate limiting",
+              "WAF rules",
+              "Pre-signed uploads",
+              "Autoscaling + queue backpressure"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-005",
+            "component": "Edge Layer - TLS Termination / Gateway",
+            "threat_category": "Spoofing",
+            "description": "TLS termination misconfiguration or acceptance of weak ciphers allows man-in-the-middle (MITM) attacks that can intercept authentication tokens or PHI in transit.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce TLS 1.2+ (prefer 1.3), disable weak ciphers/SSL, enable HSTS, mutual TLS for service-to-service where appropriate, certificate pinning in mobile clients, regular certificate monitoring and automated rotation.",
+            "applicable_controls": [
+              "TLS 1.3 enforcement",
+              "HSTS",
+              "Certificate management automation"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-006",
+            "component": "Application Services - Authentication & RBAC",
+            "threat_category": "Elevation of Privilege",
+            "description": "Broken access control where users can access or modify other users' blood test data (IDOR), or escalate to admin functions via insufficient authorization checks.",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Implement least-privilege RBAC with server-side authorization checks on every request, use strong resource-based ACLs, adopt attribute-based access control for sensitive operations, perform automated access control tests and code reviews, enforce separation of duties for admin functions.",
+            "applicable_controls": [
+              "Server-side RBAC enforcement",
+              "Access control testing"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Unacceptable"
+          },
+          {
+            "threat_id": "THR-007",
+            "component": "Application Services - Input Handling and OCR Pipeline",
+            "threat_category": "Tampering",
+            "description": "Maliciously crafted files (images, PDFs) containing embedded scripts, malformed fonts, or OCI payloads exploit parsing libraries causing arbitrary code execution or tampering with processing results.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Perform strict file type validation, sandbox processing (container isolation, seccomp), run OCR/AI tasks in isolated least-privilege environments, use up-to-date libraries, do content sanitization and enforce time/memory limits, use malware scanning for uploads.",
+            "applicable_controls": [
+              "Sandboxed processing",
+              "File validation & malware scanning"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-008",
+            "component": "Application Services - OCR/AI Integration (Third-party)",
+            "threat_category": "Information Disclosure",
+            "description": "Sensitive PHI sent to third-party AI/OCR providers without sufficient minimization or redaction leads to data exposure, provider misuse, or non-compliant processing.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Minimize data sent (send redacted images or extracted text only as needed), use DPAs, choose providers with adequate certifications, implement encryption in transit and at-rest, use on-premise/self-hosted inference or private VPC endpoints where possible, apply tokenization or anonymization before sending, maintain audit trails of data shared.",
+            "applicable_controls": [
+              "DPA contracts",
+              "Data minimization",
+              "Private network integration with vendors"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-009",
+            "component": "Application Services - Analysis Results & Summaries",
+            "threat_category": "Tampering",
+            "description": "Attackers modify stored analysis results or summaries (either in transit or at rest) to change medical interpretations, causing user harm or misleading clinicians.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Sign analysis outputs (digital signatures), store immutable audit logs, enforce strict RBAC for editing results, apply integrity checks and versioning, perform hashing of stored artifacts with KMS-managed keys.",
+            "applicable_controls": [
+              "Object and DB encryption + integrity checks",
+              "Immutable audit logs",
+              "RBAC"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-010",
+            "component": "Application Services - Message Queue / Job Orchestration",
+            "threat_category": "Denial of Service",
+            "description": "Job queue exhaustion or poisoning via crafted messages causing worker crashes or processing of malicious tasks, interrupting AI pipelines and delaying analyses.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Authenticate and validate queued messages, set strict size and schema validation for queue payloads, use dead-letter queues, rate-limit producer APIs, throttle jobs per-user, and monitor queue lengths with alerting and autoscaling.",
+            "applicable_controls": [
+              "Message validation",
+              "Dead-letter queues",
+              "Queue rate limiting"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-011",
+            "component": "Data Storage - Object Store (encrypted files)",
+            "threat_category": "Information Disclosure",
+            "description": "Misconfigured object storage ACLs or public buckets accidentally expose raw PHI (images/PDFs) to the internet or other tenants.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce private-by-default buckets, block public ACLs, use VPC endpoints, require signed URL with short TTL for access, encrypt objects with KMS, alert on ACL changes, and run periodic configuration scans.",
+            "applicable_controls": [
+              "Private buckets",
+              "KMS encryption",
+              "Signed URLs"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-012",
+            "component": "Data Storage - Relational Database",
+            "threat_category": "Tampering",
+            "description": "Unauthorized modification of structured lab results, user profiles, or retention settings via SQL injection or improper DB permissions altering PHI or audit records.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use parameterized queries/ORMs, input validation, least-privilege DB accounts, separation of duties, DB activity monitoring, and regular vulnerability scanning and code review. Harden DB network access using private subnets.",
+            "applicable_controls": [
+              "Parameterized queries",
+              "DB network isolation",
+              "DB activity monitoring"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-013",
+            "component": "Data Storage - Backups & Archives",
+            "threat_category": "Information Disclosure",
+            "description": "Backups containing PHI are retained beyond policy or stored unencrypted offsite, leading to data leaks during breach or vendor failure.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Encrypt backups with KMS-managed keys, enforce backup retention policies, perform secure deletion/overwriting, restrict access to backup keys, and include backup verification and access logging.",
+            "applicable_controls": [
+              "Encrypted backups",
+              "Retention and deletion controls",
+              "Access logging"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-014",
+            "component": "Identity & Security Services - External IdP",
+            "threat_category": "Spoofing",
+            "description": "Compromise or misconfiguration of a federated identity provider leads to spoofed tokens, allowing unauthorized access to user accounts and PHI.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Prefer enterprise-grade IdPs with strong security posture, validate tokens (signature, issuer, audience, nonce), implement token revocation and short-lived tokens, adopt SCIM provisioning controls, and monitor IdP trust relationships and metadata changes.",
+            "applicable_controls": [
+              "Token validation",
+              "Short token TTL",
+              "IdP monitoring"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-015",
+            "component": "Identity & Security Services - Key Management Service (KMS)",
+            "threat_category": "Information Disclosure",
+            "description": "Compromise or mismanagement of encryption keys leads to decryption of PHI at rest and exposure of historical records and backups.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use managed KMS with HSM-backed keys, enforce strict IAM for key admins, rotate keys periodically, use envelope encryption, separate encryption duties from application admins, monitor key usage and configure key policy with least privilege.",
+            "applicable_controls": [
+              "Managed KMS/HSM",
+              "Key rotation and separation of duties",
+              "Key usage logging"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-016",
+            "component": "Application Services - Notifications & Email/SMS Gateways",
+            "threat_category": "Information Disclosure",
+            "description": "Notification payloads (email/SMS) contain PHI or links that leak PHI via insecure channels, interception, or if phone/email is compromised; SMS phishing risk increases if content is not carefully designed.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Avoid including PHI in notifications; send minimal, non-sensitive alerts prompting app login to view results, use secure in-app notifications for PHI, offer opt-in/opt-out controls, use encrypted email if PHI must be included, and ensure vendor contracts enforce confidentiality.",
+            "applicable_controls": [
+              "Notification content policy",
+              "In-app encrypted notifications",
+              "DPA with notification vendors"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-017",
+            "component": "External Services - AI/OCR Provider",
+            "threat_category": "Tampering",
+            "description": "Malicious or compromised third-party model alters extracted lab values or reference ranges, resulting in incorrect analysis or false alerts.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Validate vendor outputs through sampling and test datasets, implement output validation rules and plausibility checks, keep an independent verification layer or fallback model, maintain vendor diversity, and include SLA clauses for model integrity.",
+            "applicable_controls": [
+              "Output validation & plausibility checks",
+              "Vendor SLAs and diversity"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-018",
+            "component": "External Services - Email/SMS Provider",
+            "threat_category": "Repudiation",
+            "description": "Insufficient logging or proof of delivery leading to disputes about whether a user was notified about critical abnormal results (non-repudiation failure).",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Keep signed delivery receipts, store notification audit logs with timestamps and content hashes, integrate provider webhooks for delivery status, and retain logs immutable for compliance periods.",
+            "applicable_controls": [
+              "Notification delivery logging",
+              "Immutable audit storage"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-019",
+            "component": "Application Services - APIs",
+            "threat_category": "Information Disclosure",
+            "description": "APIs exposing excessive data via verbose endpoints or misconfigured filters allow attackers to enumerate or bulk-download user PHI (insecure direct object references, over-permissive list endpoints).",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Implement pagination, rate limits, strict server-side authorization, field-level filtering, avoid returning full PHI in lists, require scopes for bulk export, enforce export approvals and audit before large exports.",
+            "applicable_controls": [
+              "Pagination & rate limits",
+              "Field-level authorization",
+              "Export approval workflow"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Unacceptable"
+          },
+          {
+            "threat_id": "THR-020",
+            "component": "Application Services - Input Validation (Web APIs)",
+            "threat_category": "Tampering",
+            "description": "Injection attacks (SQL, NoSQL, OS, command) via unvalidated fields (e.g., lab names, date fields, file metadata) enabling data compromise or lateral movement.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use parameterized queries or ORM, strict schema validation, input sanitization, WAF tuned for injection detection, and security-focused code reviews and fuzz testing.",
+            "applicable_controls": [
+              "Parameterized queries/ORM",
+              "Input schema validation",
+              "WAF"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-021",
+            "component": "Frontend & Edge - CSRF & XSS",
+            "threat_category": "Tampering/Information Disclosure",
+            "description": "Cross-site scripting allows attackers to capture session tokens or perform actions on behalf of users; CSRF causes unauthorized actions (e.g., changing notification preferences or uploading malicious files).",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Use anti-CSRF tokens, SameSite cookies, strict input/output encoding, CSP, sanitize user-generated content, adopt secure frameworks and perform periodic frontend security testing.",
+            "applicable_controls": [
+              "CSP",
+              "Anti-CSRF tokens",
+              "Output encoding"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-022",
+            "component": "Application Services - Audit Logging & Monitoring",
+            "threat_category": "Repudiation",
+            "description": "Insufficient, mutable, or incomplete audit logs prevent detection of malicious actions or deny accountability (e.g., missing log entries for data exports, consent changes).",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Implement immutable append-only logs, forward logs to a hardened SIEM, ensure logs contain user, timestamp, and context, protect log integrity with KMS-backed signing, and monitor/alert for suspicious patterns.",
+            "applicable_controls": [
+              "Immutable audit logs",
+              "SIEM integration",
+              "Log integrity checks"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-023",
+            "component": "Application Services - Export (PDF/CSV) Generation",
+            "threat_category": "Information Disclosure",
+            "description": "Exports containing PHI are generated with insecure filenames or stored in locations with weak permissions, or links are shared without authentication, enabling data leakage.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Require re-authentication or MFA for export, generate exports on-demand with short-lived signed URLs, sanitize filenames, restrict export storage ACLs, and log exports for audit.",
+            "applicable_controls": [
+              "Signed, short-lived export URLs",
+              "Re-authentication for exports"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-024",
+            "component": "External Services - Telemetry & Vendor Logs",
+            "threat_category": "Information Disclosure",
+            "description": "Debugging logs, telemetry or metrics sent to third-party analytics vendors inadvertently contain PHI (e.g., test values, user IDs) and are retained by vendors.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Apply strict data minimization for telemetry, scrub PHI before sending, use hashing or tokenization for identifiers, review vendor retention policies, and include DPAs restricting usage.",
+            "applicable_controls": [
+              "Telemetry scrubbing",
+              "DPA with analytics vendors"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-025",
+            "component": "Cloud Infrastructure - IAM & Misconfiguration",
+            "threat_category": "Elevation of Privilege",
+            "description": "Over-permissive IAM roles or misconfigured cloud services permit lateral movement, privilege escalation, or data access across resources (e.g., storage read access by compute instances that shouldn't have it).",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Apply least privilege, regularly audit IAM policies, use role-based access controls with separation of duties, implement resource-level policies, employ cloud configuration scanning (CSPM), and enforce ephemeral credentials for services.",
+            "applicable_controls": [
+              "Least-privilege IAM",
+              "CSPM scanning",
+              "Separation of duties"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-026",
+            "component": "Application Services - SSRF and SSRF to Internal Services (AI Vendor endpoints)",
+            "threat_category": "Tampering/Information Disclosure",
+            "description": "Server-side request forgery where attackers induce the backend to make requests to internal metadata, KMS endpoints, or vendor APIs to leak sensitive data or access internal services.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Validate and whitelist outbound URLs, restrict outbound egress with network controls and VPC service endpoints, perform internal request authorization, and sanitize all user-controllable URLs.",
+            "applicable_controls": [
+              "Egress filtering",
+              "URL allow-listing"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-027",
+            "component": "Application Services - Model & Data Poisoning",
+            "threat_category": "Tampering",
+            "description": "Attackers submit crafted reports to poison training or model adaptation pipelines (if models re-train on user data), degrading model accuracy or causing harmful inferences.",
+            "likelihood": "Low",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Avoid using raw user data to retrain models without strong vetting, use robust training datasets, apply anomaly detection on training inputs, maintain segregated training environments, and verify model behavior after updates.",
+            "applicable_controls": [
+              "Training data vetting",
+              "Anomaly detection on inputs"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-028",
+            "component": "Application Services / Data Storage - Consent & Privacy Preferences",
+            "threat_category": "Repudiation/Information Disclosure",
+            "description": "Failure to correctly enforce user consent and privacy preferences (e.g., continued sharing to vendors after revocation) leads to non-compliant data processing and legal exposure.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Store immutable consent records, check consent before any export or vendor call, provide user-facing controls and audit trails, implement consent propagation to vendors, and automate revocation enforcement with job quarantining.",
+            "applicable_controls": [
+              "Consent records & enforcement",
+              "Vendor revocation workflows"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          }
+        ],
+        "risk_summary": "The most critical threats are those that enable unauthorized access to PHI (THR-001 credential theft, THR-006 broken RBAC/privilege escalation, THR-019 excessive API data exposure), large-scale data leakage through misconfigured storage or third-party processing (THR-011 public buckets, THR-008 OCR/AI provider disclosure), and service availability or processing reliability issues (THR-004 upload/processing DoS, THR-010 queue exhaustion). Key attack vectors include authentication endpoints and password recovery, public-facing upload APIs, third-party integration endpoints (AI/OCR and notification providers), and misconfigured cloud IAM/storage. Priority areas: enforce strong authentication (MFA, token hygiene), rigorous server-side authorization and least-privilege IAM, robust input validation and sandboxing for file processing, strict data minimization and DPAs for external vendors, secure storage configurations with KMS-managed encryption, comprehensive audit logging and immutable logs, and network-level protections (WAF, rate limiting, egress whitelists). Overall risk posture is elevated due to sensitive PHI handling and multiple high-impact threat scenarios; mitigations already present in architecture (edge WAF/API gateway, KMS, DPAs) reduce but do not eliminate risk. Immediate remediation should focus on access control hardening, secure upload/processing sandboxes, third-party data flow minimization and contractual safeguards, and hardening object and backup storage configurations."
+      }
+    }
+  ]
+}

@@ -1,0 +1,272 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "User Management (Auth service / Identity Service / SSO)",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Attackers impersonate legitimate users by stealing credentials, abusing weak passwords, or exploiting SSO misconfigurations (SAML/OIDC replay or assertion manipulation) to register/log in as Admin, Co"
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Client-side code or assets are tampered (e.g., compromised CDN or supply chain) delivering malicious JS to users leading to credential theft or session hijacking."
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge & API Gateway",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Large-scale or targeted request floods or slow POST attacks overwhelm gateway or backend services, preventing booking creation or critical operations (availability impact for government workflows)."
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (APIs)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "API inputs (task creation, assignments, file metadata) are manipulated via SQL injection, NoSQL injection, or other injection attacks to alter booking data or corrupt workflows."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Frontend Layer / Application Services",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Cross-Site Scripting (XSS) through comments, file metadata, or preview streams allowing escalation to session theft, data exfiltration, or unwanted actions with user context."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Application Services (RBAC)",
+    "risk_level": "Critical",
+    "category": "Elevation of Privilege",
+    "description": "Broken access control: users access or modify tasks/agency data across tenant boundaries or gain Admin privileges through insecure checks in APIs or direct object reference manipulation."
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage (Relational DB / Object Storage)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Unauthorized access to PII, vetting/certification documents, or translations in object storage or DB due to misconfigured permissions, leaked keys, or lack of encryption at rest."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "File Management (Uploads & Previews)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Uploaded documents are replaced or maliciously altered in transit or at rest (man-in-the-middle or integrity manipulation), leading to distribution of manipulated legal/government documents."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Background & Queue Services",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Attackers flood background job system with expensive tasks (large file conversions or fake jobs) causing queue starvation, high costs, delayed notifications and assignment failures."
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Integrations & External Services (DocuSign / Calendar / Email)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromise of third-party integration tokens or misconfigured OAuth leads to unauthorized calendar/event creation, e-signature forgeries, or sending emails/SMS as the system."
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services (Assignment Engine)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Manipulating assignment logic or job payloads (e.g., by submitting crafted requests) to favor certain interpreters/translators or to bypass availability checks."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Real-time Notifications (WebSockets/Push)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Real-time channels leak sensitive task data to unauthorized users if channel authorization is flawed or tokens are exposed, e.g., one tenant receives another agency's task updates."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Observability & Audit",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Insufficient or tamperable audit logs allow privileged users or attackers to alter or delete logs, preventing forensic investigation of who created/approved bookings or changed assignments."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Notifications (Email/SMS)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Sensitive booking or PII included in email/SMS notifications could be intercepted or sent to wrong recipient due to template injection or address manipulation."
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "File Management (Malware scanning integration)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Malicious or weaponized documents bypass malware scanning via zero-day or scanner evasion and are distributed to interpreters/reviewers, resulting in endpoint compromise."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Reporting & Exports (CSV/PDF)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Report export functionality exposes aggregated or raw PII if export permissions are weak or exports are cached/stored insecurely, leading to data leaks or bulk extraction via automation."
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Integrations & External Services (Calendar APIs)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Calendar synchronization leaks sensitive booking details into external calendars if scope over-provisioning occurs or if tokens are stolen, exposing schedule and possibly PII externally."
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge & API Gateway",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Session fixation or session token theft via insecure cookies, predictable tokens, or lack of binding to client leads to unauthorized API calls using another user's session."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services (API endpoints)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Cross-Site Request Forgery (CSRF) on state-changing endpoints (e.g., create/edit bookings) allows attackers to trigger actions in an authenticated user's context."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Data Storage (KMS / Key Management)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Compromise or misconfiguration of KMS permissions allows attackers to decrypt stored data, re-encrypt to hide activity, or create keys enabling persistent access to tenant data."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Integrations & External Services (CAT Tools / 3rd party translation vendors)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Optional integration with external CAT tools may send source documents or PII to third parties with weaker controls, resulting in data exfiltration or vendor misuse."
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Background & Queue Services (File processing)",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Background job failures or retries alter timestamps or state transitions without clear audit, allowing actors to deny actions (e.g., who approved a version) or hide malicious changes."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 2,
+    "impact": 3,
+    "component": "Frontend Layer (Accessibility / Multi-language)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Localization/i18n resource injection or misuse causes disclosure of environment data or secrets if translation strings are loaded from untrusted sources or include interpolated sensitive values."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Edge & API Gateway",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Verbose error messages or stack traces returned by API gateway reveal internal architecture, DB queries, or sensitive identifiers aiding attackers in crafting targeted attacks."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services (Activity feed / Comments)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Comment @mentions or activity feed allow injection of links to malicious sites or SSRF payloads in user-supplied content, enabling server-side or client-side exploitation."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Data Storage (Immutable Audit Store)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Insider or privileged account modifies or deletes audit records in mutable stores before they are replicated to the immutable store to cover actions like unauthorized assignments."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Integrations & External Services (Email/SMS Providers)",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Third-party email or SMS provider outage causes missed urgent booking alerts and SMS alerts, impacting mission-critical scheduling and response."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Application Services (Session handling / SPA)",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Session cookie theft via XSS or insecure storage leads to account takeover; SPA storing tokens in localStorage increases risk of token theft by malicious scripts."
+  },
+  {
+    "id": "THR-029",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Data Storage (Analytics Store / Reporting)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Improper anonymization in analytics/reporting store exposes sensitive aggregates or individual PII through re-identification or by querying granular exports."
+  },
+  {
+    "id": "THR-030",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Integrations & External Services (Agency IdPs)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromised agency IdP or weak federation mapping allows an attacker from an agency tenant to escalate privileges or impersonate another agency's user due to flawed tenant mapping or federated claims "
+  }
+]

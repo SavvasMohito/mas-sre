@@ -1,0 +1,18 @@
+[
+  {
+    "level": "Critical",
+    "count": 22
+  },
+  {
+    "level": "High",
+    "count": 33
+  },
+  {
+    "level": "Medium",
+    "count": 20
+  },
+  {
+    "level": "Low",
+    "count": 3
+  }
+]

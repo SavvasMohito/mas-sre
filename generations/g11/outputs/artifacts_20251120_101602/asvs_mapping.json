@@ -1,0 +1,551 @@
+[
+  {
+    "control_id": "V2.1",
+    "standard": "OWASP",
+    "v_category": "Authentication Verification Requirements",
+    "requirement_id": "REQ-001",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that authentication requirements for account creation and login use secure password handling,"
+  },
+  {
+    "control_id": "IA-2",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication (Organizational Users)",
+    "requirement_id": "REQ-001",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Organizational users shall be uniquely identified and authenticated. Supports multi-factor authentic"
+  },
+  {
+    "control_id": "A.9.4.2",
+    "standard": "ISO27001",
+    "v_category": "Access Control",
+    "requirement_id": "REQ-001",
+    "level": null,
+    "priority": "High",
+    "requirement": "The allocation and use of privileged access rights shall be restricted and controlled. Secure authen"
+  },
+  {
+    "control_id": "V4.1",
+    "standard": "OWASP",
+    "v_category": "Access Control Verification Requirements",
+    "requirement_id": "REQ-002",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify role-based access control is enforced server-side and follows the principle of least privileg"
+  },
+  {
+    "control_id": "AC-2",
+    "standard": "NIST",
+    "v_category": "Account Management",
+    "requirement_id": "REQ-002",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization manages information system accounts, establishing, activating, modifying, disabling"
+  },
+  {
+    "control_id": "AC-6",
+    "standard": "NIST",
+    "v_category": "Least Privilege",
+    "requirement_id": "REQ-002",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization employs the principle of least privilege, ensuring users have the minimum privilege"
+  },
+  {
+    "control_id": "V5.8",
+    "standard": "OWASP",
+    "v_category": "Data Protection and Privacy",
+    "requirement_id": "REQ-003",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that personal data stored in user profiles is minimized, protected at rest and in transit, an"
+  },
+  {
+    "control_id": "PL-2",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "REQ-003",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization determines and documents the security and privacy requirements for the system, incl"
+  },
+  {
+    "control_id": "A.8.2.3",
+    "standard": "ISO27001",
+    "v_category": "Asset Management",
+    "requirement_id": "REQ-003",
+    "level": null,
+    "priority": "High",
+    "requirement": "Information should be classified according to its value, sensitivity, and criticality; controls shou"
+  },
+  {
+    "control_id": "V4.6",
+    "standard": "OWASP",
+    "v_category": "Access Control Verification Requirements",
+    "requirement_id": "REQ-004",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify tenant isolation and authorization boundaries in multi-tenant applications to prevent data le"
+  },
+  {
+    "control_id": "SC-7",
+    "standard": "NIST",
+    "v_category": "Boundary Protection",
+    "requirement_id": "REQ-004",
+    "level": null,
+    "priority": "High",
+    "requirement": "The information system monitors and controls communications at external and internal boundaries and "
+  },
+  {
+    "control_id": "AC-4",
+    "standard": "NIST",
+    "v_category": "Information Flow Enforcement",
+    "requirement_id": "REQ-004",
+    "level": null,
+    "priority": "High",
+    "requirement": "The information system enforces approved authorizations for controlling the flow of information amon"
+  },
+  {
+    "control_id": "V4.3",
+    "standard": "OWASP",
+    "v_category": "Access Control Verification Requirements",
+    "requirement_id": "REQ-005",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that business functions like creating, editing, and deleting resources enforce proper authori"
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit Events",
+    "requirement_id": "REQ-005",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization defines auditable events for the information system, including creation, modificati"
+  },
+  {
+    "control_id": "SI-10",
+    "standard": "NIST",
+    "v_category": "Information Input Validation",
+    "requirement_id": "REQ-005",
+    "level": null,
+    "priority": "High",
+    "requirement": "The information system validates inputs to prevent malicious data that could affect scheduling and l"
+  },
+  {
+    "control_id": "V5.5",
+    "standard": "OWASP",
+    "v_category": "Data Protection and Privacy",
+    "requirement_id": "REQ-006",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify secure handling of file uploads, including virus scanning, storage with access control, and p"
+  },
+  {
+    "control_id": "MP-4",
+    "standard": "NIST",
+    "v_category": "Media Storage",
+    "requirement_id": "REQ-006",
+    "level": null,
+    "priority": "High",
+    "requirement": "Protection of digital and non-digital media containing sensitive information, including proper acces"
+  },
+  {
+    "control_id": "SI-3",
+    "standard": "NIST",
+    "v_category": "Malicious Code Protection",
+    "requirement_id": "REQ-006",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization provides protection to detect and eradicate malicious code, which includes malware "
+  },
+  {
+    "control_id": "V2.6",
+    "standard": "OWASP",
+    "v_category": "Business Logic Verification Requirements",
+    "requirement_id": "REQ-007",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify business logic and automated decision-making enforce authorization, prevent abuse, and ensure"
+  },
+  {
+    "control_id": "PL-8",
+    "standard": "NIST",
+    "v_category": "Security and Privacy Architecture",
+    "requirement_id": "REQ-007",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization incorporates privacy and security requirements into the system architecture, includ"
+  },
+  {
+    "control_id": "SA-5",
+    "standard": "NIST",
+    "v_category": "System and Services Acquisition",
+    "requirement_id": "REQ-007",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Security requirements for system components including custom algorithms should be specified and eval"
+  },
+  {
+    "control_id": "V4.4",
+    "standard": "OWASP",
+    "v_category": "Access Control Verification Requirements",
+    "requirement_id": "REQ-008",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify workflows enforce authorization at each stage, maintain integrity of state transitions, and p"
+  },
+  {
+    "control_id": "AU-6",
+    "standard": "NIST",
+    "v_category": "Audit Review, Analysis, and Reporting",
+    "requirement_id": "REQ-008",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization reviews and analyzes information system audit records for indications of inappropri"
+  },
+  {
+    "control_id": "CM-3",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "REQ-008",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization develops, documents, and maintains baseline configurations and enforces control ove"
+  },
+  {
+    "control_id": "V5.6",
+    "standard": "OWASP",
+    "v_category": "Data Protection and Privacy",
+    "requirement_id": "REQ-009",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify handling of user-provided content including attachments and comments, ensuring input validati"
+  },
+  {
+    "control_id": "AU-8",
+    "standard": "NIST",
+    "v_category": "Time Stamps",
+    "requirement_id": "REQ-009",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The information system time-stamps audit records to provide accurate sequencing of events in activit"
+  },
+  {
+    "control_id": "A.12.4.3",
+    "standard": "ISO27001",
+    "v_category": "Logging and monitoring",
+    "requirement_id": "REQ-009",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Administrator and operator activities shall be logged and the logs protected to ensure traceability,"
+  },
+  {
+    "control_id": "V3.7",
+    "standard": "OWASP",
+    "v_category": "Session Management and Transport",
+    "requirement_id": "REQ-010",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify secure use of real-time communication channels (WebSockets, SSE) including encrypted transpor"
+  },
+  {
+    "control_id": "SC-8",
+    "standard": "NIST",
+    "v_category": "Transmission Confidentiality and Integrity",
+    "requirement_id": "REQ-010",
+    "level": null,
+    "priority": "High",
+    "requirement": "The information system protects the confidentiality and integrity of transmitted information."
+  },
+  {
+    "control_id": "SC-5",
+    "standard": "NIST",
+    "v_category": "Denial of Service Protection",
+    "requirement_id": "REQ-010",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The information system protects against or limits the effects of denial-of-service attacks, relevant"
+  },
+  {
+    "control_id": "V5.5",
+    "standard": "OWASP",
+    "v_category": "Data Protection and Privacy",
+    "requirement_id": "REQ-011",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify secure handling of file uploads, including virus scanning, storage with access control, and p"
+  },
+  {
+    "control_id": "SI-3",
+    "standard": "NIST",
+    "v_category": "Malicious Code Protection",
+    "requirement_id": "REQ-011",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization provides protection to detect and eradicate malicious code, which applies to handli"
+  },
+  {
+    "control_id": "A.12.2.1",
+    "standard": "ISO27001",
+    "v_category": "Protection from malware",
+    "requirement_id": "REQ-011",
+    "level": null,
+    "priority": "High",
+    "requirement": "Controls shall be implemented to detect and protect against malware, including scanning of files."
+  },
+  {
+    "control_id": "V4.1",
+    "standard": "OWASP",
+    "v_category": "Access Control Verification Requirements",
+    "requirement_id": "REQ-012",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify role-based access control is enforced server-side and follows the principle of least privileg"
+  },
+  {
+    "control_id": "AC-3",
+    "standard": "NIST",
+    "v_category": "Access Enforcement",
+    "requirement_id": "REQ-012",
+    "level": null,
+    "priority": "High",
+    "requirement": "The information system enforces approved authorizations for logical access to information and system"
+  },
+  {
+    "control_id": "A.9.1.1",
+    "standard": "ISO27001",
+    "v_category": "Business requirements for access control",
+    "requirement_id": "REQ-012",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Access control policy shall be established based on business and information security requirements, "
+  },
+  {
+    "control_id": "V3.8",
+    "standard": "OWASP",
+    "v_category": "Transport and Messaging",
+    "requirement_id": "REQ-013",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that outbound email/SMS notifications use secure channels, proper authentication (SPF, DKIM, "
+  },
+  {
+    "control_id": "SC-13",
+    "standard": "NIST",
+    "v_category": "Cryptographic Protection",
+    "requirement_id": "REQ-013",
+    "level": null,
+    "priority": "High",
+    "requirement": "The information system implements cryptographic mechanisms to protect the confidentiality and integr"
+  },
+  {
+    "control_id": "A.13.2.3",
+    "standard": "ISO27001",
+    "v_category": "Information Transfer",
+    "requirement_id": "REQ-013",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information involved in electronic messaging shall be protected in accordance with the information t"
+  },
+  {
+    "control_id": "V5.8",
+    "standard": "OWASP",
+    "v_category": "Data Protection and Privacy",
+    "requirement_id": "REQ-014",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that reporting and export functionality enforces access control, minimizes sensitive data exp"
+  },
+  {
+    "control_id": "PL-2",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "REQ-014",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization determines and documents security and privacy requirements for systems, including r"
+  },
+  {
+    "control_id": "A.8.2.1",
+    "standard": "ISO27001",
+    "v_category": "Asset Management",
+    "requirement_id": "REQ-014",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information shall be classified and handling procedures established; reports and exports should foll"
+  },
+  {
+    "control_id": "V5.8",
+    "standard": "OWASP",
+    "v_category": "Data Protection and Privacy",
+    "requirement_id": "REQ-015",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that sensitive financial and performance data is protected, access is restricted based on rol"
+  },
+  {
+    "control_id": "PL-2",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "REQ-015",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization determines and documents security and privacy requirements for systems, including f"
+  },
+  {
+    "control_id": "A.18.1.4",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "REQ-015",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Ensure compliance with legal and contractual requirements related to processing and reporting financ"
+  },
+  {
+    "control_id": "V3.9",
+    "standard": "OWASP",
+    "v_category": "Authentication and Authorization",
+    "requirement_id": "REQ-016",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify integration with third-party APIs uses secure OAuth flows, least privilege scopes, and token "
+  },
+  {
+    "control_id": "SA-9",
+    "standard": "NIST",
+    "v_category": "External System Services",
+    "requirement_id": "REQ-016",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization monitors and controls external system connections and uses contracts and security r"
+  },
+  {
+    "control_id": "A.13.2.3",
+    "standard": "ISO27001",
+    "v_category": "Information Transfer",
+    "requirement_id": "REQ-016",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Formal transfer policies, procedures and controls shall be in place to protect transferred informati"
+  },
+  {
+    "control_id": "V3.9",
+    "standard": "OWASP",
+    "v_category": "Authentication and Authorization",
+    "requirement_id": "REQ-017",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify integration with third-party APIs uses secure OAuth flows, least privilege scopes, and token "
+  },
+  {
+    "control_id": "A.15.1.1",
+    "standard": "ISO27001",
+    "v_category": "Supplier relationships",
+    "requirement_id": "REQ-017",
+    "level": null,
+    "priority": "High",
+    "requirement": "Information security requirements for mitigating risks associated with supplier access to the organi"
+  },
+  {
+    "control_id": "SA-9",
+    "standard": "NIST",
+    "v_category": "External System Services",
+    "requirement_id": "REQ-017",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "The organization monitors and controls external system connections and uses contracts and security r"
+  },
+  {
+    "control_id": "V1.3",
+    "standard": "OWASP",
+    "v_category": "General Security Requirements",
+    "requirement_id": "REQ-018",
+    "level": "L1",
+    "priority": "Medium",
+    "requirement": "Verify secure design includes accessibility and localization considerations; ensure input validation"
+  },
+  {
+    "control_id": "SA-11",
+    "standard": "NIST",
+    "v_category": "Developer Security Testing",
+    "requirement_id": "REQ-018",
+    "level": null,
+    "priority": "Low",
+    "requirement": "Developers should adhere to secure development practices that include validating localized inputs an"
+  },
+  {
+    "control_id": "A.18.1.1",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "REQ-018",
+    "level": null,
+    "priority": "Low",
+    "requirement": "Consider legal and regulatory requirements for accessibility and language support where applicable."
+  },
+  {
+    "control_id": "V10.1",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "REQ-019",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that applications produce sufficient, tamper-evident audit logs for security-relevant events,"
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit Events",
+    "requirement_id": "REQ-019",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization defines auditable events and the information system generates audit records for tho"
+  },
+  {
+    "control_id": "AU-9",
+    "standard": "NIST",
+    "v_category": "Protection of Audit Information",
+    "requirement_id": "REQ-019",
+    "level": null,
+    "priority": "High",
+    "requirement": "Audit records shall be protected against unauthorized access, modification, and deletion."
+  },
+  {
+    "control_id": "V5.1",
+    "standard": "OWASP",
+    "v_category": "Data Protection and Privacy",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify sensitive data is protected using strong cryptography in transit and at rest, keys are manage"
+  },
+  {
+    "control_id": "SI-3",
+    "standard": "NIST",
+    "v_category": "Malicious Code Protection",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization provides protection to detect and eradicate malicious code, which includes malware "
+  },
+  {
+    "control_id": "IR-4",
+    "standard": "NIST",
+    "v_category": "Incident Response Testing",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization tests incident response capabilities and maintains incident response plans to detec"
+  },
+  {
+    "control_id": "A.12.6.1",
+    "standard": "ISO27001",
+    "v_category": "Technical Vulnerability Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Require a process to identify, assess and remedy technical vulnerabilities and to manage incidents, "
+  }
+]

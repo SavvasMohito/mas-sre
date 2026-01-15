@@ -1,0 +1,1031 @@
+{
+  "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"An attacker reuses stolen session tokens or forges authentication cookies to impersonate legitimate users (including Infra Admin) via stolen tokens from browser storage or network interception.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce short-lived session tokens, HttpOnly and Secure cookies, token binding where possible, require SSO + MFA for high-privilege accounts, implement device fingerprinting and anomalous session detection, enforce secure transport (TLS 1.2+), and rotate session tokens on logout and privilege changes.\",\n      \"applicable_controls\": [\"OWASP-A2\", \"NIST-800-63B\", \"V2.1.1\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Application Services (AuthZ & RBAC)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken access control or misconfigured RBAC allows a user (reader/user) to perform infra-admin or admin actions via API endpoints that lack authorization checks or use client-side enforcement only.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce server-side authorization checks on all APIs, implement least privilege, use centralized policy engine (e.g., OPA), add automated tests for RBAC rules, regularly review role mappings and privileged accounts, employ continuous authorization monitoring.\",\n      \"applicable_controls\": [\"OWASP A5\", \"NIST-800-53-AC-6\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"SSO/MFA Integration (Integrations & External Services)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Compromise or misconfiguration of SSO/MFA provider (e.g., compromised IdP token signing keys, misconfigured SAML/OIDC settings) allows attacker to forge assertions and access the platform.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use provider best practices: verify token signatures, validate audience/issuer/exp claims, rotate IdP keys, enforce MFA for privileged roles, implement continuous monitoring for unusual logins, and have fallback account recovery procedures.\",\n      \"applicable_controls\": [\"SAML/OIDC Best Practices\", \"NIST-800-63B\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Frontend Layer / Application Services\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Client-side or API parameter tampering to alter layer sequencing or deadlines (e.g., adjusting JSON payload to mark prerequisite layer as 'approved' or change deadlines).\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Validate all state transitions server-side, enforce workflow state machine in backend, sign or timestamp critical state changes, use immutable audit log entries for approvals, and implement input validation and anti-tamper checks.\",\n      \"applicable_controls\": [\"V3.2.3\", \"Immutable Logs\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Application Services (APIs)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"APIs exposing sensitive data (VM access mappings, IP endpoints, firewall rules, handover documents) to unauthorized callers due to broken object-level authorization or verbose error messages.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Implement fine-grained object-level authorization, least privilege on API responses, remove sensitive fields unless authorized, sanitize error messages, encrypt sensitive data at rest and in transit, and audit API access.\",\n      \"applicable_controls\": [\"OWASP A3\", \"NIST-800-53-SC-13\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Data Storage (RDBMS, Object Storage)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Unauthorized modification of firewall rules or per-VM policy metadata in the database through SQL injection or compromised credentials, leading to exposure of VM services.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries / ORM, DB least-privileged service accounts, input validation, WAF, strong DB authentication and network isolation, database activity monitoring, and periodic integrity checks.\",\n      \"applicable_controls\": [\"OWASP A1\", \"DB Access Controls\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Application Services / Frontend\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Cross-Site Request Forgery (CSRF) actions causing unauthorized state changes (approvals, handover submissions) when users browse malicious sites.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement anti-CSRF tokens for state-changing endpoints, require SameSite cookies where applicable, validate Origin/Referer headers, and require re-authentication for sensitive actions.\",\n      \"applicable_controls\": [\"OWASP CSRF Controls\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Cross-Site Scripting (XSS) in the SPA that allows an attacker to steal tokens or perform actions on behalf of users via stored or reflected malicious content in handover documents or comments.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Contextual output encoding, CSP (Content-Security-Policy), input sanitization/whitelisting for rich text, use of secure libraries for rendering, and security testing (DAST/SAST).\",\n      \"applicable_controls\": [\"OWASP A7\", \"CSP\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"APIs & Application Services\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"API abuse: unauthenticated or authenticated attackers send crafted requests to manipulate VM inventory mappings, create rogue VM assignments, or alter allowed ports to open backdoors.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Require authentication and authorization on all endpoints, implement rate limiting, input validation, maintain an allowlist of permissible actions, and add anomaly detection for abnormal API patterns.\",\n      \"applicable_controls\": [\"API Gateway\", \"Rate Limiting\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"Infrastructure & Access Layer (SSH Bastion, KMS)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Compromise of SSH bastion or KMS, allowing attacker to obtain or misuse SSH keys, sign tokens or decrypt secrets to access VMs or escalate privileges across hosts.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Harden bastion hosts, use ephemeral certificates for SSH (certificate-based auth), central session recording, restrict bastion to known IPs, apply MFA, isolate KMS keys in HSM, enforce key rotation and auditing, and follow least privilege for KMS access.\",\n      \"applicable_controls\": [\"NIST-800-57\", \"HSM\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Artifact & Air-gap Services\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Poisoned or tampered artifacts/images are mirrored into the bare-metal repository (supply chain attack) leading to malware distribution to air-gapped project servers.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Require artifact signing and verification (SLSA), maintain provenance metadata, perform reproducible builds, run vulnerability scanning and integrity checks, isolate staging mirror server, and enforce strict offline review procedures before air-gap import.\",\n      \"applicable_controls\": [\"SLSA\", \"Supply Chain Controls\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"Artifact & Air-gap Services\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Exposure of proprietary images or signed artifacts when bare-metal repository is not sufficiently protected, or when mirrored artifacts include sensitive metadata (build secrets, internal endpoints).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Encrypt artifact storage, use access controls for repository, scrub build metadata, limit artifact metadata exposure, and apply audit logging for artifact access.\",\n      \"applicable_controls\": [\"Encrypted Object Storage\", \"ACLs\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"Data Storage (Audit Log Store)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Attackers or malicious insiders tamper with or delete audit logs to cover tracks, disabling post-incident investigation and approvals trail (handover, approvals).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use append-only immutable logs (WORM), send logs to external SIEM, implement cryptographic signing of logs, replicate logs to multiple locations, monitor log integrity, and alert on log deletions.\",\n      \"applicable_controls\": [\"Immutable Logs\", \"SIEM\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"Notifications (Email/Chat Providers)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive details in notification payloads (VM IPs, firewall rules, private handover content) are leaked via insecure email or chat integrations, or if provider is compromised.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Avoid including secrets in notifications, provide links to authenticated dashboards instead of data in message body, use secure email gateways, enable encryption for messages where supported, and limit notification content.\",\n      \"applicable_controls\": [\"Secure Notification Patterns\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"Integrations & External Services (IaC Registries)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Credentials for external registries or IaC providers leaked (e.g., in repo or configs), allowing attackers to manipulate infrastructure templates or pull sensitive images.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use secret management (KMS/Secrets Manager), avoid embedding credentials in repos, enforce least privilege for registry accounts, rotate credentials, and use ephemeral credentials for automation.\",\n      \"applicable_controls\": [\"Secrets Management\", \"NIST-800-57\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"Application Services (Workflow Engine)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Attacker manipulates workflow engine to bypass layer sequencing enforcement (e.g., directly invoking internal APIs to create a dependent layer without prerequisite completion).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Harden internal APIs, implement strong authentication/authorization even for internal endpoints, enforce workflow transitions in a single trusted service, use service-to-service mutual TLS, and perform fuzzing/penetration testing on workflow logic.\",\n      \"applicable_controls\": [\"mTLS\", \"Workflow Hardening\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"Task Management / Collaboration\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient or tamperable approval records enable unauthorized approvals or disallow detection of fraudulent handover approvals (lack of traceable logs / signed approvals).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Digitally sign approvals or use authenticated audit trails, implement multi-party approval with explicit identity checks, and maintain immutable records with timestamps and approver metadata.\",\n      \"applicable_controls\": [\"Digital Signatures\", \"Immutable Audit\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"Data Storage (Handover Documents)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Handover documents containing network diagrams, credentials, or internal IP addresses are stored or shared insecurely, exposing sensitive project topology.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce access controls on documents, classify and redact sensitive content, use DLP scanning, encrypt documents at rest, require role-based access for downloads, and provide secure viewer links.\",\n      \"applicable_controls\": [\"DLP\", \"Document ACLs\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Infrastructure & Access Layer (VM access mapping)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Attackers spoof source IPs or stolen user credentials to impersonate authorized users when accessing VMs; weak mapping enables unauthorized VM access.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use certificate-based or ephemeral SSH credentials, enforce MFA for interactive SSH sessions, restrict access by identity + IP where feasible, log and alert on unusual access patterns, and integrate with PAM solutions.\",\n      \"applicable_controls\": [\"PAM\", \"Ephemeral Certs\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"Data Management (Firewall/Port Rules)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Unauthorized changes to firewall rules or allowed ingress/egress ports (via compromised API credentials or misconfigured IaC) open services to the internet that should remain internal.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Apply policy-as-code (e.g., OPA) to enforce allowed port lists, require pull-request reviews for IaC changes, maintain change control and approvals for firewall changes, implement automated validation of deployed rules vs desired state, and monitor network flows.\",\n      \"applicable_controls\": [\"Policy-as-Code\", \"IaC Review\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"Monitoring & Alerting Integrations\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Monitoring integrations leak sensitive metadata or create an attack channel if the monitoring system is compromised, exposing project states, deadlines, or infrastructure details.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Limit sensitive data sent to monitoring, use role-based access to monitoring systems, encrypt telemetry, and segregate monitoring environments with strict IAM.\",\n      \"applicable_controls\": [\"Monitoring Controls\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Application Services / API Gateway\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"An attacker launches API floods or abusive calls (e.g., creating many layers, requests to workflow engine) causing resource exhaustion, delays in sequencing, and missed deadlines.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement API rate limiting, request quotas, WAF, autoscaling, circuit breakers, and prioritize traffic for high-priority management operations; monitor and block abusive clients.\",\n      \"applicable_controls\": [\"API Rate Limiting\", \"WAF\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"Frontend Layer & Notifications\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Mass notifications or webhook storms (intentional or misconfigured) overwhelm notification providers or users, causing alert fatigue or service degradation.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Rate-limit notifications, batch where appropriate, provide throttling and escalation policies, implement deduplication, and validate webhook sources.\",\n      \"applicable_controls\": [\"Notification Rate Limiting\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"Data Storage (RDBMS) / Backups\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Ransomware or destructive attacks target DB backups or primary DB, causing loss of project data, audit logs and timelines, interrupting projects.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Harden backups (offline/immutable backups), encrypt backups, restrict access to backup systems, test restore procedures, use anomaly detection for large-scale deletions, and maintain air-gapped backups.\",\n      \"applicable_controls\": [\"Immutable Backups\", \"Backup Encryption\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Integrations & External Services (Email/Chat)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Attackers spoof notification emails or chat messages to trick users into approving handovers or following malicious links, leading to social engineering attacks and credential theft.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Sign emails (DKIM/SPF/DMARC), include in-app confirmation for critical actions, educate users on phishing, use short one-time approval tokens that resolve only in-dashboard, and provide clear provenance of notifications.\",\n      \"applicable_controls\": [\"Email Security (DKIM/SPF/DMARC)\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Application Services / Workflow Engine\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Internal debug or verbose logs in production leak sensitive fields (IP addresses, keys) to log stores or external monitoring due to insufficient redaction.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Sanitize logs, implement PII masking and strict logging policies, use structured logging with redaction, and enforce log access controls.\",\n      \"applicable_controls\": [\"Logging Policies\", \"PII Masking\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"Infrastructure & Access Layer (Hypervisor / Cloud APIs)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Excessive cloud permissions or misconfigured IAM roles allow service or user accounts to create privileged resources or exfiltrate data (e.g., admin role misassignment via IaC).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement least-privilege IAM, use IAM conditions, enable access review and attestation, guardrails with SCP/org policies for cloud accounts, and scan IaC for dangerous permissions before deployment.\",\n      \"applicable_controls\": [\"Cloud IAM Best Practices\", \"Policy Guardrails\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Artifact & Air-gap Services (Staging server)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Malicious or accidental replacement of staged images (or broken integrity checks) before disconnecting air-gapped environment; later deployed images contain backdoors.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement strict change control, multi-person review for staging, enforce artifact signing and verification, and maintain provenance with signed manifests verified by receiving hosts.\",\n      \"applicable_controls\": [\"Staging Controls\", \"Artifact Signing\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-029\",\n      \"component\": \"Frontend Layer & APIs\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive configuration or secret leakage through client-side source maps, embedded configs, or misconfigured public S3 buckets used to host static SPA assets.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Avoid bundling secrets in client builds, remove source maps in production or protect them, scan storage for public exposure, use signed URLs for assets, and restrict bucket policies.\",\n      \"applicable_controls\": [\"Storage ACLs\", \"Build Hygiene\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-030\",\n      \"component\": \"Task Management / Escalations\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Business logic-level DoS where an attacker or faulty automation creates many overlapping layers or tasks, flooding the workflow engine and preventing legitimate progress tracking and notifications.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce quotas per project/user, validate workload sizes, implement workflow admission control, analyze and throttle bulk operations, and provide back-pressure to clients.\",\n      \"applicable_controls\": [\"Workflow Quotas\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    }\n  ],\n  \"risk_summary\": \"The most critical threats are credential/session theft and broken access control (THR-001, THR-002), unauthorized modification of VM/network policies and artifact tampering (THR-006, THR-011, THR-020), compromise of infrastructure access primitives (SSH bastion / KMS \u2014 THR-010), and audit/log tampering (THR-013). Overall risk posture is elevated due to the platform's high-value capabilities: managing VM access, firewall rules, artifact repositories for air-gapped systems, and orchestration of sequenced infrastructure changes. Key attack vectors include stolen or forged authentication tokens (SSO/Session), API abuse and insufficient server-side authorization, supply chain attacks against mirrored artifacts, misconfigured cloud IAM and IaC, and insecure third-party integrations (email/chat/monitoring). Immediate priority areas: 1) Harden authentication and session management (SSO + MFA, short token lifetimes, session analytics), 2) Enforce server-side, fine-grained authorization and policy-as-code for RBAC and network/firewall changes, 3) Protect artifact integrity with signing/provenance (SLSA) and staging controls for air-gapped workflows, 4) Protect and monitor critical infrastructure components (bastion, KMS, DB backups) with HSM, PAM, immutable logs and tested recovery, and 5) Implement API gateway protections (rate limiting, WAF), input validation, and secure integration patterns (avoid sensitive content in notifications). Addressing these controls will reduce critical risks substantially; remaining residual risks should be tracked and reviewed regularly with compensating controls (monitoring, incident response, least privilege reviews, and regular threat/pen-test cycles).\"\n}",
+  "pydantic": {
+    "methodology": "STRIDE",
+    "threats": [
+      {
+        "threat_id": "THR-001",
+        "component": "Frontend Layer",
+        "threat_category": "Spoofing",
+        "description": "An attacker reuses stolen session tokens or forges authentication cookies to impersonate legitimate users (including Infra Admin) via stolen tokens from browser storage or network interception.",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Enforce short-lived session tokens, HttpOnly and Secure cookies, token binding where possible, require SSO + MFA for high-privilege accounts, implement device fingerprinting and anomalous session detection, enforce secure transport (TLS 1.2+), and rotate session tokens on logout and privilege changes.",
+        "applicable_controls": [
+          "OWASP-A2",
+          "NIST-800-63B",
+          "V2.1.1"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-002",
+        "component": "Application Services (AuthZ & RBAC)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Broken access control or misconfigured RBAC allows a user (reader/user) to perform infra-admin or admin actions via API endpoints that lack authorization checks or use client-side enforcement only.",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Enforce server-side authorization checks on all APIs, implement least privilege, use centralized policy engine (e.g., OPA), add automated tests for RBAC rules, regularly review role mappings and privileged accounts, employ continuous authorization monitoring.",
+        "applicable_controls": [
+          "OWASP A5",
+          "NIST-800-53-AC-6"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-003",
+        "component": "SSO/MFA Integration (Integrations & External Services)",
+        "threat_category": "Spoofing",
+        "description": "Compromise or misconfiguration of SSO/MFA provider (e.g., compromised IdP token signing keys, misconfigured SAML/OIDC settings) allows attacker to forge assertions and access the platform.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use provider best practices: verify token signatures, validate audience/issuer/exp claims, rotate IdP keys, enforce MFA for privileged roles, implement continuous monitoring for unusual logins, and have fallback account recovery procedures.",
+        "applicable_controls": [
+          "SAML/OIDC Best Practices",
+          "NIST-800-63B"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-004",
+        "component": "Frontend Layer / Application Services",
+        "threat_category": "Tampering",
+        "description": "Client-side or API parameter tampering to alter layer sequencing or deadlines (e.g., adjusting JSON payload to mark prerequisite layer as 'approved' or change deadlines).",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Validate all state transitions server-side, enforce workflow state machine in backend, sign or timestamp critical state changes, use immutable audit log entries for approvals, and implement input validation and anti-tamper checks.",
+        "applicable_controls": [
+          "V3.2.3",
+          "Immutable Logs"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-005",
+        "component": "Application Services (APIs)",
+        "threat_category": "Information Disclosure",
+        "description": "APIs exposing sensitive data (VM access mappings, IP endpoints, firewall rules, handover documents) to unauthorized callers due to broken object-level authorization or verbose error messages.",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Implement fine-grained object-level authorization, least privilege on API responses, remove sensitive fields unless authorized, sanitize error messages, encrypt sensitive data at rest and in transit, and audit API access.",
+        "applicable_controls": [
+          "OWASP A3",
+          "NIST-800-53-SC-13"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "High",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-006",
+        "component": "Data Storage (RDBMS, Object Storage)",
+        "threat_category": "Tampering",
+        "description": "Unauthorized modification of firewall rules or per-VM policy metadata in the database through SQL injection or compromised credentials, leading to exposure of VM services.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use parameterized queries / ORM, DB least-privileged service accounts, input validation, WAF, strong DB authentication and network isolation, database activity monitoring, and periodic integrity checks.",
+        "applicable_controls": [
+          "OWASP A1",
+          "DB Access Controls"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-007",
+        "component": "Application Services / Frontend",
+        "threat_category": "Tampering",
+        "description": "Cross-Site Request Forgery (CSRF) actions causing unauthorized state changes (approvals, handover submissions) when users browse malicious sites.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Implement anti-CSRF tokens for state-changing endpoints, require SameSite cookies where applicable, validate Origin/Referer headers, and require re-authentication for sensitive actions.",
+        "applicable_controls": [
+          "OWASP CSRF Controls"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-008",
+        "component": "Frontend Layer",
+        "threat_category": "Information Disclosure",
+        "description": "Cross-Site Scripting (XSS) in the SPA that allows an attacker to steal tokens or perform actions on behalf of users via stored or reflected malicious content in handover documents or comments.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Contextual output encoding, CSP (Content-Security-Policy), input sanitization/whitelisting for rich text, use of secure libraries for rendering, and security testing (DAST/SAST).",
+        "applicable_controls": [
+          "OWASP A7",
+          "CSP"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-009",
+        "component": "APIs & Application Services",
+        "threat_category": "Tampering",
+        "description": "API abuse: unauthenticated or authenticated attackers send crafted requests to manipulate VM inventory mappings, create rogue VM assignments, or alter allowed ports to open backdoors.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Require authentication and authorization on all endpoints, implement rate limiting, input validation, maintain an allowlist of permissible actions, and add anomaly detection for abnormal API patterns.",
+        "applicable_controls": [
+          "API Gateway",
+          "Rate Limiting"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-010",
+        "component": "Infrastructure & Access Layer (SSH Bastion, KMS)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Compromise of SSH bastion or KMS, allowing attacker to obtain or misuse SSH keys, sign tokens or decrypt secrets to access VMs or escalate privileges across hosts.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Harden bastion hosts, use ephemeral certificates for SSH (certificate-based auth), central session recording, restrict bastion to known IPs, apply MFA, isolate KMS keys in HSM, enforce key rotation and auditing, and follow least privilege for KMS access.",
+        "applicable_controls": [
+          "NIST-800-57",
+          "HSM"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-011",
+        "component": "Artifact & Air-gap Services",
+        "threat_category": "Tampering",
+        "description": "Poisoned or tampered artifacts/images are mirrored into the bare-metal repository (supply chain attack) leading to malware distribution to air-gapped project servers.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Require artifact signing and verification (SLSA), maintain provenance metadata, perform reproducible builds, run vulnerability scanning and integrity checks, isolate staging mirror server, and enforce strict offline review procedures before air-gap import.",
+        "applicable_controls": [
+          "SLSA",
+          "Supply Chain Controls"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-012",
+        "component": "Artifact & Air-gap Services",
+        "threat_category": "Information Disclosure",
+        "description": "Exposure of proprietary images or signed artifacts when bare-metal repository is not sufficiently protected, or when mirrored artifacts include sensitive metadata (build secrets, internal endpoints).",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Encrypt artifact storage, use access controls for repository, scrub build metadata, limit artifact metadata exposure, and apply audit logging for artifact access.",
+        "applicable_controls": [
+          "Encrypted Object Storage",
+          "ACLs"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-013",
+        "component": "Data Storage (Audit Log Store)",
+        "threat_category": "Repudiation",
+        "description": "Attackers or malicious insiders tamper with or delete audit logs to cover tracks, disabling post-incident investigation and approvals trail (handover, approvals).",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use append-only immutable logs (WORM), send logs to external SIEM, implement cryptographic signing of logs, replicate logs to multiple locations, monitor log integrity, and alert on log deletions.",
+        "applicable_controls": [
+          "Immutable Logs",
+          "SIEM"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-014",
+        "component": "Notifications (Email/Chat Providers)",
+        "threat_category": "Information Disclosure",
+        "description": "Sensitive details in notification payloads (VM IPs, firewall rules, private handover content) are leaked via insecure email or chat integrations, or if provider is compromised.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Avoid including secrets in notifications, provide links to authenticated dashboards instead of data in message body, use secure email gateways, enable encryption for messages where supported, and limit notification content.",
+        "applicable_controls": [
+          "Secure Notification Patterns"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-015",
+        "component": "Integrations & External Services (IaC Registries)",
+        "threat_category": "Information Disclosure",
+        "description": "Credentials for external registries or IaC providers leaked (e.g., in repo or configs), allowing attackers to manipulate infrastructure templates or pull sensitive images.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use secret management (KMS/Secrets Manager), avoid embedding credentials in repos, enforce least privilege for registry accounts, rotate credentials, and use ephemeral credentials for automation.",
+        "applicable_controls": [
+          "Secrets Management",
+          "NIST-800-57"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-016",
+        "component": "Application Services (Workflow Engine)",
+        "threat_category": "Tampering",
+        "description": "Attacker manipulates workflow engine to bypass layer sequencing enforcement (e.g., directly invoking internal APIs to create a dependent layer without prerequisite completion).",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Harden internal APIs, implement strong authentication/authorization even for internal endpoints, enforce workflow transitions in a single trusted service, use service-to-service mutual TLS, and perform fuzzing/penetration testing on workflow logic.",
+        "applicable_controls": [
+          "mTLS",
+          "Workflow Hardening"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-017",
+        "component": "Task Management / Collaboration",
+        "threat_category": "Repudiation",
+        "description": "Insufficient or tamperable approval records enable unauthorized approvals or disallow detection of fraudulent handover approvals (lack of traceable logs / signed approvals).",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Digitally sign approvals or use authenticated audit trails, implement multi-party approval with explicit identity checks, and maintain immutable records with timestamps and approver metadata.",
+        "applicable_controls": [
+          "Digital Signatures",
+          "Immutable Audit"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-018",
+        "component": "Data Storage (Handover Documents)",
+        "threat_category": "Information Disclosure",
+        "description": "Handover documents containing network diagrams, credentials, or internal IP addresses are stored or shared insecurely, exposing sensitive project topology.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce access controls on documents, classify and redact sensitive content, use DLP scanning, encrypt documents at rest, require role-based access for downloads, and provide secure viewer links.",
+        "applicable_controls": [
+          "DLP",
+          "Document ACLs"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-019",
+        "component": "Infrastructure & Access Layer (VM access mapping)",
+        "threat_category": "Spoofing",
+        "description": "Attackers spoof source IPs or stolen user credentials to impersonate authorized users when accessing VMs; weak mapping enables unauthorized VM access.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use certificate-based or ephemeral SSH credentials, enforce MFA for interactive SSH sessions, restrict access by identity + IP where feasible, log and alert on unusual access patterns, and integrate with PAM solutions.",
+        "applicable_controls": [
+          "PAM",
+          "Ephemeral Certs"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-020",
+        "component": "Data Management (Firewall/Port Rules)",
+        "threat_category": "Tampering",
+        "description": "Unauthorized changes to firewall rules or allowed ingress/egress ports (via compromised API credentials or misconfigured IaC) open services to the internet that should remain internal.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Apply policy-as-code (e.g., OPA) to enforce allowed port lists, require pull-request reviews for IaC changes, maintain change control and approvals for firewall changes, implement automated validation of deployed rules vs desired state, and monitor network flows.",
+        "applicable_controls": [
+          "Policy-as-Code",
+          "IaC Review"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-021",
+        "component": "Monitoring & Alerting Integrations",
+        "threat_category": "Information Disclosure",
+        "description": "Monitoring integrations leak sensitive metadata or create an attack channel if the monitoring system is compromised, exposing project states, deadlines, or infrastructure details.",
+        "likelihood": "Low",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Limit sensitive data sent to monitoring, use role-based access to monitoring systems, encrypt telemetry, and segregate monitoring environments with strict IAM.",
+        "applicable_controls": [
+          "Monitoring Controls"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-022",
+        "component": "Application Services / API Gateway",
+        "threat_category": "Denial of Service",
+        "description": "An attacker launches API floods or abusive calls (e.g., creating many layers, requests to workflow engine) causing resource exhaustion, delays in sequencing, and missed deadlines.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Implement API rate limiting, request quotas, WAF, autoscaling, circuit breakers, and prioritize traffic for high-priority management operations; monitor and block abusive clients.",
+        "applicable_controls": [
+          "API Rate Limiting",
+          "WAF"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      },
+      {
+        "threat_id": "THR-023",
+        "component": "Frontend Layer & Notifications",
+        "threat_category": "Denial of Service",
+        "description": "Mass notifications or webhook storms (intentional or misconfigured) overwhelm notification providers or users, causing alert fatigue or service degradation.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Rate-limit notifications, batch where appropriate, provide throttling and escalation policies, implement deduplication, and validate webhook sources.",
+        "applicable_controls": [
+          "Notification Rate Limiting"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-024",
+        "component": "Data Storage (RDBMS) / Backups",
+        "threat_category": "Denial of Service",
+        "description": "Ransomware or destructive attacks target DB backups or primary DB, causing loss of project data, audit logs and timelines, interrupting projects.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Harden backups (offline/immutable backups), encrypt backups, restrict access to backup systems, test restore procedures, use anomaly detection for large-scale deletions, and maintain air-gapped backups.",
+        "applicable_controls": [
+          "Immutable Backups",
+          "Backup Encryption"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-025",
+        "component": "Integrations & External Services (Email/Chat)",
+        "threat_category": "Spoofing",
+        "description": "Attackers spoof notification emails or chat messages to trick users into approving handovers or following malicious links, leading to social engineering attacks and credential theft.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Sign emails (DKIM/SPF/DMARC), include in-app confirmation for critical actions, educate users on phishing, use short one-time approval tokens that resolve only in-dashboard, and provide clear provenance of notifications.",
+        "applicable_controls": [
+          "Email Security (DKIM/SPF/DMARC)"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-026",
+        "component": "Application Services / Workflow Engine",
+        "threat_category": "Information Disclosure",
+        "description": "Internal debug or verbose logs in production leak sensitive fields (IP addresses, keys) to log stores or external monitoring due to insufficient redaction.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Sanitize logs, implement PII masking and strict logging policies, use structured logging with redaction, and enforce log access controls.",
+        "applicable_controls": [
+          "Logging Policies",
+          "PII Masking"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-027",
+        "component": "Infrastructure & Access Layer (Hypervisor / Cloud APIs)",
+        "threat_category": "Elevation of Privilege",
+        "description": "Excessive cloud permissions or misconfigured IAM roles allow service or user accounts to create privileged resources or exfiltrate data (e.g., admin role misassignment via IaC).",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Implement least-privilege IAM, use IAM conditions, enable access review and attestation, guardrails with SCP/org policies for cloud accounts, and scan IaC for dangerous permissions before deployment.",
+        "applicable_controls": [
+          "Cloud IAM Best Practices",
+          "Policy Guardrails"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-028",
+        "component": "Artifact & Air-gap Services (Staging server)",
+        "threat_category": "Tampering",
+        "description": "Malicious or accidental replacement of staged images (or broken integrity checks) before disconnecting air-gapped environment; later deployed images contain backdoors.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Implement strict change control, multi-person review for staging, enforce artifact signing and verification, and maintain provenance with signed manifests verified by receiving hosts.",
+        "applicable_controls": [
+          "Staging Controls",
+          "Artifact Signing"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-029",
+        "component": "Frontend Layer & APIs",
+        "threat_category": "Information Disclosure",
+        "description": "Sensitive configuration or secret leakage through client-side source maps, embedded configs, or misconfigured public S3 buckets used to host static SPA assets.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Avoid bundling secrets in client builds, remove source maps in production or protect them, scan storage for public exposure, use signed URLs for assets, and restrict bucket policies.",
+        "applicable_controls": [
+          "Storage ACLs",
+          "Build Hygiene"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-030",
+        "component": "Task Management / Escalations",
+        "threat_category": "Denial of Service",
+        "description": "Business logic-level DoS where an attacker or faulty automation creates many overlapping layers or tasks, flooding the workflow engine and preventing legitimate progress tracking and notifications.",
+        "likelihood": "Low",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Enforce quotas per project/user, validate workload sizes, implement workflow admission control, analyze and throttle bulk operations, and provide back-pressure to clients.",
+        "applicable_controls": [
+          "Workflow Quotas"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Accepted"
+      }
+    ],
+    "risk_summary": "The most critical threats are credential/session theft and broken access control (THR-001, THR-002), unauthorized modification of VM/network policies and artifact tampering (THR-006, THR-011, THR-020), compromise of infrastructure access primitives (SSH bastion / KMS \u2014 THR-010), and audit/log tampering (THR-013). Overall risk posture is elevated due to the platform's high-value capabilities: managing VM access, firewall rules, artifact repositories for air-gapped systems, and orchestration of sequenced infrastructure changes. Key attack vectors include stolen or forged authentication tokens (SSO/Session), API abuse and insufficient server-side authorization, supply chain attacks against mirrored artifacts, misconfigured cloud IAM and IaC, and insecure third-party integrations (email/chat/monitoring). Immediate priority areas: 1) Harden authentication and session management (SSO + MFA, short token lifetimes, session analytics), 2) Enforce server-side, fine-grained authorization and policy-as-code for RBAC and network/firewall changes, 3) Protect artifact integrity with signing/provenance (SLSA) and staging controls for air-gapped workflows, 4) Protect and monitor critical infrastructure components (bastion, KMS, DB backups) with HSM, PAM, immutable logs and tested recovery, and 5) Implement API gateway protections (rate limiting, WAF), input validation, and secure integration patterns (avoid sensitive content in notifications). Addressing these controls will reduce critical risks substantially; remaining residual risks should be tracked and reviewed regularly with compensating controls (monitoring, incident response, least privilege reviews, and regular threat/pen-test cycles)."
+  },
+  "tasks": [
+    {
+      "name": "perform_threat_modeling",
+      "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"An attacker reuses stolen session tokens or forges authentication cookies to impersonate legitimate users (including Infra Admin) via stolen tokens from browser storage or network interception.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce short-lived session tokens, HttpOnly and Secure cookies, token binding where possible, require SSO + MFA for high-privilege accounts, implement device fingerprinting and anomalous session detection, enforce secure transport (TLS 1.2+), and rotate session tokens on logout and privilege changes.\",\n      \"applicable_controls\": [\"OWASP-A2\", \"NIST-800-63B\", \"V2.1.1\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Application Services (AuthZ & RBAC)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken access control or misconfigured RBAC allows a user (reader/user) to perform infra-admin or admin actions via API endpoints that lack authorization checks or use client-side enforcement only.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce server-side authorization checks on all APIs, implement least privilege, use centralized policy engine (e.g., OPA), add automated tests for RBAC rules, regularly review role mappings and privileged accounts, employ continuous authorization monitoring.\",\n      \"applicable_controls\": [\"OWASP A5\", \"NIST-800-53-AC-6\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"SSO/MFA Integration (Integrations & External Services)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Compromise or misconfiguration of SSO/MFA provider (e.g., compromised IdP token signing keys, misconfigured SAML/OIDC settings) allows attacker to forge assertions and access the platform.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use provider best practices: verify token signatures, validate audience/issuer/exp claims, rotate IdP keys, enforce MFA for privileged roles, implement continuous monitoring for unusual logins, and have fallback account recovery procedures.\",\n      \"applicable_controls\": [\"SAML/OIDC Best Practices\", \"NIST-800-63B\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Frontend Layer / Application Services\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Client-side or API parameter tampering to alter layer sequencing or deadlines (e.g., adjusting JSON payload to mark prerequisite layer as 'approved' or change deadlines).\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Validate all state transitions server-side, enforce workflow state machine in backend, sign or timestamp critical state changes, use immutable audit log entries for approvals, and implement input validation and anti-tamper checks.\",\n      \"applicable_controls\": [\"V3.2.3\", \"Immutable Logs\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Application Services (APIs)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"APIs exposing sensitive data (VM access mappings, IP endpoints, firewall rules, handover documents) to unauthorized callers due to broken object-level authorization or verbose error messages.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Implement fine-grained object-level authorization, least privilege on API responses, remove sensitive fields unless authorized, sanitize error messages, encrypt sensitive data at rest and in transit, and audit API access.\",\n      \"applicable_controls\": [\"OWASP A3\", \"NIST-800-53-SC-13\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"High\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Data Storage (RDBMS, Object Storage)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Unauthorized modification of firewall rules or per-VM policy metadata in the database through SQL injection or compromised credentials, leading to exposure of VM services.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries / ORM, DB least-privileged service accounts, input validation, WAF, strong DB authentication and network isolation, database activity monitoring, and periodic integrity checks.\",\n      \"applicable_controls\": [\"OWASP A1\", \"DB Access Controls\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Application Services / Frontend\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Cross-Site Request Forgery (CSRF) actions causing unauthorized state changes (approvals, handover submissions) when users browse malicious sites.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement anti-CSRF tokens for state-changing endpoints, require SameSite cookies where applicable, validate Origin/Referer headers, and require re-authentication for sensitive actions.\",\n      \"applicable_controls\": [\"OWASP CSRF Controls\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Cross-Site Scripting (XSS) in the SPA that allows an attacker to steal tokens or perform actions on behalf of users via stored or reflected malicious content in handover documents or comments.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Contextual output encoding, CSP (Content-Security-Policy), input sanitization/whitelisting for rich text, use of secure libraries for rendering, and security testing (DAST/SAST).\",\n      \"applicable_controls\": [\"OWASP A7\", \"CSP\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"APIs & Application Services\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"API abuse: unauthenticated or authenticated attackers send crafted requests to manipulate VM inventory mappings, create rogue VM assignments, or alter allowed ports to open backdoors.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Require authentication and authorization on all endpoints, implement rate limiting, input validation, maintain an allowlist of permissible actions, and add anomaly detection for abnormal API patterns.\",\n      \"applicable_controls\": [\"API Gateway\", \"Rate Limiting\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"Infrastructure & Access Layer (SSH Bastion, KMS)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Compromise of SSH bastion or KMS, allowing attacker to obtain or misuse SSH keys, sign tokens or decrypt secrets to access VMs or escalate privileges across hosts.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Harden bastion hosts, use ephemeral certificates for SSH (certificate-based auth), central session recording, restrict bastion to known IPs, apply MFA, isolate KMS keys in HSM, enforce key rotation and auditing, and follow least privilege for KMS access.\",\n      \"applicable_controls\": [\"NIST-800-57\", \"HSM\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Artifact & Air-gap Services\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Poisoned or tampered artifacts/images are mirrored into the bare-metal repository (supply chain attack) leading to malware distribution to air-gapped project servers.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Require artifact signing and verification (SLSA), maintain provenance metadata, perform reproducible builds, run vulnerability scanning and integrity checks, isolate staging mirror server, and enforce strict offline review procedures before air-gap import.\",\n      \"applicable_controls\": [\"SLSA\", \"Supply Chain Controls\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"Artifact & Air-gap Services\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Exposure of proprietary images or signed artifacts when bare-metal repository is not sufficiently protected, or when mirrored artifacts include sensitive metadata (build secrets, internal endpoints).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Encrypt artifact storage, use access controls for repository, scrub build metadata, limit artifact metadata exposure, and apply audit logging for artifact access.\",\n      \"applicable_controls\": [\"Encrypted Object Storage\", \"ACLs\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"Data Storage (Audit Log Store)\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Attackers or malicious insiders tamper with or delete audit logs to cover tracks, disabling post-incident investigation and approvals trail (handover, approvals).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use append-only immutable logs (WORM), send logs to external SIEM, implement cryptographic signing of logs, replicate logs to multiple locations, monitor log integrity, and alert on log deletions.\",\n      \"applicable_controls\": [\"Immutable Logs\", \"SIEM\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"Notifications (Email/Chat Providers)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive details in notification payloads (VM IPs, firewall rules, private handover content) are leaked via insecure email or chat integrations, or if provider is compromised.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Avoid including secrets in notifications, provide links to authenticated dashboards instead of data in message body, use secure email gateways, enable encryption for messages where supported, and limit notification content.\",\n      \"applicable_controls\": [\"Secure Notification Patterns\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"Integrations & External Services (IaC Registries)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Credentials for external registries or IaC providers leaked (e.g., in repo or configs), allowing attackers to manipulate infrastructure templates or pull sensitive images.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use secret management (KMS/Secrets Manager), avoid embedding credentials in repos, enforce least privilege for registry accounts, rotate credentials, and use ephemeral credentials for automation.\",\n      \"applicable_controls\": [\"Secrets Management\", \"NIST-800-57\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"Application Services (Workflow Engine)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Attacker manipulates workflow engine to bypass layer sequencing enforcement (e.g., directly invoking internal APIs to create a dependent layer without prerequisite completion).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Harden internal APIs, implement strong authentication/authorization even for internal endpoints, enforce workflow transitions in a single trusted service, use service-to-service mutual TLS, and perform fuzzing/penetration testing on workflow logic.\",\n      \"applicable_controls\": [\"mTLS\", \"Workflow Hardening\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"Task Management / Collaboration\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient or tamperable approval records enable unauthorized approvals or disallow detection of fraudulent handover approvals (lack of traceable logs / signed approvals).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Digitally sign approvals or use authenticated audit trails, implement multi-party approval with explicit identity checks, and maintain immutable records with timestamps and approver metadata.\",\n      \"applicable_controls\": [\"Digital Signatures\", \"Immutable Audit\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"Data Storage (Handover Documents)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Handover documents containing network diagrams, credentials, or internal IP addresses are stored or shared insecurely, exposing sensitive project topology.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce access controls on documents, classify and redact sensitive content, use DLP scanning, encrypt documents at rest, require role-based access for downloads, and provide secure viewer links.\",\n      \"applicable_controls\": [\"DLP\", \"Document ACLs\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Infrastructure & Access Layer (VM access mapping)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Attackers spoof source IPs or stolen user credentials to impersonate authorized users when accessing VMs; weak mapping enables unauthorized VM access.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use certificate-based or ephemeral SSH credentials, enforce MFA for interactive SSH sessions, restrict access by identity + IP where feasible, log and alert on unusual access patterns, and integrate with PAM solutions.\",\n      \"applicable_controls\": [\"PAM\", \"Ephemeral Certs\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"Data Management (Firewall/Port Rules)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Unauthorized changes to firewall rules or allowed ingress/egress ports (via compromised API credentials or misconfigured IaC) open services to the internet that should remain internal.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Apply policy-as-code (e.g., OPA) to enforce allowed port lists, require pull-request reviews for IaC changes, maintain change control and approvals for firewall changes, implement automated validation of deployed rules vs desired state, and monitor network flows.\",\n      \"applicable_controls\": [\"Policy-as-Code\", \"IaC Review\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"Monitoring & Alerting Integrations\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Monitoring integrations leak sensitive metadata or create an attack channel if the monitoring system is compromised, exposing project states, deadlines, or infrastructure details.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Limit sensitive data sent to monitoring, use role-based access to monitoring systems, encrypt telemetry, and segregate monitoring environments with strict IAM.\",\n      \"applicable_controls\": [\"Monitoring Controls\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Application Services / API Gateway\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"An attacker launches API floods or abusive calls (e.g., creating many layers, requests to workflow engine) causing resource exhaustion, delays in sequencing, and missed deadlines.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement API rate limiting, request quotas, WAF, autoscaling, circuit breakers, and prioritize traffic for high-priority management operations; monitor and block abusive clients.\",\n      \"applicable_controls\": [\"API Rate Limiting\", \"WAF\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"Frontend Layer & Notifications\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Mass notifications or webhook storms (intentional or misconfigured) overwhelm notification providers or users, causing alert fatigue or service degradation.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Rate-limit notifications, batch where appropriate, provide throttling and escalation policies, implement deduplication, and validate webhook sources.\",\n      \"applicable_controls\": [\"Notification Rate Limiting\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"Data Storage (RDBMS) / Backups\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Ransomware or destructive attacks target DB backups or primary DB, causing loss of project data, audit logs and timelines, interrupting projects.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Harden backups (offline/immutable backups), encrypt backups, restrict access to backup systems, test restore procedures, use anomaly detection for large-scale deletions, and maintain air-gapped backups.\",\n      \"applicable_controls\": [\"Immutable Backups\", \"Backup Encryption\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Integrations & External Services (Email/Chat)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Attackers spoof notification emails or chat messages to trick users into approving handovers or following malicious links, leading to social engineering attacks and credential theft.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Sign emails (DKIM/SPF/DMARC), include in-app confirmation for critical actions, educate users on phishing, use short one-time approval tokens that resolve only in-dashboard, and provide clear provenance of notifications.\",\n      \"applicable_controls\": [\"Email Security (DKIM/SPF/DMARC)\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Application Services / Workflow Engine\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Internal debug or verbose logs in production leak sensitive fields (IP addresses, keys) to log stores or external monitoring due to insufficient redaction.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Sanitize logs, implement PII masking and strict logging policies, use structured logging with redaction, and enforce log access controls.\",\n      \"applicable_controls\": [\"Logging Policies\", \"PII Masking\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"Infrastructure & Access Layer (Hypervisor / Cloud APIs)\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Excessive cloud permissions or misconfigured IAM roles allow service or user accounts to create privileged resources or exfiltrate data (e.g., admin role misassignment via IaC).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement least-privilege IAM, use IAM conditions, enable access review and attestation, guardrails with SCP/org policies for cloud accounts, and scan IaC for dangerous permissions before deployment.\",\n      \"applicable_controls\": [\"Cloud IAM Best Practices\", \"Policy Guardrails\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Artifact & Air-gap Services (Staging server)\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Malicious or accidental replacement of staged images (or broken integrity checks) before disconnecting air-gapped environment; later deployed images contain backdoors.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement strict change control, multi-person review for staging, enforce artifact signing and verification, and maintain provenance with signed manifests verified by receiving hosts.\",\n      \"applicable_controls\": [\"Staging Controls\", \"Artifact Signing\"],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-029\",\n      \"component\": \"Frontend Layer & APIs\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive configuration or secret leakage through client-side source maps, embedded configs, or misconfigured public S3 buckets used to host static SPA assets.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Avoid bundling secrets in client builds, remove source maps in production or protect them, scan storage for public exposure, use signed URLs for assets, and restrict bucket policies.\",\n      \"applicable_controls\": [\"Storage ACLs\", \"Build Hygiene\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-030\",\n      \"component\": \"Task Management / Escalations\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Business logic-level DoS where an attacker or faulty automation creates many overlapping layers or tasks, flooding the workflow engine and preventing legitimate progress tracking and notifications.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Enforce quotas per project/user, validate workload sizes, implement workflow admission control, analyze and throttle bulk operations, and provide back-pressure to clients.\",\n      \"applicable_controls\": [\"Workflow Quotas\"],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Accepted\"\n    }\n  ],\n  \"risk_summary\": \"The most critical threats are credential/session theft and broken access control (THR-001, THR-002), unauthorized modification of VM/network policies and artifact tampering (THR-006, THR-011, THR-020), compromise of infrastructure access primitives (SSH bastion / KMS \u2014 THR-010), and audit/log tampering (THR-013). Overall risk posture is elevated due to the platform's high-value capabilities: managing VM access, firewall rules, artifact repositories for air-gapped systems, and orchestration of sequenced infrastructure changes. Key attack vectors include stolen or forged authentication tokens (SSO/Session), API abuse and insufficient server-side authorization, supply chain attacks against mirrored artifacts, misconfigured cloud IAM and IaC, and insecure third-party integrations (email/chat/monitoring). Immediate priority areas: 1) Harden authentication and session management (SSO + MFA, short token lifetimes, session analytics), 2) Enforce server-side, fine-grained authorization and policy-as-code for RBAC and network/firewall changes, 3) Protect artifact integrity with signing/provenance (SLSA) and staging controls for air-gapped workflows, 4) Protect and monitor critical infrastructure components (bastion, KMS, DB backups) with HSM, PAM, immutable logs and tested recovery, and 5) Implement API gateway protections (rate limiting, WAF), input validation, and secure integration patterns (avoid sensitive content in notifications). Addressing these controls will reduce critical risks substantially; remaining residual risks should be tracked and reviewed regularly with compensating controls (monitoring, incident response, least privilege reviews, and regular threat/pen-test cycles).\"\n}",
+      "pydantic": {
+        "methodology": "STRIDE",
+        "threats": [
+          {
+            "threat_id": "THR-001",
+            "component": "Frontend Layer",
+            "threat_category": "Spoofing",
+            "description": "An attacker reuses stolen session tokens or forges authentication cookies to impersonate legitimate users (including Infra Admin) via stolen tokens from browser storage or network interception.",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Enforce short-lived session tokens, HttpOnly and Secure cookies, token binding where possible, require SSO + MFA for high-privilege accounts, implement device fingerprinting and anomalous session detection, enforce secure transport (TLS 1.2+), and rotate session tokens on logout and privilege changes.",
+            "applicable_controls": [
+              "OWASP-A2",
+              "NIST-800-63B",
+              "V2.1.1"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-002",
+            "component": "Application Services (AuthZ & RBAC)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Broken access control or misconfigured RBAC allows a user (reader/user) to perform infra-admin or admin actions via API endpoints that lack authorization checks or use client-side enforcement only.",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Enforce server-side authorization checks on all APIs, implement least privilege, use centralized policy engine (e.g., OPA), add automated tests for RBAC rules, regularly review role mappings and privileged accounts, employ continuous authorization monitoring.",
+            "applicable_controls": [
+              "OWASP A5",
+              "NIST-800-53-AC-6"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-003",
+            "component": "SSO/MFA Integration (Integrations & External Services)",
+            "threat_category": "Spoofing",
+            "description": "Compromise or misconfiguration of SSO/MFA provider (e.g., compromised IdP token signing keys, misconfigured SAML/OIDC settings) allows attacker to forge assertions and access the platform.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use provider best practices: verify token signatures, validate audience/issuer/exp claims, rotate IdP keys, enforce MFA for privileged roles, implement continuous monitoring for unusual logins, and have fallback account recovery procedures.",
+            "applicable_controls": [
+              "SAML/OIDC Best Practices",
+              "NIST-800-63B"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-004",
+            "component": "Frontend Layer / Application Services",
+            "threat_category": "Tampering",
+            "description": "Client-side or API parameter tampering to alter layer sequencing or deadlines (e.g., adjusting JSON payload to mark prerequisite layer as 'approved' or change deadlines).",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Validate all state transitions server-side, enforce workflow state machine in backend, sign or timestamp critical state changes, use immutable audit log entries for approvals, and implement input validation and anti-tamper checks.",
+            "applicable_controls": [
+              "V3.2.3",
+              "Immutable Logs"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-005",
+            "component": "Application Services (APIs)",
+            "threat_category": "Information Disclosure",
+            "description": "APIs exposing sensitive data (VM access mappings, IP endpoints, firewall rules, handover documents) to unauthorized callers due to broken object-level authorization or verbose error messages.",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Implement fine-grained object-level authorization, least privilege on API responses, remove sensitive fields unless authorized, sanitize error messages, encrypt sensitive data at rest and in transit, and audit API access.",
+            "applicable_controls": [
+              "OWASP A3",
+              "NIST-800-53-SC-13"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "High",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-006",
+            "component": "Data Storage (RDBMS, Object Storage)",
+            "threat_category": "Tampering",
+            "description": "Unauthorized modification of firewall rules or per-VM policy metadata in the database through SQL injection or compromised credentials, leading to exposure of VM services.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use parameterized queries / ORM, DB least-privileged service accounts, input validation, WAF, strong DB authentication and network isolation, database activity monitoring, and periodic integrity checks.",
+            "applicable_controls": [
+              "OWASP A1",
+              "DB Access Controls"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-007",
+            "component": "Application Services / Frontend",
+            "threat_category": "Tampering",
+            "description": "Cross-Site Request Forgery (CSRF) actions causing unauthorized state changes (approvals, handover submissions) when users browse malicious sites.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Implement anti-CSRF tokens for state-changing endpoints, require SameSite cookies where applicable, validate Origin/Referer headers, and require re-authentication for sensitive actions.",
+            "applicable_controls": [
+              "OWASP CSRF Controls"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-008",
+            "component": "Frontend Layer",
+            "threat_category": "Information Disclosure",
+            "description": "Cross-Site Scripting (XSS) in the SPA that allows an attacker to steal tokens or perform actions on behalf of users via stored or reflected malicious content in handover documents or comments.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Contextual output encoding, CSP (Content-Security-Policy), input sanitization/whitelisting for rich text, use of secure libraries for rendering, and security testing (DAST/SAST).",
+            "applicable_controls": [
+              "OWASP A7",
+              "CSP"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-009",
+            "component": "APIs & Application Services",
+            "threat_category": "Tampering",
+            "description": "API abuse: unauthenticated or authenticated attackers send crafted requests to manipulate VM inventory mappings, create rogue VM assignments, or alter allowed ports to open backdoors.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Require authentication and authorization on all endpoints, implement rate limiting, input validation, maintain an allowlist of permissible actions, and add anomaly detection for abnormal API patterns.",
+            "applicable_controls": [
+              "API Gateway",
+              "Rate Limiting"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-010",
+            "component": "Infrastructure & Access Layer (SSH Bastion, KMS)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Compromise of SSH bastion or KMS, allowing attacker to obtain or misuse SSH keys, sign tokens or decrypt secrets to access VMs or escalate privileges across hosts.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Harden bastion hosts, use ephemeral certificates for SSH (certificate-based auth), central session recording, restrict bastion to known IPs, apply MFA, isolate KMS keys in HSM, enforce key rotation and auditing, and follow least privilege for KMS access.",
+            "applicable_controls": [
+              "NIST-800-57",
+              "HSM"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-011",
+            "component": "Artifact & Air-gap Services",
+            "threat_category": "Tampering",
+            "description": "Poisoned or tampered artifacts/images are mirrored into the bare-metal repository (supply chain attack) leading to malware distribution to air-gapped project servers.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Require artifact signing and verification (SLSA), maintain provenance metadata, perform reproducible builds, run vulnerability scanning and integrity checks, isolate staging mirror server, and enforce strict offline review procedures before air-gap import.",
+            "applicable_controls": [
+              "SLSA",
+              "Supply Chain Controls"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-012",
+            "component": "Artifact & Air-gap Services",
+            "threat_category": "Information Disclosure",
+            "description": "Exposure of proprietary images or signed artifacts when bare-metal repository is not sufficiently protected, or when mirrored artifacts include sensitive metadata (build secrets, internal endpoints).",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Encrypt artifact storage, use access controls for repository, scrub build metadata, limit artifact metadata exposure, and apply audit logging for artifact access.",
+            "applicable_controls": [
+              "Encrypted Object Storage",
+              "ACLs"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-013",
+            "component": "Data Storage (Audit Log Store)",
+            "threat_category": "Repudiation",
+            "description": "Attackers or malicious insiders tamper with or delete audit logs to cover tracks, disabling post-incident investigation and approvals trail (handover, approvals).",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use append-only immutable logs (WORM), send logs to external SIEM, implement cryptographic signing of logs, replicate logs to multiple locations, monitor log integrity, and alert on log deletions.",
+            "applicable_controls": [
+              "Immutable Logs",
+              "SIEM"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-014",
+            "component": "Notifications (Email/Chat Providers)",
+            "threat_category": "Information Disclosure",
+            "description": "Sensitive details in notification payloads (VM IPs, firewall rules, private handover content) are leaked via insecure email or chat integrations, or if provider is compromised.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Avoid including secrets in notifications, provide links to authenticated dashboards instead of data in message body, use secure email gateways, enable encryption for messages where supported, and limit notification content.",
+            "applicable_controls": [
+              "Secure Notification Patterns"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-015",
+            "component": "Integrations & External Services (IaC Registries)",
+            "threat_category": "Information Disclosure",
+            "description": "Credentials for external registries or IaC providers leaked (e.g., in repo or configs), allowing attackers to manipulate infrastructure templates or pull sensitive images.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use secret management (KMS/Secrets Manager), avoid embedding credentials in repos, enforce least privilege for registry accounts, rotate credentials, and use ephemeral credentials for automation.",
+            "applicable_controls": [
+              "Secrets Management",
+              "NIST-800-57"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-016",
+            "component": "Application Services (Workflow Engine)",
+            "threat_category": "Tampering",
+            "description": "Attacker manipulates workflow engine to bypass layer sequencing enforcement (e.g., directly invoking internal APIs to create a dependent layer without prerequisite completion).",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Harden internal APIs, implement strong authentication/authorization even for internal endpoints, enforce workflow transitions in a single trusted service, use service-to-service mutual TLS, and perform fuzzing/penetration testing on workflow logic.",
+            "applicable_controls": [
+              "mTLS",
+              "Workflow Hardening"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-017",
+            "component": "Task Management / Collaboration",
+            "threat_category": "Repudiation",
+            "description": "Insufficient or tamperable approval records enable unauthorized approvals or disallow detection of fraudulent handover approvals (lack of traceable logs / signed approvals).",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Digitally sign approvals or use authenticated audit trails, implement multi-party approval with explicit identity checks, and maintain immutable records with timestamps and approver metadata.",
+            "applicable_controls": [
+              "Digital Signatures",
+              "Immutable Audit"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-018",
+            "component": "Data Storage (Handover Documents)",
+            "threat_category": "Information Disclosure",
+            "description": "Handover documents containing network diagrams, credentials, or internal IP addresses are stored or shared insecurely, exposing sensitive project topology.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce access controls on documents, classify and redact sensitive content, use DLP scanning, encrypt documents at rest, require role-based access for downloads, and provide secure viewer links.",
+            "applicable_controls": [
+              "DLP",
+              "Document ACLs"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-019",
+            "component": "Infrastructure & Access Layer (VM access mapping)",
+            "threat_category": "Spoofing",
+            "description": "Attackers spoof source IPs or stolen user credentials to impersonate authorized users when accessing VMs; weak mapping enables unauthorized VM access.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use certificate-based or ephemeral SSH credentials, enforce MFA for interactive SSH sessions, restrict access by identity + IP where feasible, log and alert on unusual access patterns, and integrate with PAM solutions.",
+            "applicable_controls": [
+              "PAM",
+              "Ephemeral Certs"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-020",
+            "component": "Data Management (Firewall/Port Rules)",
+            "threat_category": "Tampering",
+            "description": "Unauthorized changes to firewall rules or allowed ingress/egress ports (via compromised API credentials or misconfigured IaC) open services to the internet that should remain internal.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Apply policy-as-code (e.g., OPA) to enforce allowed port lists, require pull-request reviews for IaC changes, maintain change control and approvals for firewall changes, implement automated validation of deployed rules vs desired state, and monitor network flows.",
+            "applicable_controls": [
+              "Policy-as-Code",
+              "IaC Review"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-021",
+            "component": "Monitoring & Alerting Integrations",
+            "threat_category": "Information Disclosure",
+            "description": "Monitoring integrations leak sensitive metadata or create an attack channel if the monitoring system is compromised, exposing project states, deadlines, or infrastructure details.",
+            "likelihood": "Low",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Limit sensitive data sent to monitoring, use role-based access to monitoring systems, encrypt telemetry, and segregate monitoring environments with strict IAM.",
+            "applicable_controls": [
+              "Monitoring Controls"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-022",
+            "component": "Application Services / API Gateway",
+            "threat_category": "Denial of Service",
+            "description": "An attacker launches API floods or abusive calls (e.g., creating many layers, requests to workflow engine) causing resource exhaustion, delays in sequencing, and missed deadlines.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Implement API rate limiting, request quotas, WAF, autoscaling, circuit breakers, and prioritize traffic for high-priority management operations; monitor and block abusive clients.",
+            "applicable_controls": [
+              "API Rate Limiting",
+              "WAF"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          },
+          {
+            "threat_id": "THR-023",
+            "component": "Frontend Layer & Notifications",
+            "threat_category": "Denial of Service",
+            "description": "Mass notifications or webhook storms (intentional or misconfigured) overwhelm notification providers or users, causing alert fatigue or service degradation.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Rate-limit notifications, batch where appropriate, provide throttling and escalation policies, implement deduplication, and validate webhook sources.",
+            "applicable_controls": [
+              "Notification Rate Limiting"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-024",
+            "component": "Data Storage (RDBMS) / Backups",
+            "threat_category": "Denial of Service",
+            "description": "Ransomware or destructive attacks target DB backups or primary DB, causing loss of project data, audit logs and timelines, interrupting projects.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Harden backups (offline/immutable backups), encrypt backups, restrict access to backup systems, test restore procedures, use anomaly detection for large-scale deletions, and maintain air-gapped backups.",
+            "applicable_controls": [
+              "Immutable Backups",
+              "Backup Encryption"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-025",
+            "component": "Integrations & External Services (Email/Chat)",
+            "threat_category": "Spoofing",
+            "description": "Attackers spoof notification emails or chat messages to trick users into approving handovers or following malicious links, leading to social engineering attacks and credential theft.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Sign emails (DKIM/SPF/DMARC), include in-app confirmation for critical actions, educate users on phishing, use short one-time approval tokens that resolve only in-dashboard, and provide clear provenance of notifications.",
+            "applicable_controls": [
+              "Email Security (DKIM/SPF/DMARC)"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-026",
+            "component": "Application Services / Workflow Engine",
+            "threat_category": "Information Disclosure",
+            "description": "Internal debug or verbose logs in production leak sensitive fields (IP addresses, keys) to log stores or external monitoring due to insufficient redaction.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Sanitize logs, implement PII masking and strict logging policies, use structured logging with redaction, and enforce log access controls.",
+            "applicable_controls": [
+              "Logging Policies",
+              "PII Masking"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-027",
+            "component": "Infrastructure & Access Layer (Hypervisor / Cloud APIs)",
+            "threat_category": "Elevation of Privilege",
+            "description": "Excessive cloud permissions or misconfigured IAM roles allow service or user accounts to create privileged resources or exfiltrate data (e.g., admin role misassignment via IaC).",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Implement least-privilege IAM, use IAM conditions, enable access review and attestation, guardrails with SCP/org policies for cloud accounts, and scan IaC for dangerous permissions before deployment.",
+            "applicable_controls": [
+              "Cloud IAM Best Practices",
+              "Policy Guardrails"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-028",
+            "component": "Artifact & Air-gap Services (Staging server)",
+            "threat_category": "Tampering",
+            "description": "Malicious or accidental replacement of staged images (or broken integrity checks) before disconnecting air-gapped environment; later deployed images contain backdoors.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Implement strict change control, multi-person review for staging, enforce artifact signing and verification, and maintain provenance with signed manifests verified by receiving hosts.",
+            "applicable_controls": [
+              "Staging Controls",
+              "Artifact Signing"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-029",
+            "component": "Frontend Layer & APIs",
+            "threat_category": "Information Disclosure",
+            "description": "Sensitive configuration or secret leakage through client-side source maps, embedded configs, or misconfigured public S3 buckets used to host static SPA assets.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Avoid bundling secrets in client builds, remove source maps in production or protect them, scan storage for public exposure, use signed URLs for assets, and restrict bucket policies.",
+            "applicable_controls": [
+              "Storage ACLs",
+              "Build Hygiene"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-030",
+            "component": "Task Management / Escalations",
+            "threat_category": "Denial of Service",
+            "description": "Business logic-level DoS where an attacker or faulty automation creates many overlapping layers or tasks, flooding the workflow engine and preventing legitimate progress tracking and notifications.",
+            "likelihood": "Low",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Enforce quotas per project/user, validate workload sizes, implement workflow admission control, analyze and throttle bulk operations, and provide back-pressure to clients.",
+            "applicable_controls": [
+              "Workflow Quotas"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Accepted"
+          }
+        ],
+        "risk_summary": "The most critical threats are credential/session theft and broken access control (THR-001, THR-002), unauthorized modification of VM/network policies and artifact tampering (THR-006, THR-011, THR-020), compromise of infrastructure access primitives (SSH bastion / KMS \u2014 THR-010), and audit/log tampering (THR-013). Overall risk posture is elevated due to the platform's high-value capabilities: managing VM access, firewall rules, artifact repositories for air-gapped systems, and orchestration of sequenced infrastructure changes. Key attack vectors include stolen or forged authentication tokens (SSO/Session), API abuse and insufficient server-side authorization, supply chain attacks against mirrored artifacts, misconfigured cloud IAM and IaC, and insecure third-party integrations (email/chat/monitoring). Immediate priority areas: 1) Harden authentication and session management (SSO + MFA, short token lifetimes, session analytics), 2) Enforce server-side, fine-grained authorization and policy-as-code for RBAC and network/firewall changes, 3) Protect artifact integrity with signing/provenance (SLSA) and staging controls for air-gapped workflows, 4) Protect and monitor critical infrastructure components (bastion, KMS, DB backups) with HSM, PAM, immutable logs and tested recovery, and 5) Implement API gateway protections (rate limiting, WAF), input validation, and secure integration patterns (avoid sensitive content in notifications). Addressing these controls will reduce critical risks substantially; remaining residual risks should be tracked and reviewed regularly with compensating controls (monitoring, incident response, least privilege reviews, and regular threat/pen-test cycles)."
+      }
+    }
+  ]
+}

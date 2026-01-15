@@ -1,0 +1,664 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"A cloud-hosted, geo-centric web and mobile platform with a layered architecture: public users access a SPA or mobile-optimised site via a CDN/WAF edge layer; requests pass through an API Gateway to Application Services (Auth/RBAC, Core API, Search/Geo engine, Moderation pipeline, Messaging, Notifications, Payments). Application services persist data to a structured relational database for adverts/users, a search index for geo/filters, and object storage for media; audit logs and analytics stream to a logging/monitoring tier. Automated moderation (heuristics/ML) and human moderator UIs enforce content safety. External integrations include mapping APIs, email/push providers, and a PCI-compliant payment gateway. Strong privacy controls (approximate locations, email domain verification, PII encryption, consent management) and role-based access protect data and operations.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\n  subgraph \\\"Users\\\"\\n    UserWeb[End Users Web/Mobile]\\n    AdminUser[Admins Moderators]\\n  end\\n\\n  subgraph \\\"Edge Layer\\\"\\n    CDN[CDN & WAF]\\n    APIGW[API Gateway & Rate Limiter]\\n  end\\n\\n  subgraph \\\"Frontend Layer\\\"\\n    FE[Web App SPA & Mobile UI]\\n    AdminUI[Admin Moderator UI]\\n  end\\n\\n  subgraph \\\"Application Services\\\"\\n    Auth[Auth Service & RBAC]\\n    CoreAPI[Core API Services]\\n    SearchSvc[Search & Geo Engine]\\n    Moderation[Moderation Pipeline ML & Rules]\\n    Messaging[In-App Messaging]\\n    Notifs[Notifications Service]\\n    Billing[Payments & Billing Service]\\n    Analytics[Analytics & Reporting]\\n  end\\n\\n  subgraph \\\"Data Layer\\\"\\n    DB[Relational DB Users/Adverts]\\n    ObjStore[Object Storage Media]\\n    Index[Search Index & Geohash]\\n    Logs[Audit Logging & SIEM]\\n  end\\n\\n  subgraph \\\"External Services\\\"\\n    Maps[Maps API Mapbox/Google]\\n    Email[Email Service Provider]\\n    Push[Push Notification Provider]\\n    PaymentGW[PCI-DSS Payment Gateway]\\n  end\\n\\n  UserWeb --> CDN --> FE --> APIGW --> Auth\\n  AdminUser --> CDN --> AdminUI --> APIGW --> Auth\\n  APIGW --> CoreAPI\\n  CoreAPI --> DB\\n  CoreAPI --> ObjStore\\n  CoreAPI --> Index\\n  CoreAPI --> Messaging\\n  CoreAPI --> Notifs\\n  CoreAPI --> Moderation\\n  CoreAPI --> Billing\\n  Moderation --> Logs\\n  Messaging --> DB\\n  Messaging --> Logs\\n  Notifs --> Email\\n  Notifs --> Push\\n  Billing --> PaymentGW\\n  SearchSvc --> Index\\n  SearchSvc --> CoreAPI\\n  CoreAPI --> Analytics\\n  Analytics --> Logs\\n  CoreAPI --> Maps\\n  Maps --> External Services[Maps API Proxy]\\n  Email --> External Services\\n  Push --> External Services\\n  PaymentGW --> External Services\\n\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Serve the SPA and mobile-optimised UI for seekers, advertisers and admins; handle client-side validation, map rendering, saved searches UI and favourites management.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN/WAF\",\n        \"Maps API\",\n        \"Email/Push Providers\"\n      ],\n      \"data_handled\": [\n        \"User interface state\",\n        \"Non-sensitive advert details\",\n        \"Saved searches and favourites (user-specific metadata)\"\n      ]\n    },\n    {\n      \"name\": \"Edge Layer\",\n      \"responsibility\": \"CDN and Web Application Firewall to protect and accelerate traffic; API Gateway for authentication enforcement, rate limiting, and request routing.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Cloud CDN provider\",\n        \"WAF/Rate-limiting service\"\n      ],\n      \"data_handled\": [\n        \"Inbound HTTP requests\",\n        \"Authentication tokens (transit)\",\n        \"Client IP/meta for rate limiting\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic: authentication & RBAC, advert lifecycle, moderation pipeline (automated + human), geo-search, messaging, notifications, paid-tier logic and analytics.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"ML/Moderation tooling (optional)\",\n        \"Timeseries/analytics tools\",\n        \"Payment gateway\"\n      ],\n      \"data_handled\": [\n        \"User accounts and roles\",\n        \"Advert content and metadata\",\n        \"Messaging contents (PII/communications)\",\n        \"Moderation verdicts and audit data\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Persistent storage for relational data (users, adverts, rooms), object storage for media, search index for geo/filters and logs/audit retention for compliance and forensics.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud-managed RDBMS\",\n        \"Cloud object storage\",\n        \"Search index service (Elasticsearch/Opensearch)\"\n      ],\n      \"data_handled\": [\n        \"Personal data (PII)\",\n        \"Adverts and room metadata\",\n        \"Media files (photos)\",\n        \"Transaction records and audit logs\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Third-party integrations: maps for visualisation, email/ESP for notifications, push providers for device notifications, and PCI-compliant payment gateway for billing.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Mapbox/Google Maps\",\n        \"SendGrid/Mailgun or similar\",\n        \"Firebase/APNs\",\n        \"Stripe/Adyen/Payment gateway\"\n      ],\n      \"data_handled\": [\n        \"Approximate location queries\",\n        \"Email content/addresses\",\n        \"Payment tokens/transaction metadata\"\n      ]\n    },\n    {\n      \"name\": \"Admin & Moderation\",\n      \"responsibility\": \"Tools and UIs for moderators and admins to review adverts, handle reports, manage users/roles, and enforce policy; includes audit trail review and dispute resolution workflows.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Identity provider for admin SSO\",\n        \"Audit logging/SIEM\"\n      ],\n      \"data_handled\": [\n        \"Flagged content and reports\",\n        \"Moderator actions and audit logs\",\n        \"User verification artifacts\"\n      ]\n    },\n    {\n      \"name\": \"Notifications & Messaging\",\n      \"responsibility\": \"In-app mediated messaging between users, notification orchestration (instant and digest emails), and queueing for reliable delivery.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Email provider\",\n        \"Push provider\",\n        \"Queueing service (SQS/Kafka)\"\n      ],\n      \"data_handled\": [\n        \"Message bodies and metadata\",\n        \"Notification preferences\",\n        \"Digest contents and timestamps\"\n      ]\n    },\n    {\n      \"name\": \"Payments & Billing\",\n      \"responsibility\": \"Manage subscriptions, one-off purchases, priority listings, invoicing metadata, and integrate with PCI-compliant gateway using tokenization; provide advertiser analytics.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"PCI-DSS Payment Gateway (Stripe/Adyen)\",\n        \"Tax/VAT services (optional)\"\n      ],\n      \"data_handled\": [\n        \"Payment tokens\",\n        \"Billing records and invoices\",\n        \"Subscription status and entitlements\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users interact via web/mobile UI which is served through a CDN/WAF. Client requests pass the API Gateway where authentication and rate-limiting occur. Authenticated requests reach Core APIs which validate input, invoke moderation checks (automated ML heuristics) and persist adverts, user profiles and room entities to the relational DB; media is uploaded to object storage and indexed into the search index (geohash/obfuscated coordinates). Search queries query the Search Index and may call geospatial services to cluster results; approximate locations are computed via geohash or centroid obfuscation before returning results to clients. Messaging is mediated by Messaging Service, storing encrypted message logs in DB and forwarding notifications to Notification Service which dispatches via email/push providers. Billing interacts with the Payment Gateway using tokenized card data; transaction metadata and audit logs are stored in DB and immutable logs. Moderation results and admin actions are logged to the audit/SIEM pipeline for retention and compliance. Data transformations include PII encryption at rest, location obfuscation, content scanning/enrichment, and payment tokenization.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"End Users Web/Mobile\",\n        \"Third-party clients\"\n      ],\n      \"boundary_type\": \"Untrusted External Boundary\",\n      \"security_controls\": [\n        \"TLS for all traffic\",\n        \"CAPTCHA and bot-detection on forms\",\n        \"Rate limiting at CDN and API Gateway\",\n        \"Input validation and CSP on frontends\"\n      ]\n    },\n    {\n      \"name\": \"Edge/DMZ\",\n      \"components\": [\n        \"CDN & WAF\",\n        \"API Gateway\"\n      ],\n      \"boundary_type\": \"Perimeter/Edge Boundary\",\n      \"security_controls\": [\n        \"WAF rulesets\",\n        \"IP reputation and geo-blocking\",\n        \"TLS termination with strict ciphers\",\n        \"DDoS protection and rate limiting\"\n      ]\n    },\n    {\n      \"name\": \"Application Tier\",\n      \"components\": [\n        \"Frontend App Servers\",\n        \"Auth Service\",\n        \"Core API Services\",\n        \"Moderation Service\",\n        \"Messaging & Notification Services\",\n        \"Billing Service\"\n      ],\n      \"boundary_type\": \"Trust Zone with Auth Controls\",\n      \"security_controls\": [\n        \"JWT/OAuth2 tokens with short TTLs\",\n        \"RBAC and MFA for high-privilege roles\",\n        \"Service-to-service mTLS\",\n        \"Input validation, XSS/CSRF protections\"\n      ]\n    },\n    {\n      \"name\": \"Internal Network\",\n      \"components\": [\n        \"Admin UI\",\n        \"Moderator Tools\",\n        \"Analytics\"\n      ],\n      \"boundary_type\": \"Restricted Internal Boundary\",\n      \"security_controls\": [\n        \"IP allowlists or SSO enforced\",\n        \"Least privilege access via IAM\",\n        \"Session timeouts and privileged audit logging\"\n      ]\n    },\n    {\n      \"name\": \"Data/Storage Tier\",\n      \"components\": [\n        \"Relational DB\",\n        \"Object Storage\",\n        \"Search Index\",\n        \"Audit Logs\"\n      ],\n      \"boundary_type\": \"Highly Trusted Data Boundary\",\n      \"security_controls\": [\n        \"Encryption at rest\",\n        \"VPC/private subnets\",\n        \"Database access via bastion or service accounts\",\n        \"Field-level encryption for PII and tokenization for payment data\"\n      ]\n    },\n    {\n      \"name\": \"External Integrations\",\n      \"components\": [\n        \"Maps API\",\n        \"Email/Push Providers\",\n        \"Payment Gateway\"\n      ],\n      \"boundary_type\": \"Third-Party Service Boundary\",\n      \"security_controls\": [\n        \"API keys and scoped credentials\",\n        \"Outbound firewall rules\",\n        \"Least privilege scopes and token rotation\",\n        \"TLS and contractual SLAs/DPAs\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: Web/Mobile UI and Public APIs (High risk) \u2014 exposure to account takeover, XSS, CSRF, injection and abuse; mitigations: strong authentication (MFA opt-in), input validation, CSP, WAF, rate limiting and session management. Authentication endpoints (High) \u2014 risk of brute-force and credential stuffing; mitigations: password policies, MFA, anomaly detection, account lockouts, email domain checks for advertiser onboarding. File uploads/media (Medium) \u2014 risk of malware and PII leaks; mitigations: virus scanning, size/type restrictions, storage isolation, signed URLs and metadata stripping. Messaging and moderated content endpoints (High) \u2014 risk of PII leakage, harassment and phishing; mitigations: content scanning, profanity/ML filters, human moderation queue, retention and redaction policies. Search and geo APIs (Medium) \u2014 risk of data inference and scraping to discover exact addresses; mitigations: approximate geohash, rate limits, API quotas, per-request obfuscation. Payment integration (High) \u2014 PCI exposure if misconfigured; mitigations: use tokenization via PCI-compliant gateway, do not store raw card data, secure webhooks and signed callbacks. Third-party integrations (Maps/Email/Push) (Medium) \u2014 supply chain risk and data leakage; mitigations: encrypted transit, minimal scopes, contractual DPAs and monitoring. Admin/moderator UIs (High) \u2014 privileged abuse or account compromise; mitigations: SSO, strong MFA, IP restrictions, session monitoring and immutable audit logs. Logging and analytics endpoints (Medium) \u2014 risk of sensitive data in logs; mitigations: PII redaction, access controls and log encryption. Overall, major risks concentrate on authentication, moderation, payments, and data exfiltration; the defensive architecture uses layered controls (edge WAF, gateway auth, service mTLS, encryption, RBAC, monitoring) and operational controls (incident response, retention policies, privacy/consent workflows).\"\n}",
+  "pydantic": {
+    "architecture_summary": "A cloud-hosted, geo-centric web and mobile platform with a layered architecture: public users access a SPA or mobile-optimised site via a CDN/WAF edge layer; requests pass through an API Gateway to Application Services (Auth/RBAC, Core API, Search/Geo engine, Moderation pipeline, Messaging, Notifications, Payments). Application services persist data to a structured relational database for adverts/users, a search index for geo/filters, and object storage for media; audit logs and analytics stream to a logging/monitoring tier. Automated moderation (heuristics/ML) and human moderator UIs enforce content safety. External integrations include mapping APIs, email/push providers, and a PCI-compliant payment gateway. Strong privacy controls (approximate locations, email domain verification, PII encryption, consent management) and role-based access protect data and operations.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\n  subgraph \"Users\"\n    UserWeb[End Users Web/Mobile]\n    AdminUser[Admins Moderators]\n  end\n\n  subgraph \"Edge Layer\"\n    CDN[CDN & WAF]\n    APIGW[API Gateway & Rate Limiter]\n  end\n\n  subgraph \"Frontend Layer\"\n    FE[Web App SPA & Mobile UI]\n    AdminUI[Admin Moderator UI]\n  end\n\n  subgraph \"Application Services\"\n    Auth[Auth Service & RBAC]\n    CoreAPI[Core API Services]\n    SearchSvc[Search & Geo Engine]\n    Moderation[Moderation Pipeline ML & Rules]\n    Messaging[In-App Messaging]\n    Notifs[Notifications Service]\n    Billing[Payments & Billing Service]\n    Analytics[Analytics & Reporting]\n  end\n\n  subgraph \"Data Layer\"\n    DB[Relational DB Users/Adverts]\n    ObjStore[Object Storage Media]\n    Index[Search Index & Geohash]\n    Logs[Audit Logging & SIEM]\n  end\n\n  subgraph \"External Services\"\n    Maps[Maps API Mapbox/Google]\n    Email[Email Service Provider]\n    Push[Push Notification Provider]\n    PaymentGW[PCI-DSS Payment Gateway]\n  end\n\n  UserWeb --> CDN --> FE --> APIGW --> Auth\n  AdminUser --> CDN --> AdminUI --> APIGW --> Auth\n  APIGW --> CoreAPI\n  CoreAPI --> DB\n  CoreAPI --> ObjStore\n  CoreAPI --> Index\n  CoreAPI --> Messaging\n  CoreAPI --> Notifs\n  CoreAPI --> Moderation\n  CoreAPI --> Billing\n  Moderation --> Logs\n  Messaging --> DB\n  Messaging --> Logs\n  Notifs --> Email\n  Notifs --> Push\n  Billing --> PaymentGW\n  SearchSvc --> Index\n  SearchSvc --> CoreAPI\n  CoreAPI --> Analytics\n  Analytics --> Logs\n  CoreAPI --> Maps\n  Maps --> External Services[Maps API Proxy]\n  Email --> External Services\n  Push --> External Services\n  PaymentGW --> External Services\n",
+    "components": [
+      {
+        "name": "Frontend Layer",
+        "responsibility": "Serve the SPA and mobile-optimised UI for seekers, advertisers and admins; handle client-side validation, map rendering, saved searches UI and favourites management.",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "CDN/WAF",
+          "Maps API",
+          "Email/Push Providers"
+        ],
+        "data_handled": [
+          "User interface state",
+          "Non-sensitive advert details",
+          "Saved searches and favourites (user-specific metadata)"
+        ]
+      },
+      {
+        "name": "Edge Layer",
+        "responsibility": "CDN and Web Application Firewall to protect and accelerate traffic; API Gateway for authentication enforcement, rate limiting, and request routing.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Cloud CDN provider",
+          "WAF/Rate-limiting service"
+        ],
+        "data_handled": [
+          "Inbound HTTP requests",
+          "Authentication tokens (transit)",
+          "Client IP/meta for rate limiting"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core business logic: authentication & RBAC, advert lifecycle, moderation pipeline (automated + human), geo-search, messaging, notifications, paid-tier logic and analytics.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "ML/Moderation tooling (optional)",
+          "Timeseries/analytics tools",
+          "Payment gateway"
+        ],
+        "data_handled": [
+          "User accounts and roles",
+          "Advert content and metadata",
+          "Messaging contents (PII/communications)",
+          "Moderation verdicts and audit data"
+        ]
+      },
+      {
+        "name": "Data Storage",
+        "responsibility": "Persistent storage for relational data (users, adverts, rooms), object storage for media, search index for geo/filters and logs/audit retention for compliance and forensics.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Cloud-managed RDBMS",
+          "Cloud object storage",
+          "Search index service (Elasticsearch/Opensearch)"
+        ],
+        "data_handled": [
+          "Personal data (PII)",
+          "Adverts and room metadata",
+          "Media files (photos)",
+          "Transaction records and audit logs"
+        ]
+      },
+      {
+        "name": "External Services",
+        "responsibility": "Third-party integrations: maps for visualisation, email/ESP for notifications, push providers for device notifications, and PCI-compliant payment gateway for billing.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Mapbox/Google Maps",
+          "SendGrid/Mailgun or similar",
+          "Firebase/APNs",
+          "Stripe/Adyen/Payment gateway"
+        ],
+        "data_handled": [
+          "Approximate location queries",
+          "Email content/addresses",
+          "Payment tokens/transaction metadata"
+        ]
+      },
+      {
+        "name": "Admin & Moderation",
+        "responsibility": "Tools and UIs for moderators and admins to review adverts, handle reports, manage users/roles, and enforce policy; includes audit trail review and dispute resolution workflows.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Identity provider for admin SSO",
+          "Audit logging/SIEM"
+        ],
+        "data_handled": [
+          "Flagged content and reports",
+          "Moderator actions and audit logs",
+          "User verification artifacts"
+        ]
+      },
+      {
+        "name": "Notifications & Messaging",
+        "responsibility": "In-app mediated messaging between users, notification orchestration (instant and digest emails), and queueing for reliable delivery.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Email provider",
+          "Push provider",
+          "Queueing service (SQS/Kafka)"
+        ],
+        "data_handled": [
+          "Message bodies and metadata",
+          "Notification preferences",
+          "Digest contents and timestamps"
+        ]
+      },
+      {
+        "name": "Payments & Billing",
+        "responsibility": "Manage subscriptions, one-off purchases, priority listings, invoicing metadata, and integrate with PCI-compliant gateway using tokenization; provide advertiser analytics.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "PCI-DSS Payment Gateway (Stripe/Adyen)",
+          "Tax/VAT services (optional)"
+        ],
+        "data_handled": [
+          "Payment tokens",
+          "Billing records and invoices",
+          "Subscription status and entitlements"
+        ]
+      }
+    ],
+    "data_flow_description": "Users interact via web/mobile UI which is served through a CDN/WAF. Client requests pass the API Gateway where authentication and rate-limiting occur. Authenticated requests reach Core APIs which validate input, invoke moderation checks (automated ML heuristics) and persist adverts, user profiles and room entities to the relational DB; media is uploaded to object storage and indexed into the search index (geohash/obfuscated coordinates). Search queries query the Search Index and may call geospatial services to cluster results; approximate locations are computed via geohash or centroid obfuscation before returning results to clients. Messaging is mediated by Messaging Service, storing encrypted message logs in DB and forwarding notifications to Notification Service which dispatches via email/push providers. Billing interacts with the Payment Gateway using tokenized card data; transaction metadata and audit logs are stored in DB and immutable logs. Moderation results and admin actions are logged to the audit/SIEM pipeline for retention and compliance. Data transformations include PII encryption at rest, location obfuscation, content scanning/enrichment, and payment tokenization.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "End Users Web/Mobile",
+          "Third-party clients"
+        ],
+        "boundary_type": "Untrusted External Boundary",
+        "security_controls": [
+          "TLS for all traffic",
+          "CAPTCHA and bot-detection on forms",
+          "Rate limiting at CDN and API Gateway",
+          "Input validation and CSP on frontends"
+        ]
+      },
+      {
+        "name": "Edge/DMZ",
+        "components": [
+          "CDN & WAF",
+          "API Gateway"
+        ],
+        "boundary_type": "Perimeter/Edge Boundary",
+        "security_controls": [
+          "WAF rulesets",
+          "IP reputation and geo-blocking",
+          "TLS termination with strict ciphers",
+          "DDoS protection and rate limiting"
+        ]
+      },
+      {
+        "name": "Application Tier",
+        "components": [
+          "Frontend App Servers",
+          "Auth Service",
+          "Core API Services",
+          "Moderation Service",
+          "Messaging & Notification Services",
+          "Billing Service"
+        ],
+        "boundary_type": "Trust Zone with Auth Controls",
+        "security_controls": [
+          "JWT/OAuth2 tokens with short TTLs",
+          "RBAC and MFA for high-privilege roles",
+          "Service-to-service mTLS",
+          "Input validation, XSS/CSRF protections"
+        ]
+      },
+      {
+        "name": "Internal Network",
+        "components": [
+          "Admin UI",
+          "Moderator Tools",
+          "Analytics"
+        ],
+        "boundary_type": "Restricted Internal Boundary",
+        "security_controls": [
+          "IP allowlists or SSO enforced",
+          "Least privilege access via IAM",
+          "Session timeouts and privileged audit logging"
+        ]
+      },
+      {
+        "name": "Data/Storage Tier",
+        "components": [
+          "Relational DB",
+          "Object Storage",
+          "Search Index",
+          "Audit Logs"
+        ],
+        "boundary_type": "Highly Trusted Data Boundary",
+        "security_controls": [
+          "Encryption at rest",
+          "VPC/private subnets",
+          "Database access via bastion or service accounts",
+          "Field-level encryption for PII and tokenization for payment data"
+        ]
+      },
+      {
+        "name": "External Integrations",
+        "components": [
+          "Maps API",
+          "Email/Push Providers",
+          "Payment Gateway"
+        ],
+        "boundary_type": "Third-Party Service Boundary",
+        "security_controls": [
+          "API keys and scoped credentials",
+          "Outbound firewall rules",
+          "Least privilege scopes and token rotation",
+          "TLS and contractual SLAs/DPAs"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Primary entry points: Web/Mobile UI and Public APIs (High risk) \u2014 exposure to account takeover, XSS, CSRF, injection and abuse; mitigations: strong authentication (MFA opt-in), input validation, CSP, WAF, rate limiting and session management. Authentication endpoints (High) \u2014 risk of brute-force and credential stuffing; mitigations: password policies, MFA, anomaly detection, account lockouts, email domain checks for advertiser onboarding. File uploads/media (Medium) \u2014 risk of malware and PII leaks; mitigations: virus scanning, size/type restrictions, storage isolation, signed URLs and metadata stripping. Messaging and moderated content endpoints (High) \u2014 risk of PII leakage, harassment and phishing; mitigations: content scanning, profanity/ML filters, human moderation queue, retention and redaction policies. Search and geo APIs (Medium) \u2014 risk of data inference and scraping to discover exact addresses; mitigations: approximate geohash, rate limits, API quotas, per-request obfuscation. Payment integration (High) \u2014 PCI exposure if misconfigured; mitigations: use tokenization via PCI-compliant gateway, do not store raw card data, secure webhooks and signed callbacks. Third-party integrations (Maps/Email/Push) (Medium) \u2014 supply chain risk and data leakage; mitigations: encrypted transit, minimal scopes, contractual DPAs and monitoring. Admin/moderator UIs (High) \u2014 privileged abuse or account compromise; mitigations: SSO, strong MFA, IP restrictions, session monitoring and immutable audit logs. Logging and analytics endpoints (Medium) \u2014 risk of sensitive data in logs; mitigations: PII redaction, access controls and log encryption. Overall, major risks concentrate on authentication, moderation, payments, and data exfiltration; the defensive architecture uses layered controls (edge WAF, gateway auth, service mTLS, encryption, RBAC, monitoring) and operational controls (incident response, retention policies, privacy/consent workflows)."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A geo-centric web and mobile-optimised platform for advertising and discovering vacancies in student household sharehouses and finding compatible housemates. The system emphasises approximate-location search and map visualisation, secure mediated communication, role-based user management (advertisers, seekers, moderators, admins), automated and human moderation for safety and quality, paid-tier premium advertising with payment integration, and GDPR-compliant handling of personal data and communications while protecting exact addresses and contact details to preserve privacy and safety.\",\n  \"high_level_requirements\": [\n    \"User registration and login with role assignment and secure authentication\",\n    \"Email domain verification and tier-based access controls (free vs paid advertisers)\",\n    \"User profile management with verifiable contact display options\",\n    \"Advert creation, edit, delete lifecycle with support for multi-room properties\",\n    \"Automated and manual moderation workflow for adverts and content\",\n    \"Geo-centric search and filtered discovery with map visualisation (approximate locations)\",\n    \"Advanced filtering, saveable searches, and alerting (instant and daily digest)\",\n    \"Favourites/bookmarking and personalised saved-advert lists with organisation tools\",\n    \"Secure in-app messaging between users with optional verified contact reveal\",\n    \"Interactive map with clustering and approximate location display\",\n    \"Notifications system for adverts, messages and moderation status\",\n    \"Administrator and moderator dashboard for content, user and role management\",\n    \"Reporting and abuse-flagging system with dispute handling\",\n    \"Automated expiry handling and lifecycle enforcement for adverts\",\n    \"Paid-tier features: priority listing, branding, analytics, subscription and one-off payments\",\n    \"Secure payment gateway integration and payment record management\",\n    \"Logging, audit trails, and analytics for moderation, payments and admin actions\",\n    \"Privacy and data protection controls (GDPR compliance, consent management, data subject requests)\",\n    \"Security controls: encryption in transit and at rest, RBAC, MFA option, rate limiting and anti-abuse protections\",\n    \"Accessibility and mobile responsiveness (WCAG conformance target)\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"User registration and secure login with role assignment (Advertiser, Seeker, Moderator, Administrator) and support for password policies and optional multi-factor authentication (MFA).\",\n      \"business_category\": \"Authentication & Authorization\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Accounts are required to identify and manage users, enforce permissions and protect access to personal data and communication. MFA and strong passwords reduce account takeover risk.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Email domain verification for free-tier advertisers (restrict to institutional/university email domains) and onboarding workflow for paid-tier organisations with identity/business verification.\",\n      \"business_category\": \"Account Management & Verification\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Domain verification reduces fraudulent or low-quality adverts from non-students and provides a barrier to abuse. Paid-tier verification prevents misuse by fake agencies and supports trust and billing.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"User profile management capturing display name, profile photo, optional bio, occupation/status, and privacy settings; option to mark verified contact details which can be displayed only after verification.\",\n      \"business_category\": \"Data Management / Privacy\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Profiles help matching and trust; contact reveal must be controlled to prevent scraping and harassment. Storing profile data requires classification for access controls and retention policies.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Advert lifecycle management: create, save draft, submit for moderation, edit, publish (post-approval), expire automatically based on availability dates or admin action, and delete.\",\n      \"business_category\": \"Content Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Structured advert lifecycle enforces moderation, ensures up-to-date listings and prevents stale or misleading adverts. Automatic expiry maintains platform quality and legal compliance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"Support property-level entry with multiple room entities per property; each room includes cost, size, deposit, availability dates, furnishings, bills/broadband inclusion, and household preference attributes.\",\n      \"business_category\": \"Data Model & Catalog\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Capturing structured room and property data enables richer search and filtering and consistent display for seekers while limiting personal data exposure.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"Automatic moderation/ filtering pipeline using heuristics and ML to detect spam, scams, malicious links, prohibited content, and potential discrimination; stage adverts as pending until checks and/or human moderator approval complete.\",\n      \"business_category\": \"Moderation & Safety\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Automated detection reduces workload and improves safety; pending state prevents immediate publication of harmful adverts. Models and heuristics will process content and metadata that may include PII or malicious indicators.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Moderator and Administrator dashboard to review, approve, disable, or delete adverts; manage user accounts and roles; review flagged content and escalate disputes. Include audit logging of decisions and actions.\",\n      \"business_category\": \"Administration & Governance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Human oversight is required for edge cases and disputes; audit logs provide accountability and evidence for legal or compliance requirements.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Geo-centric search with approximate location visualisation (neighbourhood or postcode area), map clustering for dense regions, distance filters from a user-specified point, and results ranked by match and paid priority.\",\n      \"business_category\": \"Search & Discovery\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Location-first search is core to user intent; approximate locations balance utility with privacy/safety by hiding exact addresses until appropriate.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Advanced filters: price range, distance, number of housemates, amenities, stay duration, household preferences (smoking, pets, occupation, age range, language, diet), and ability to save filter sets and searches.\",\n      \"business_category\": \"Search & Personalisation\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Granular filters improve match quality and user experience; saved searches enable engagement via alerts and personalization.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Email alerts (instant and daily digest) and in-app notifications for new adverts matching saved search criteria, favourites activity, advert status changes, and incoming messages.\",\n      \"business_category\": \"Notifications & Engagement\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Timely alerts improve platform usage; notification mechanisms must respect user consent and unsubscribe preferences (ePrivacy/GDPR).\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Favourites/bookmarks management: allow users to favourite adverts/rooms, organise lists (tags/folders), and generate personalised summaries on the dashboard.\",\n      \"business_category\": \"User Experience & Personalisation\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Saved items increase engagement and create a personalised experience. Favourites metadata must be protected as behavioural data.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"Secure in-app messaging system that mediates communications between seekers and advertisers and stores message logs securely; optionally reveal phone/email to verified users only after explicit consent.\",\n      \"business_category\": \"Communication & Privacy\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Mediated messaging prevents scraping of contact details, helps moderation, and provides an audit trail for disputes and safety issues. Messages often contain PII and require confidentiality controls.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"Interactive map view using third-party mapping APIs with clustering and obfuscation of exact coordinates; store location metadata with a privacy-preserving geohash or polygon delineation rather than exact address display.\",\n      \"business_category\": \"Data Privacy & Visualisation\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Maps are essential for discovery, but must not reveal precise addresses publicly to protect advertisers and tenants. The data model should support approximate display and more precise internal coordinates for authorised workflows only.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Reporting and abuse-flagging workflow for users to report suspicious adverts or users, with automated triage and moderator escalation; include rate-limiting to prevent abuse of the reporting system.\",\n      \"business_category\": \"Safety & Trust\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"User reports help identify scams and safety issues. The reporting system must be robust and auditable to avoid manipulation and malicious reporting.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"Paid-tier features: priority listing / boosted placement, branding fields, extended descriptions, and an analytics dashboard showing impressions, contacts (mediated), and conversions; subscription and one-off purchase management.\",\n      \"business_category\": \"Monetisation & Analytics\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Monetisation supports platform sustainability; analytics help advertisers evaluate ROI. Payment and usage data must be protected and separated from public content.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"Secure payment processing via a PCI-DSS-compliant gateway for subscriptions and one-off payments; do not store raw card numbers on platform unless using a validated tokenisation service.\",\n      \"business_category\": \"Payment Processing & Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Handling payments triggers PCI-DSS obligations; using a compliant gateway and tokenization minimises platform liability and reduces attack surface.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"GDPR-compliant data handling: obtain explicit consent for processing where required, allow data subject access, rectification, deletion (right to be forgotten), and data portability; maintain processing records and data retention policies.\",\n      \"business_category\": \"Legal & Privacy\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Platform processes personal data of EU/UK residents and must meet GDPR obligations for lawful processing, transparency, and rights handling to avoid legal penalties.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"Logging, monitoring and audit trails for authentication events, moderation actions, payment transactions, and admin operations; logs must be immutable for a defined retention period and access-controlled.\",\n      \"business_category\": \"Security Operations & Forensics\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Auditable logs are required for incident response, compliance, dispute resolution, and detecting abuse. They may contain sensitive metadata and must be protected accordingly.\"\n    },\n    {\n      \"requirement_id\": \"REQ-019\",\n      \"requirement_text\": \"Security controls including encryption in transit (TLS), encryption at rest for PII and payment tokens, role-based access control (RBAC), principle of least privilege, input validation, XSS/CSRF protections, rate limiting, and abuse mitigation (CAPTCHA, bot detection).\",\n      \"business_category\": \"Application Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"A comprehensive security baseline protects user data, prevents common web attacks, and reduces fraud risk. These controls are fundamental to platform trust and compliance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-020\",\n      \"requirement_text\": \"Accessibility and responsive design to support common browsers and mobile devices, and target WCAG 2.1 AA conformance for critical user journeys (registration, search, messaging, payments).\",\n      \"business_category\": \"Accessibility & UX\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Accessibility broadens user base, reduces legal risk and improves usability for students and staff across devices; financial and legal requirements may mandate accessibility.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulations and obligations include: GDPR (EU/EEA/UK) for personal data processing, data subject rights and consent management; ePrivacy rules for electronic marketing and email notifications; PCI-DSS obligations for any payment card processing or token storage; national consumer protection and housing anti-discrimination laws applicable to adverts (platform should enforce non-discriminatory advertising policies); local data residency or export control laws if hosting data in or for specific jurisdictions; WCAG accessibility standards (target WCAG 2.1 AA); obligations to preserve and produce records for lawful requests (law enforcement). Platform must also consider obligations under consumer protection and payment service regulations where relevant (e.g., VAT collection, invoicing for B2B advertisers).\",\n  \"assumptions\": [\n    \"System will be cloud-hosted (public cloud) with support for region-based data residency where required.\",\n    \"Third-party services will be used for mapping (e.g., Google Maps, Mapbox), email delivery, and payments (PCI-compliant gateway).\",\n    \"Moderation combines automated tools and human moderators; moderators are trusted and trained staff with appropriate background checks.\",\n    \"Advertisers and users are primarily adults (18+); platform will implement age gating or explicit checks if minors are supported.\",\n    \"Universities will provide or have publicly available email domain lists for domain-restricted signups, or a maintainable allowlist will be created.\",\n    \"Users have internet access and modern browsers or mobile devices; push notifications rely on standard web/mobile push services.\",\n    \"Paid-tier customers will use the provided payment options and accept the platform's terms; recurring subscription billing will be supported.\",\n    \"Platform will not publish exact addresses publicly; precise coordinates may be stored internally for authorised use (e.g., emergency/legal requests) with strict access controls.\"\n  ],\n  \"constraints\": [\n    \"Exact addresses must not be displayed publicly \u2014 only approximate locations (neighbourhood/postcode/geohash) permitted for privacy and safety.\",\n    \"Integration with third-party mapping and payment providers introduces dependencies on their APIs, SLAs, and pricing.\",\n    \"Moderation pipeline (automated + human) may introduce publication latency; SLAs for advert approval must balance speed and safety.\",\n    \"Payment processing requires PCI-DSS compliance or use of a tokenizing gateway to avoid storing sensitive card data on-platform.\",\n    \"Data residency and local privacy regulations may require regional hosting or data segregation for EU/UK users.\",\n    \"Scalability and rate limiting requirements must be designed to handle dense clusters (e.g., high advert volumes in university towns) without degrading search performance.\",\n    \"Retention policies for logs, messages and adverts must be defined to meet legal and operational needs but may conflict with user 'right to be forgotten' timelines \u2014 implementation must reconcile both.\",\n    \"Accessibility (WCAG) and cross-browser mobile support constrain front-end frameworks and testing matrices.\",\n    \"Anti-abuse measures (rate limits, CAPTCHAs, content filters) must avoid impeding legitimate users while blocking bots and fraud attempts.\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A geo-centric web and mobile-optimised platform for advertising and discovering vacancies in student household sharehouses and finding compatible housemates. The system emphasises approximate-location search and map visualisation, secure mediated communication, role-based user management (advertisers, seekers, moderators, admins), automated and human moderation for safety and quality, paid-tier premium advertising with payment integration, and GDPR-compliant handling of personal data and communications while protecting exact addresses and contact details to preserve privacy and safety.",
+        "high_level_requirements": [
+          "User registration and login with role assignment and secure authentication",
+          "Email domain verification and tier-based access controls (free vs paid advertisers)",
+          "User profile management with verifiable contact display options",
+          "Advert creation, edit, delete lifecycle with support for multi-room properties",
+          "Automated and manual moderation workflow for adverts and content",
+          "Geo-centric search and filtered discovery with map visualisation (approximate locations)",
+          "Advanced filtering, saveable searches, and alerting (instant and daily digest)",
+          "Favourites/bookmarking and personalised saved-advert lists with organisation tools",
+          "Secure in-app messaging between users with optional verified contact reveal",
+          "Interactive map with clustering and approximate location display",
+          "Notifications system for adverts, messages and moderation status",
+          "Administrator and moderator dashboard for content, user and role management",
+          "Reporting and abuse-flagging system with dispute handling",
+          "Automated expiry handling and lifecycle enforcement for adverts",
+          "Paid-tier features: priority listing, branding, analytics, subscription and one-off payments",
+          "Secure payment gateway integration and payment record management",
+          "Logging, audit trails, and analytics for moderation, payments and admin actions",
+          "Privacy and data protection controls (GDPR compliance, consent management, data subject requests)",
+          "Security controls: encryption in transit and at rest, RBAC, MFA option, rate limiting and anti-abuse protections",
+          "Accessibility and mobile responsiveness (WCAG conformance target)"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "User registration and secure login with role assignment (Advertiser, Seeker, Moderator, Administrator) and support for password policies and optional multi-factor authentication (MFA).",
+            "business_category": "Authentication & Authorization",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Accounts are required to identify and manage users, enforce permissions and protect access to personal data and communication. MFA and strong passwords reduce account takeover risk."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Email domain verification for free-tier advertisers (restrict to institutional/university email domains) and onboarding workflow for paid-tier organisations with identity/business verification.",
+            "business_category": "Account Management & Verification",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Domain verification reduces fraudulent or low-quality adverts from non-students and provides a barrier to abuse. Paid-tier verification prevents misuse by fake agencies and supports trust and billing."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "User profile management capturing display name, profile photo, optional bio, occupation/status, and privacy settings; option to mark verified contact details which can be displayed only after verification.",
+            "business_category": "Data Management / Privacy",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Profiles help matching and trust; contact reveal must be controlled to prevent scraping and harassment. Storing profile data requires classification for access controls and retention policies."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Advert lifecycle management: create, save draft, submit for moderation, edit, publish (post-approval), expire automatically based on availability dates or admin action, and delete.",
+            "business_category": "Content Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Public",
+            "rationale": "Structured advert lifecycle enforces moderation, ensures up-to-date listings and prevents stale or misleading adverts. Automatic expiry maintains platform quality and legal compliance."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "Support property-level entry with multiple room entities per property; each room includes cost, size, deposit, availability dates, furnishings, bills/broadband inclusion, and household preference attributes.",
+            "business_category": "Data Model & Catalog",
+            "security_sensitivity": "Low",
+            "data_classification": "Public",
+            "rationale": "Capturing structured room and property data enables richer search and filtering and consistent display for seekers while limiting personal data exposure."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "Automatic moderation/ filtering pipeline using heuristics and ML to detect spam, scams, malicious links, prohibited content, and potential discrimination; stage adverts as pending until checks and/or human moderator approval complete.",
+            "business_category": "Moderation & Safety",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Automated detection reduces workload and improves safety; pending state prevents immediate publication of harmful adverts. Models and heuristics will process content and metadata that may include PII or malicious indicators."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Moderator and Administrator dashboard to review, approve, disable, or delete adverts; manage user accounts and roles; review flagged content and escalate disputes. Include audit logging of decisions and actions.",
+            "business_category": "Administration & Governance",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Human oversight is required for edge cases and disputes; audit logs provide accountability and evidence for legal or compliance requirements."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Geo-centric search with approximate location visualisation (neighbourhood or postcode area), map clustering for dense regions, distance filters from a user-specified point, and results ranked by match and paid priority.",
+            "business_category": "Search & Discovery",
+            "security_sensitivity": "Low",
+            "data_classification": "Public",
+            "rationale": "Location-first search is core to user intent; approximate locations balance utility with privacy/safety by hiding exact addresses until appropriate."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Advanced filters: price range, distance, number of housemates, amenities, stay duration, household preferences (smoking, pets, occupation, age range, language, diet), and ability to save filter sets and searches.",
+            "business_category": "Search & Personalisation",
+            "security_sensitivity": "Low",
+            "data_classification": "Public",
+            "rationale": "Granular filters improve match quality and user experience; saved searches enable engagement via alerts and personalization."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Email alerts (instant and daily digest) and in-app notifications for new adverts matching saved search criteria, favourites activity, advert status changes, and incoming messages.",
+            "business_category": "Notifications & Engagement",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Timely alerts improve platform usage; notification mechanisms must respect user consent and unsubscribe preferences (ePrivacy/GDPR)."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Favourites/bookmarks management: allow users to favourite adverts/rooms, organise lists (tags/folders), and generate personalised summaries on the dashboard.",
+            "business_category": "User Experience & Personalisation",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Saved items increase engagement and create a personalised experience. Favourites metadata must be protected as behavioural data."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "Secure in-app messaging system that mediates communications between seekers and advertisers and stores message logs securely; optionally reveal phone/email to verified users only after explicit consent.",
+            "business_category": "Communication & Privacy",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Mediated messaging prevents scraping of contact details, helps moderation, and provides an audit trail for disputes and safety issues. Messages often contain PII and require confidentiality controls."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "Interactive map view using third-party mapping APIs with clustering and obfuscation of exact coordinates; store location metadata with a privacy-preserving geohash or polygon delineation rather than exact address display.",
+            "business_category": "Data Privacy & Visualisation",
+            "security_sensitivity": "Medium",
+            "data_classification": "Public",
+            "rationale": "Maps are essential for discovery, but must not reveal precise addresses publicly to protect advertisers and tenants. The data model should support approximate display and more precise internal coordinates for authorised workflows only."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Reporting and abuse-flagging workflow for users to report suspicious adverts or users, with automated triage and moderator escalation; include rate-limiting to prevent abuse of the reporting system.",
+            "business_category": "Safety & Trust",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "User reports help identify scams and safety issues. The reporting system must be robust and auditable to avoid manipulation and malicious reporting."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "Paid-tier features: priority listing / boosted placement, branding fields, extended descriptions, and an analytics dashboard showing impressions, contacts (mediated), and conversions; subscription and one-off purchase management.",
+            "business_category": "Monetisation & Analytics",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Monetisation supports platform sustainability; analytics help advertisers evaluate ROI. Payment and usage data must be protected and separated from public content."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "Secure payment processing via a PCI-DSS-compliant gateway for subscriptions and one-off payments; do not store raw card numbers on platform unless using a validated tokenisation service.",
+            "business_category": "Payment Processing & Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Handling payments triggers PCI-DSS obligations; using a compliant gateway and tokenization minimises platform liability and reduces attack surface."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "GDPR-compliant data handling: obtain explicit consent for processing where required, allow data subject access, rectification, deletion (right to be forgotten), and data portability; maintain processing records and data retention policies.",
+            "business_category": "Legal & Privacy",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Platform processes personal data of EU/UK residents and must meet GDPR obligations for lawful processing, transparency, and rights handling to avoid legal penalties."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "Logging, monitoring and audit trails for authentication events, moderation actions, payment transactions, and admin operations; logs must be immutable for a defined retention period and access-controlled.",
+            "business_category": "Security Operations & Forensics",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Auditable logs are required for incident response, compliance, dispute resolution, and detecting abuse. They may contain sensitive metadata and must be protected accordingly."
+          },
+          {
+            "requirement_id": "REQ-019",
+            "requirement_text": "Security controls including encryption in transit (TLS), encryption at rest for PII and payment tokens, role-based access control (RBAC), principle of least privilege, input validation, XSS/CSRF protections, rate limiting, and abuse mitigation (CAPTCHA, bot detection).",
+            "business_category": "Application Security",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "A comprehensive security baseline protects user data, prevents common web attacks, and reduces fraud risk. These controls are fundamental to platform trust and compliance."
+          },
+          {
+            "requirement_id": "REQ-020",
+            "requirement_text": "Accessibility and responsive design to support common browsers and mobile devices, and target WCAG 2.1 AA conformance for critical user journeys (registration, search, messaging, payments).",
+            "business_category": "Accessibility & UX",
+            "security_sensitivity": "Low",
+            "data_classification": "Public",
+            "rationale": "Accessibility broadens user base, reduces legal risk and improves usability for students and staff across devices; financial and legal requirements may mandate accessibility."
+          }
+        ],
+        "security_context": "Applicable regulations and obligations include: GDPR (EU/EEA/UK) for personal data processing, data subject rights and consent management; ePrivacy rules for electronic marketing and email notifications; PCI-DSS obligations for any payment card processing or token storage; national consumer protection and housing anti-discrimination laws applicable to adverts (platform should enforce non-discriminatory advertising policies); local data residency or export control laws if hosting data in or for specific jurisdictions; WCAG accessibility standards (target WCAG 2.1 AA); obligations to preserve and produce records for lawful requests (law enforcement). Platform must also consider obligations under consumer protection and payment service regulations where relevant (e.g., VAT collection, invoicing for B2B advertisers).",
+        "assumptions": [
+          "System will be cloud-hosted (public cloud) with support for region-based data residency where required.",
+          "Third-party services will be used for mapping (e.g., Google Maps, Mapbox), email delivery, and payments (PCI-compliant gateway).",
+          "Moderation combines automated tools and human moderators; moderators are trusted and trained staff with appropriate background checks.",
+          "Advertisers and users are primarily adults (18+); platform will implement age gating or explicit checks if minors are supported.",
+          "Universities will provide or have publicly available email domain lists for domain-restricted signups, or a maintainable allowlist will be created.",
+          "Users have internet access and modern browsers or mobile devices; push notifications rely on standard web/mobile push services.",
+          "Paid-tier customers will use the provided payment options and accept the platform's terms; recurring subscription billing will be supported.",
+          "Platform will not publish exact addresses publicly; precise coordinates may be stored internally for authorised use (e.g., emergency/legal requests) with strict access controls."
+        ],
+        "constraints": [
+          "Exact addresses must not be displayed publicly \u2014 only approximate locations (neighbourhood/postcode/geohash) permitted for privacy and safety.",
+          "Integration with third-party mapping and payment providers introduces dependencies on their APIs, SLAs, and pricing.",
+          "Moderation pipeline (automated + human) may introduce publication latency; SLAs for advert approval must balance speed and safety.",
+          "Payment processing requires PCI-DSS compliance or use of a tokenizing gateway to avoid storing sensitive card data on-platform.",
+          "Data residency and local privacy regulations may require regional hosting or data segregation for EU/UK users.",
+          "Scalability and rate limiting requirements must be designed to handle dense clusters (e.g., high advert volumes in university towns) without degrading search performance.",
+          "Retention policies for logs, messages and adverts must be defined to meet legal and operational needs but may conflict with user 'right to be forgotten' timelines \u2014 implementation must reconcile both.",
+          "Accessibility (WCAG) and cross-browser mobile support constrain front-end frameworks and testing matrices.",
+          "Anti-abuse measures (rate limits, CAPTCHAs, content filters) must avoid impeding legitimate users while blocking bots and fraud attempts."
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"A cloud-hosted, geo-centric web and mobile platform with a layered architecture: public users access a SPA or mobile-optimised site via a CDN/WAF edge layer; requests pass through an API Gateway to Application Services (Auth/RBAC, Core API, Search/Geo engine, Moderation pipeline, Messaging, Notifications, Payments). Application services persist data to a structured relational database for adverts/users, a search index for geo/filters, and object storage for media; audit logs and analytics stream to a logging/monitoring tier. Automated moderation (heuristics/ML) and human moderator UIs enforce content safety. External integrations include mapping APIs, email/push providers, and a PCI-compliant payment gateway. Strong privacy controls (approximate locations, email domain verification, PII encryption, consent management) and role-based access protect data and operations.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\n  subgraph \\\"Users\\\"\\n    UserWeb[End Users Web/Mobile]\\n    AdminUser[Admins Moderators]\\n  end\\n\\n  subgraph \\\"Edge Layer\\\"\\n    CDN[CDN & WAF]\\n    APIGW[API Gateway & Rate Limiter]\\n  end\\n\\n  subgraph \\\"Frontend Layer\\\"\\n    FE[Web App SPA & Mobile UI]\\n    AdminUI[Admin Moderator UI]\\n  end\\n\\n  subgraph \\\"Application Services\\\"\\n    Auth[Auth Service & RBAC]\\n    CoreAPI[Core API Services]\\n    SearchSvc[Search & Geo Engine]\\n    Moderation[Moderation Pipeline ML & Rules]\\n    Messaging[In-App Messaging]\\n    Notifs[Notifications Service]\\n    Billing[Payments & Billing Service]\\n    Analytics[Analytics & Reporting]\\n  end\\n\\n  subgraph \\\"Data Layer\\\"\\n    DB[Relational DB Users/Adverts]\\n    ObjStore[Object Storage Media]\\n    Index[Search Index & Geohash]\\n    Logs[Audit Logging & SIEM]\\n  end\\n\\n  subgraph \\\"External Services\\\"\\n    Maps[Maps API Mapbox/Google]\\n    Email[Email Service Provider]\\n    Push[Push Notification Provider]\\n    PaymentGW[PCI-DSS Payment Gateway]\\n  end\\n\\n  UserWeb --> CDN --> FE --> APIGW --> Auth\\n  AdminUser --> CDN --> AdminUI --> APIGW --> Auth\\n  APIGW --> CoreAPI\\n  CoreAPI --> DB\\n  CoreAPI --> ObjStore\\n  CoreAPI --> Index\\n  CoreAPI --> Messaging\\n  CoreAPI --> Notifs\\n  CoreAPI --> Moderation\\n  CoreAPI --> Billing\\n  Moderation --> Logs\\n  Messaging --> DB\\n  Messaging --> Logs\\n  Notifs --> Email\\n  Notifs --> Push\\n  Billing --> PaymentGW\\n  SearchSvc --> Index\\n  SearchSvc --> CoreAPI\\n  CoreAPI --> Analytics\\n  Analytics --> Logs\\n  CoreAPI --> Maps\\n  Maps --> External Services[Maps API Proxy]\\n  Email --> External Services\\n  Push --> External Services\\n  PaymentGW --> External Services\\n\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Serve the SPA and mobile-optimised UI for seekers, advertisers and admins; handle client-side validation, map rendering, saved searches UI and favourites management.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN/WAF\",\n        \"Maps API\",\n        \"Email/Push Providers\"\n      ],\n      \"data_handled\": [\n        \"User interface state\",\n        \"Non-sensitive advert details\",\n        \"Saved searches and favourites (user-specific metadata)\"\n      ]\n    },\n    {\n      \"name\": \"Edge Layer\",\n      \"responsibility\": \"CDN and Web Application Firewall to protect and accelerate traffic; API Gateway for authentication enforcement, rate limiting, and request routing.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Cloud CDN provider\",\n        \"WAF/Rate-limiting service\"\n      ],\n      \"data_handled\": [\n        \"Inbound HTTP requests\",\n        \"Authentication tokens (transit)\",\n        \"Client IP/meta for rate limiting\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic: authentication & RBAC, advert lifecycle, moderation pipeline (automated + human), geo-search, messaging, notifications, paid-tier logic and analytics.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"ML/Moderation tooling (optional)\",\n        \"Timeseries/analytics tools\",\n        \"Payment gateway\"\n      ],\n      \"data_handled\": [\n        \"User accounts and roles\",\n        \"Advert content and metadata\",\n        \"Messaging contents (PII/communications)\",\n        \"Moderation verdicts and audit data\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Persistent storage for relational data (users, adverts, rooms), object storage for media, search index for geo/filters and logs/audit retention for compliance and forensics.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud-managed RDBMS\",\n        \"Cloud object storage\",\n        \"Search index service (Elasticsearch/Opensearch)\"\n      ],\n      \"data_handled\": [\n        \"Personal data (PII)\",\n        \"Adverts and room metadata\",\n        \"Media files (photos)\",\n        \"Transaction records and audit logs\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Third-party integrations: maps for visualisation, email/ESP for notifications, push providers for device notifications, and PCI-compliant payment gateway for billing.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Mapbox/Google Maps\",\n        \"SendGrid/Mailgun or similar\",\n        \"Firebase/APNs\",\n        \"Stripe/Adyen/Payment gateway\"\n      ],\n      \"data_handled\": [\n        \"Approximate location queries\",\n        \"Email content/addresses\",\n        \"Payment tokens/transaction metadata\"\n      ]\n    },\n    {\n      \"name\": \"Admin & Moderation\",\n      \"responsibility\": \"Tools and UIs for moderators and admins to review adverts, handle reports, manage users/roles, and enforce policy; includes audit trail review and dispute resolution workflows.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Identity provider for admin SSO\",\n        \"Audit logging/SIEM\"\n      ],\n      \"data_handled\": [\n        \"Flagged content and reports\",\n        \"Moderator actions and audit logs\",\n        \"User verification artifacts\"\n      ]\n    },\n    {\n      \"name\": \"Notifications & Messaging\",\n      \"responsibility\": \"In-app mediated messaging between users, notification orchestration (instant and digest emails), and queueing for reliable delivery.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Email provider\",\n        \"Push provider\",\n        \"Queueing service (SQS/Kafka)\"\n      ],\n      \"data_handled\": [\n        \"Message bodies and metadata\",\n        \"Notification preferences\",\n        \"Digest contents and timestamps\"\n      ]\n    },\n    {\n      \"name\": \"Payments & Billing\",\n      \"responsibility\": \"Manage subscriptions, one-off purchases, priority listings, invoicing metadata, and integrate with PCI-compliant gateway using tokenization; provide advertiser analytics.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"PCI-DSS Payment Gateway (Stripe/Adyen)\",\n        \"Tax/VAT services (optional)\"\n      ],\n      \"data_handled\": [\n        \"Payment tokens\",\n        \"Billing records and invoices\",\n        \"Subscription status and entitlements\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users interact via web/mobile UI which is served through a CDN/WAF. Client requests pass the API Gateway where authentication and rate-limiting occur. Authenticated requests reach Core APIs which validate input, invoke moderation checks (automated ML heuristics) and persist adverts, user profiles and room entities to the relational DB; media is uploaded to object storage and indexed into the search index (geohash/obfuscated coordinates). Search queries query the Search Index and may call geospatial services to cluster results; approximate locations are computed via geohash or centroid obfuscation before returning results to clients. Messaging is mediated by Messaging Service, storing encrypted message logs in DB and forwarding notifications to Notification Service which dispatches via email/push providers. Billing interacts with the Payment Gateway using tokenized card data; transaction metadata and audit logs are stored in DB and immutable logs. Moderation results and admin actions are logged to the audit/SIEM pipeline for retention and compliance. Data transformations include PII encryption at rest, location obfuscation, content scanning/enrichment, and payment tokenization.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"End Users Web/Mobile\",\n        \"Third-party clients\"\n      ],\n      \"boundary_type\": \"Untrusted External Boundary\",\n      \"security_controls\": [\n        \"TLS for all traffic\",\n        \"CAPTCHA and bot-detection on forms\",\n        \"Rate limiting at CDN and API Gateway\",\n        \"Input validation and CSP on frontends\"\n      ]\n    },\n    {\n      \"name\": \"Edge/DMZ\",\n      \"components\": [\n        \"CDN & WAF\",\n        \"API Gateway\"\n      ],\n      \"boundary_type\": \"Perimeter/Edge Boundary\",\n      \"security_controls\": [\n        \"WAF rulesets\",\n        \"IP reputation and geo-blocking\",\n        \"TLS termination with strict ciphers\",\n        \"DDoS protection and rate limiting\"\n      ]\n    },\n    {\n      \"name\": \"Application Tier\",\n      \"components\": [\n        \"Frontend App Servers\",\n        \"Auth Service\",\n        \"Core API Services\",\n        \"Moderation Service\",\n        \"Messaging & Notification Services\",\n        \"Billing Service\"\n      ],\n      \"boundary_type\": \"Trust Zone with Auth Controls\",\n      \"security_controls\": [\n        \"JWT/OAuth2 tokens with short TTLs\",\n        \"RBAC and MFA for high-privilege roles\",\n        \"Service-to-service mTLS\",\n        \"Input validation, XSS/CSRF protections\"\n      ]\n    },\n    {\n      \"name\": \"Internal Network\",\n      \"components\": [\n        \"Admin UI\",\n        \"Moderator Tools\",\n        \"Analytics\"\n      ],\n      \"boundary_type\": \"Restricted Internal Boundary\",\n      \"security_controls\": [\n        \"IP allowlists or SSO enforced\",\n        \"Least privilege access via IAM\",\n        \"Session timeouts and privileged audit logging\"\n      ]\n    },\n    {\n      \"name\": \"Data/Storage Tier\",\n      \"components\": [\n        \"Relational DB\",\n        \"Object Storage\",\n        \"Search Index\",\n        \"Audit Logs\"\n      ],\n      \"boundary_type\": \"Highly Trusted Data Boundary\",\n      \"security_controls\": [\n        \"Encryption at rest\",\n        \"VPC/private subnets\",\n        \"Database access via bastion or service accounts\",\n        \"Field-level encryption for PII and tokenization for payment data\"\n      ]\n    },\n    {\n      \"name\": \"External Integrations\",\n      \"components\": [\n        \"Maps API\",\n        \"Email/Push Providers\",\n        \"Payment Gateway\"\n      ],\n      \"boundary_type\": \"Third-Party Service Boundary\",\n      \"security_controls\": [\n        \"API keys and scoped credentials\",\n        \"Outbound firewall rules\",\n        \"Least privilege scopes and token rotation\",\n        \"TLS and contractual SLAs/DPAs\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: Web/Mobile UI and Public APIs (High risk) \u2014 exposure to account takeover, XSS, CSRF, injection and abuse; mitigations: strong authentication (MFA opt-in), input validation, CSP, WAF, rate limiting and session management. Authentication endpoints (High) \u2014 risk of brute-force and credential stuffing; mitigations: password policies, MFA, anomaly detection, account lockouts, email domain checks for advertiser onboarding. File uploads/media (Medium) \u2014 risk of malware and PII leaks; mitigations: virus scanning, size/type restrictions, storage isolation, signed URLs and metadata stripping. Messaging and moderated content endpoints (High) \u2014 risk of PII leakage, harassment and phishing; mitigations: content scanning, profanity/ML filters, human moderation queue, retention and redaction policies. Search and geo APIs (Medium) \u2014 risk of data inference and scraping to discover exact addresses; mitigations: approximate geohash, rate limits, API quotas, per-request obfuscation. Payment integration (High) \u2014 PCI exposure if misconfigured; mitigations: use tokenization via PCI-compliant gateway, do not store raw card data, secure webhooks and signed callbacks. Third-party integrations (Maps/Email/Push) (Medium) \u2014 supply chain risk and data leakage; mitigations: encrypted transit, minimal scopes, contractual DPAs and monitoring. Admin/moderator UIs (High) \u2014 privileged abuse or account compromise; mitigations: SSO, strong MFA, IP restrictions, session monitoring and immutable audit logs. Logging and analytics endpoints (Medium) \u2014 risk of sensitive data in logs; mitigations: PII redaction, access controls and log encryption. Overall, major risks concentrate on authentication, moderation, payments, and data exfiltration; the defensive architecture uses layered controls (edge WAF, gateway auth, service mTLS, encryption, RBAC, monitoring) and operational controls (incident response, retention policies, privacy/consent workflows).\"\n}",
+      "pydantic": {
+        "architecture_summary": "A cloud-hosted, geo-centric web and mobile platform with a layered architecture: public users access a SPA or mobile-optimised site via a CDN/WAF edge layer; requests pass through an API Gateway to Application Services (Auth/RBAC, Core API, Search/Geo engine, Moderation pipeline, Messaging, Notifications, Payments). Application services persist data to a structured relational database for adverts/users, a search index for geo/filters, and object storage for media; audit logs and analytics stream to a logging/monitoring tier. Automated moderation (heuristics/ML) and human moderator UIs enforce content safety. External integrations include mapping APIs, email/push providers, and a PCI-compliant payment gateway. Strong privacy controls (approximate locations, email domain verification, PII encryption, consent management) and role-based access protect data and operations.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\n  subgraph \"Users\"\n    UserWeb[End Users Web/Mobile]\n    AdminUser[Admins Moderators]\n  end\n\n  subgraph \"Edge Layer\"\n    CDN[CDN & WAF]\n    APIGW[API Gateway & Rate Limiter]\n  end\n\n  subgraph \"Frontend Layer\"\n    FE[Web App SPA & Mobile UI]\n    AdminUI[Admin Moderator UI]\n  end\n\n  subgraph \"Application Services\"\n    Auth[Auth Service & RBAC]\n    CoreAPI[Core API Services]\n    SearchSvc[Search & Geo Engine]\n    Moderation[Moderation Pipeline ML & Rules]\n    Messaging[In-App Messaging]\n    Notifs[Notifications Service]\n    Billing[Payments & Billing Service]\n    Analytics[Analytics & Reporting]\n  end\n\n  subgraph \"Data Layer\"\n    DB[Relational DB Users/Adverts]\n    ObjStore[Object Storage Media]\n    Index[Search Index & Geohash]\n    Logs[Audit Logging & SIEM]\n  end\n\n  subgraph \"External Services\"\n    Maps[Maps API Mapbox/Google]\n    Email[Email Service Provider]\n    Push[Push Notification Provider]\n    PaymentGW[PCI-DSS Payment Gateway]\n  end\n\n  UserWeb --> CDN --> FE --> APIGW --> Auth\n  AdminUser --> CDN --> AdminUI --> APIGW --> Auth\n  APIGW --> CoreAPI\n  CoreAPI --> DB\n  CoreAPI --> ObjStore\n  CoreAPI --> Index\n  CoreAPI --> Messaging\n  CoreAPI --> Notifs\n  CoreAPI --> Moderation\n  CoreAPI --> Billing\n  Moderation --> Logs\n  Messaging --> DB\n  Messaging --> Logs\n  Notifs --> Email\n  Notifs --> Push\n  Billing --> PaymentGW\n  SearchSvc --> Index\n  SearchSvc --> CoreAPI\n  CoreAPI --> Analytics\n  Analytics --> Logs\n  CoreAPI --> Maps\n  Maps --> External Services[Maps API Proxy]\n  Email --> External Services\n  Push --> External Services\n  PaymentGW --> External Services\n",
+        "components": [
+          {
+            "name": "Frontend Layer",
+            "responsibility": "Serve the SPA and mobile-optimised UI for seekers, advertisers and admins; handle client-side validation, map rendering, saved searches UI and favourites management.",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "CDN/WAF",
+              "Maps API",
+              "Email/Push Providers"
+            ],
+            "data_handled": [
+              "User interface state",
+              "Non-sensitive advert details",
+              "Saved searches and favourites (user-specific metadata)"
+            ]
+          },
+          {
+            "name": "Edge Layer",
+            "responsibility": "CDN and Web Application Firewall to protect and accelerate traffic; API Gateway for authentication enforcement, rate limiting, and request routing.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Cloud CDN provider",
+              "WAF/Rate-limiting service"
+            ],
+            "data_handled": [
+              "Inbound HTTP requests",
+              "Authentication tokens (transit)",
+              "Client IP/meta for rate limiting"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core business logic: authentication & RBAC, advert lifecycle, moderation pipeline (automated + human), geo-search, messaging, notifications, paid-tier logic and analytics.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "ML/Moderation tooling (optional)",
+              "Timeseries/analytics tools",
+              "Payment gateway"
+            ],
+            "data_handled": [
+              "User accounts and roles",
+              "Advert content and metadata",
+              "Messaging contents (PII/communications)",
+              "Moderation verdicts and audit data"
+            ]
+          },
+          {
+            "name": "Data Storage",
+            "responsibility": "Persistent storage for relational data (users, adverts, rooms), object storage for media, search index for geo/filters and logs/audit retention for compliance and forensics.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Cloud-managed RDBMS",
+              "Cloud object storage",
+              "Search index service (Elasticsearch/Opensearch)"
+            ],
+            "data_handled": [
+              "Personal data (PII)",
+              "Adverts and room metadata",
+              "Media files (photos)",
+              "Transaction records and audit logs"
+            ]
+          },
+          {
+            "name": "External Services",
+            "responsibility": "Third-party integrations: maps for visualisation, email/ESP for notifications, push providers for device notifications, and PCI-compliant payment gateway for billing.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Mapbox/Google Maps",
+              "SendGrid/Mailgun or similar",
+              "Firebase/APNs",
+              "Stripe/Adyen/Payment gateway"
+            ],
+            "data_handled": [
+              "Approximate location queries",
+              "Email content/addresses",
+              "Payment tokens/transaction metadata"
+            ]
+          },
+          {
+            "name": "Admin & Moderation",
+            "responsibility": "Tools and UIs for moderators and admins to review adverts, handle reports, manage users/roles, and enforce policy; includes audit trail review and dispute resolution workflows.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Identity provider for admin SSO",
+              "Audit logging/SIEM"
+            ],
+            "data_handled": [
+              "Flagged content and reports",
+              "Moderator actions and audit logs",
+              "User verification artifacts"
+            ]
+          },
+          {
+            "name": "Notifications & Messaging",
+            "responsibility": "In-app mediated messaging between users, notification orchestration (instant and digest emails), and queueing for reliable delivery.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Email provider",
+              "Push provider",
+              "Queueing service (SQS/Kafka)"
+            ],
+            "data_handled": [
+              "Message bodies and metadata",
+              "Notification preferences",
+              "Digest contents and timestamps"
+            ]
+          },
+          {
+            "name": "Payments & Billing",
+            "responsibility": "Manage subscriptions, one-off purchases, priority listings, invoicing metadata, and integrate with PCI-compliant gateway using tokenization; provide advertiser analytics.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "PCI-DSS Payment Gateway (Stripe/Adyen)",
+              "Tax/VAT services (optional)"
+            ],
+            "data_handled": [
+              "Payment tokens",
+              "Billing records and invoices",
+              "Subscription status and entitlements"
+            ]
+          }
+        ],
+        "data_flow_description": "Users interact via web/mobile UI which is served through a CDN/WAF. Client requests pass the API Gateway where authentication and rate-limiting occur. Authenticated requests reach Core APIs which validate input, invoke moderation checks (automated ML heuristics) and persist adverts, user profiles and room entities to the relational DB; media is uploaded to object storage and indexed into the search index (geohash/obfuscated coordinates). Search queries query the Search Index and may call geospatial services to cluster results; approximate locations are computed via geohash or centroid obfuscation before returning results to clients. Messaging is mediated by Messaging Service, storing encrypted message logs in DB and forwarding notifications to Notification Service which dispatches via email/push providers. Billing interacts with the Payment Gateway using tokenized card data; transaction metadata and audit logs are stored in DB and immutable logs. Moderation results and admin actions are logged to the audit/SIEM pipeline for retention and compliance. Data transformations include PII encryption at rest, location obfuscation, content scanning/enrichment, and payment tokenization.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "End Users Web/Mobile",
+              "Third-party clients"
+            ],
+            "boundary_type": "Untrusted External Boundary",
+            "security_controls": [
+              "TLS for all traffic",
+              "CAPTCHA and bot-detection on forms",
+              "Rate limiting at CDN and API Gateway",
+              "Input validation and CSP on frontends"
+            ]
+          },
+          {
+            "name": "Edge/DMZ",
+            "components": [
+              "CDN & WAF",
+              "API Gateway"
+            ],
+            "boundary_type": "Perimeter/Edge Boundary",
+            "security_controls": [
+              "WAF rulesets",
+              "IP reputation and geo-blocking",
+              "TLS termination with strict ciphers",
+              "DDoS protection and rate limiting"
+            ]
+          },
+          {
+            "name": "Application Tier",
+            "components": [
+              "Frontend App Servers",
+              "Auth Service",
+              "Core API Services",
+              "Moderation Service",
+              "Messaging & Notification Services",
+              "Billing Service"
+            ],
+            "boundary_type": "Trust Zone with Auth Controls",
+            "security_controls": [
+              "JWT/OAuth2 tokens with short TTLs",
+              "RBAC and MFA for high-privilege roles",
+              "Service-to-service mTLS",
+              "Input validation, XSS/CSRF protections"
+            ]
+          },
+          {
+            "name": "Internal Network",
+            "components": [
+              "Admin UI",
+              "Moderator Tools",
+              "Analytics"
+            ],
+            "boundary_type": "Restricted Internal Boundary",
+            "security_controls": [
+              "IP allowlists or SSO enforced",
+              "Least privilege access via IAM",
+              "Session timeouts and privileged audit logging"
+            ]
+          },
+          {
+            "name": "Data/Storage Tier",
+            "components": [
+              "Relational DB",
+              "Object Storage",
+              "Search Index",
+              "Audit Logs"
+            ],
+            "boundary_type": "Highly Trusted Data Boundary",
+            "security_controls": [
+              "Encryption at rest",
+              "VPC/private subnets",
+              "Database access via bastion or service accounts",
+              "Field-level encryption for PII and tokenization for payment data"
+            ]
+          },
+          {
+            "name": "External Integrations",
+            "components": [
+              "Maps API",
+              "Email/Push Providers",
+              "Payment Gateway"
+            ],
+            "boundary_type": "Third-Party Service Boundary",
+            "security_controls": [
+              "API keys and scoped credentials",
+              "Outbound firewall rules",
+              "Least privilege scopes and token rotation",
+              "TLS and contractual SLAs/DPAs"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Primary entry points: Web/Mobile UI and Public APIs (High risk) \u2014 exposure to account takeover, XSS, CSRF, injection and abuse; mitigations: strong authentication (MFA opt-in), input validation, CSP, WAF, rate limiting and session management. Authentication endpoints (High) \u2014 risk of brute-force and credential stuffing; mitigations: password policies, MFA, anomaly detection, account lockouts, email domain checks for advertiser onboarding. File uploads/media (Medium) \u2014 risk of malware and PII leaks; mitigations: virus scanning, size/type restrictions, storage isolation, signed URLs and metadata stripping. Messaging and moderated content endpoints (High) \u2014 risk of PII leakage, harassment and phishing; mitigations: content scanning, profanity/ML filters, human moderation queue, retention and redaction policies. Search and geo APIs (Medium) \u2014 risk of data inference and scraping to discover exact addresses; mitigations: approximate geohash, rate limits, API quotas, per-request obfuscation. Payment integration (High) \u2014 PCI exposure if misconfigured; mitigations: use tokenization via PCI-compliant gateway, do not store raw card data, secure webhooks and signed callbacks. Third-party integrations (Maps/Email/Push) (Medium) \u2014 supply chain risk and data leakage; mitigations: encrypted transit, minimal scopes, contractual DPAs and monitoring. Admin/moderator UIs (High) \u2014 privileged abuse or account compromise; mitigations: SSO, strong MFA, IP restrictions, session monitoring and immutable audit logs. Logging and analytics endpoints (Medium) \u2014 risk of sensitive data in logs; mitigations: PII redaction, access controls and log encryption. Overall, major risks concentrate on authentication, moderation, payments, and data exfiltration; the defensive architecture uses layered controls (edge WAF, gateway auth, service mTLS, encryption, RBAC, monitoring) and operational controls (incident response, retention policies, privacy/consent workflows)."
+      }
+    }
+  ]
+}

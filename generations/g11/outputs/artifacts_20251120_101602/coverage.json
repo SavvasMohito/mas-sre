@@ -1,0 +1,142 @@
+[
+  {
+    "req_id": "REQ-001",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "Critical"
+  },
+  {
+    "req_id": "REQ-002",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "Critical"
+  },
+  {
+    "req_id": "REQ-003",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "Critical"
+  },
+  {
+    "req_id": "REQ-004",
+    "has_threat": false,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "Critical"
+  },
+  {
+    "req_id": "REQ-005",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "Critical"
+  },
+  {
+    "req_id": "REQ-006",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "Critical"
+  },
+  {
+    "req_id": "REQ-007",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "High"
+  },
+  {
+    "req_id": "REQ-008",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "High"
+  },
+  {
+    "req_id": "REQ-009",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "High"
+  },
+  {
+    "req_id": "REQ-010",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "High"
+  },
+  {
+    "req_id": "REQ-011",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "Critical"
+  },
+  {
+    "req_id": "REQ-012",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "Critical"
+  },
+  {
+    "req_id": "REQ-013",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "High"
+  },
+  {
+    "req_id": "REQ-014",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "High"
+  },
+  {
+    "req_id": "REQ-015",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "Critical"
+  },
+  {
+    "req_id": "REQ-016",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "High"
+  },
+  {
+    "req_id": "REQ-017",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "High"
+  },
+  {
+    "req_id": "REQ-018",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "Medium"
+  },
+  {
+    "req_id": "REQ-019",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 3,
+    "priority": "Critical"
+  },
+  {
+    "req_id": "REQ-020",
+    "has_threat": true,
+    "has_controls": true,
+    "tests": 4,
+    "priority": "Critical"
+  }
+]

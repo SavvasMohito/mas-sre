@@ -1,0 +1,552 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"The system is a cloud-hosted, multi-tenant web application composed of user-facing frontends (Web SPA and Admin UI) served via an edge layer (CDN/WAF) to an API Gateway that enforces authentication/authorization and routes requests to a set of application services (Auth, Core API, File/Versioning, RBAC/Permissions, Signing, Notification, Audit). Application services persist encrypted metadata to a primary metadata database, files and versions to encrypted object storage, and write immutable audit events to an append-only audit store. A KMS manages encryption keys including optional customer-managed keys. External services (Identity Providers, Email, Search/Indexing, Backup, optional third-party e-sign providers) integrate via secure, authenticated APIs. Company-scoped tenancy and fine-grained authorization are enforced at the gateway and within services on every operation, while notifications and audit trails ensure visibility and compliance.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Users & Admins\\\"\\n  U[End Users & Admins]\\n  ADMIN[Company Admins]\\n  IDP[Identity Providers SSO/OIDC/SAML]\\nend\\nsubgraph \\\"Edge Layer\\\"\\n  CDN[CDN & WAF]\\n  GW[API Gateway & AuthZ]\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web SPA & Admin UI]\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[Core API Services]\\n  AUTH[Auth & Session Service]\\n  FILES[File Service & Versioning]\\n  PERM[Permissions & RBAC Service]\\n  SIGN[Electronic Signature Service]\\n  NOTIFY[Notification Service]\\n  AUDIT[Audit & Logging Service]\\nend\\nsubgraph \\\"Data Layer\\\"\\n  DB[Metadata DB (Encrypted)]\\n  STORAGE[Object Storage (Encrypted)]\\n  KMS[Key Management Service]\\n  AUDITSTORE[Immutable Audit Store]\\nend\\nsubgraph \\\"External Services\\\"\\n  EMAIL[Email Provider]\\n  SEARCH[Search / Indexing]\\n  BACKUP[Backup / Archive]\\n  ESIGN[Third-Party ESign Provider]\\nend\\n\\nU --> CDN\\nADMIN --> CDN\\nCDN --> FE\\nFE --> GW\\nIDP --> AUTH\\nFE --> GW\\nGW --> AUTH\\nGW --> API\\nAPI --> FILES\\nAPI --> PERM\\nAPI --> SIGN\\nAPI --> NOTIFY\\nAPI --> AUDIT\\nFILES --> STORAGE\\nFILES --> DB\\nDB --> KMS\\nSTORAGE --> KMS\\nAUDIT --> AUDITSTORE\\nNOTIFY --> EMAIL\\nAPI --> SEARCH\\nBACKUP --> STORAGE\\nSIGN --> ESIGN\\n\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Provide user interfaces for end users and administrators (Web SPA and Admin UI); present previews, upload/download flows, and initiate signing and sharing actions.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN/WAF\",\n        \"Identity Providers (OIDC/SAML)\"\n      ],\n      \"data_handled\": [\n        \"User interactions & UI state\",\n        \"Temporary upload chunks/metadata\",\n        \"Notification preferences\"\n      ]\n    },\n    {\n      \"name\": \"Edge Layer\",\n      \"responsibility\": \"Ingress controls including CDN, web application firewall, TLS termination, rate limiting, and API Gateway which performs authentication, initial authorization checks, request validation, and routing.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud CDN/WAF\",\n        \"API Gateway products\"\n      ],\n      \"data_handled\": [\n        \"Authenticated requests\",\n        \"Request/response metadata\",\n        \"Rate/abuse telemetry\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic including Auth & SSO, Core API, File & Version management, Permissions & RBAC engine, Electronic Signature flows, Notification handling, and Audit event generation.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Identity Providers (SSO/SCIM)\",\n        \"Third-party e-sign providers\"\n      ],\n      \"data_handled\": [\n        \"User identities & roles\",\n        \"File metadata & version records\",\n        \"Permission assignments\",\n        \"Signature metadata\",\n        \"Audit events\",\n        \"Notification events\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Persist encrypted metadata, file objects, versions, and immutable audit logs; enforce company-scoped identifiers on all persisted objects and support retention/legal-hold policies.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud object storage\",\n        \"Cloud-hosted databases\",\n        \"KMS for encryption keys\"\n      ],\n      \"data_handled\": [\n        \"Encrypted file blobs\",\n        \"Metadata records (company IDs, file attributes)\",\n        \"Version history\",\n        \"Audit logs\",\n        \"Signature artifacts\"\n      ]\n    },\n    {\n      \"name\": \"Key Management\",\n      \"responsibility\": \"Manage encryption keys for data at rest/encryption operations, support BYOK/customer-managed keys, key rotation, access controls and key usage audit logs.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud KMS (or customer-managed HSM)\"\n      ],\n      \"data_handled\": [\n        \"Encryption keys & key metadata\",\n        \"Key usage logs\"\n      ]\n    },\n    {\n      \"name\": \"External Integrations\",\n      \"responsibility\": \"Support auxiliary services such as email delivery, search/indexing, backup/archival, and optional third-party e-sign providers; integrations use authenticated APIs and limited scopes.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Email providers (SMTP/SES)\",\n        \"Search indexing services\",\n        \"Backup/archive services\",\n        \"Third-party e-sign vendors\"\n      ],\n      \"data_handled\": [\n        \"Notification messages (metadata/links)\",\n        \"Search indexes (metadata)\",\n        \"Backups (encrypted blobs & metadata)\",\n        \"Signature validations/certificates\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"A user interacts with the Web SPA which connects via CDN/WAF to the API Gateway. The gateway verifies authentication/authorization then forwards requests to application services. File uploads may be direct to object storage (pre-signed URLs) while metadata and version records are written to the encrypted metadata DB. File service writes version metadata and signature artifacts tied to exact versions and triggers the audit service and notification service. Notification service writes in-app notifications and sends email via the email provider (containing metadata and safe links, not full content). Audit events are appended to an immutable audit store. KMS is invoked for encryption/decryption operations and to manage customer keys. Search indexing consumes sanitized metadata for search. Backups read encrypted storage and DB content while preserving encryption and tenancy boundaries.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"End Users & Admins\",\n        \"External Identity Providers\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS 1.2+/HTTPS\",\n        \"Client-side validation\",\n        \"Rate limiting and bot detection\",\n        \"MFA and strong password policies\"\n      ]\n    },\n    {\n      \"name\": \"Edge / DMZ\",\n      \"components\": [\n        \"CDN & WAF\",\n        \"API Gateway\"\n      ],\n      \"boundary_type\": \"Perimeter/Ingress\",\n      \"security_controls\": [\n        \"WAF rules and OWASP protections\",\n        \"IP allowlists/denylists\",\n        \"Mutual TLS for integrations\",\n        \"Request validation and rate limiting\",\n        \"Initial AuthN/AuthZ checks\"\n      ]\n    },\n    {\n      \"name\": \"Application Tier\",\n      \"components\": [\n        \"Core API Services\",\n        \"Auth Service\",\n        \"File/Version Service\",\n        \"Permissions Service\",\n        \"Signature Service\",\n        \"Notification Service\",\n        \"Audit Service\"\n      ],\n      \"boundary_type\": \"Trusted Internal\",\n      \"security_controls\": [\n        \"Service-to-service mTLS\",\n        \"Least-privilege service roles\",\n        \"Runtime monitoring & anomaly detection\",\n        \"Input sanitization and content sanitizers\",\n        \"Centralized authorization checks\"\n      ]\n    },\n    {\n      \"name\": \"Data Tier\",\n      \"components\": [\n        \"Metadata DB\",\n        \"Object Storage\",\n        \"Immutable Audit Store\",\n        \"KMS\"\n      ],\n      \"boundary_type\": \"Highly Trusted / Confidential\",\n      \"security_controls\": [\n        \"Encryption at rest (per-tenant keys where required)\",\n        \"Encryption in transit\",\n        \"KMS access control and logging\",\n        \"Network isolation/VPCs and private endpoints\",\n        \"WORM or append-only audit storage\"\n      ]\n    },\n    {\n      \"name\": \"External Service Integrations\",\n      \"components\": [\n        \"Email Provider\",\n        \"Search Indexing\",\n        \"Backup/Archive\",\n        \"Third-Party ESign Provider\"\n      ],\n      \"boundary_type\": \"Third-Party\",\n      \"security_controls\": [\n        \"Scoped API keys and short-lived tokens\",\n        \"Limited data sharing (metadata-only for email)\",\n        \"Contractual SLA/security requirements\",\n        \"Encrypted transport and payloads\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary attack surfaces: 1) Web UI/API Gateway: exposure to the Internet; risks include XSS, CSRF, auth bypass, and credential theft \u2014 mitigations: WAF, CSP, strong auth, MFA, rate limiting, SSO hardened configs. Risk level: High. 2) Auth & Identity integrations: SAML/OIDC endpoints and token flows; risks include token theft, SSO misconfigurations \u2014 mitigations: signed assertions, replay protections, short token TTLs. Risk level: High. 3) File upload processing: upload/parsing/preview generation may allow malware or content-based exploits; mitigate with sandboxed processors, content-type validation, antivirus/scanning, and sanitization. Risk level: High. 4) APIs for file/metadata operations: exposed REST APIs for automation; risks include excessive privileges, insecure direct object references (IDOR), and mass data exfiltration \u2014 mitigations: strict RBAC, per-request company-scoped authorization, rate-limiting, and audit logging. Risk level: High. 5) Third-party integrations (email/esign/search/backup): risks include data leakage and compromised credentials \u2014 mitigations: least-privilege credentials, metadata-only emails with safe links, encrypted backups, and contractual security reviews. Risk level: Medium. 6) Data stores and keys: compromise of DB/storage/KMS would expose data; mitigations: strong key management, BYOK options, network isolation, monitoring, and immutable audit stores. Risk level: Critical. 7) Admin console and delegation features: privileged actions can cause privilege escalation; mitigations: just-in-time admin access, approval workflows, and audited delegation events. Risk level: High. Overall the system must implement defense-in-depth, centralized authorization enforcement, immutable audit trails, strong KMS integration, and hardened third-party integration patterns to reduce attack surface and meet compliance needs.\"\n}",
+  "pydantic": {
+    "architecture_summary": "The system is a cloud-hosted, multi-tenant web application composed of user-facing frontends (Web SPA and Admin UI) served via an edge layer (CDN/WAF) to an API Gateway that enforces authentication/authorization and routes requests to a set of application services (Auth, Core API, File/Versioning, RBAC/Permissions, Signing, Notification, Audit). Application services persist encrypted metadata to a primary metadata database, files and versions to encrypted object storage, and write immutable audit events to an append-only audit store. A KMS manages encryption keys including optional customer-managed keys. External services (Identity Providers, Email, Search/Indexing, Backup, optional third-party e-sign providers) integrate via secure, authenticated APIs. Company-scoped tenancy and fine-grained authorization are enforced at the gateway and within services on every operation, while notifications and audit trails ensure visibility and compliance.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Users & Admins\"\n  U[End Users & Admins]\n  ADMIN[Company Admins]\n  IDP[Identity Providers SSO/OIDC/SAML]\nend\nsubgraph \"Edge Layer\"\n  CDN[CDN & WAF]\n  GW[API Gateway & AuthZ]\nend\nsubgraph \"Frontend Layer\"\n  FE[Web SPA & Admin UI]\nend\nsubgraph \"Application Services\"\n  API[Core API Services]\n  AUTH[Auth & Session Service]\n  FILES[File Service & Versioning]\n  PERM[Permissions & RBAC Service]\n  SIGN[Electronic Signature Service]\n  NOTIFY[Notification Service]\n  AUDIT[Audit & Logging Service]\nend\nsubgraph \"Data Layer\"\n  DB[Metadata DB (Encrypted)]\n  STORAGE[Object Storage (Encrypted)]\n  KMS[Key Management Service]\n  AUDITSTORE[Immutable Audit Store]\nend\nsubgraph \"External Services\"\n  EMAIL[Email Provider]\n  SEARCH[Search / Indexing]\n  BACKUP[Backup / Archive]\n  ESIGN[Third-Party ESign Provider]\nend\n\nU --> CDN\nADMIN --> CDN\nCDN --> FE\nFE --> GW\nIDP --> AUTH\nFE --> GW\nGW --> AUTH\nGW --> API\nAPI --> FILES\nAPI --> PERM\nAPI --> SIGN\nAPI --> NOTIFY\nAPI --> AUDIT\nFILES --> STORAGE\nFILES --> DB\nDB --> KMS\nSTORAGE --> KMS\nAUDIT --> AUDITSTORE\nNOTIFY --> EMAIL\nAPI --> SEARCH\nBACKUP --> STORAGE\nSIGN --> ESIGN\n",
+    "components": [
+      {
+        "name": "Frontend Layer",
+        "responsibility": "Provide user interfaces for end users and administrators (Web SPA and Admin UI); present previews, upload/download flows, and initiate signing and sharing actions.",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "CDN/WAF",
+          "Identity Providers (OIDC/SAML)"
+        ],
+        "data_handled": [
+          "User interactions & UI state",
+          "Temporary upload chunks/metadata",
+          "Notification preferences"
+        ]
+      },
+      {
+        "name": "Edge Layer",
+        "responsibility": "Ingress controls including CDN, web application firewall, TLS termination, rate limiting, and API Gateway which performs authentication, initial authorization checks, request validation, and routing.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Cloud CDN/WAF",
+          "API Gateway products"
+        ],
+        "data_handled": [
+          "Authenticated requests",
+          "Request/response metadata",
+          "Rate/abuse telemetry"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core business logic including Auth & SSO, Core API, File & Version management, Permissions & RBAC engine, Electronic Signature flows, Notification handling, and Audit event generation.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Identity Providers (SSO/SCIM)",
+          "Third-party e-sign providers"
+        ],
+        "data_handled": [
+          "User identities & roles",
+          "File metadata & version records",
+          "Permission assignments",
+          "Signature metadata",
+          "Audit events",
+          "Notification events"
+        ]
+      },
+      {
+        "name": "Data Storage",
+        "responsibility": "Persist encrypted metadata, file objects, versions, and immutable audit logs; enforce company-scoped identifiers on all persisted objects and support retention/legal-hold policies.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Cloud object storage",
+          "Cloud-hosted databases",
+          "KMS for encryption keys"
+        ],
+        "data_handled": [
+          "Encrypted file blobs",
+          "Metadata records (company IDs, file attributes)",
+          "Version history",
+          "Audit logs",
+          "Signature artifacts"
+        ]
+      },
+      {
+        "name": "Key Management",
+        "responsibility": "Manage encryption keys for data at rest/encryption operations, support BYOK/customer-managed keys, key rotation, access controls and key usage audit logs.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Cloud KMS (or customer-managed HSM)"
+        ],
+        "data_handled": [
+          "Encryption keys & key metadata",
+          "Key usage logs"
+        ]
+      },
+      {
+        "name": "External Integrations",
+        "responsibility": "Support auxiliary services such as email delivery, search/indexing, backup/archival, and optional third-party e-sign providers; integrations use authenticated APIs and limited scopes.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Email providers (SMTP/SES)",
+          "Search indexing services",
+          "Backup/archive services",
+          "Third-party e-sign vendors"
+        ],
+        "data_handled": [
+          "Notification messages (metadata/links)",
+          "Search indexes (metadata)",
+          "Backups (encrypted blobs & metadata)",
+          "Signature validations/certificates"
+        ]
+      }
+    ],
+    "data_flow_description": "A user interacts with the Web SPA which connects via CDN/WAF to the API Gateway. The gateway verifies authentication/authorization then forwards requests to application services. File uploads may be direct to object storage (pre-signed URLs) while metadata and version records are written to the encrypted metadata DB. File service writes version metadata and signature artifacts tied to exact versions and triggers the audit service and notification service. Notification service writes in-app notifications and sends email via the email provider (containing metadata and safe links, not full content). Audit events are appended to an immutable audit store. KMS is invoked for encryption/decryption operations and to manage customer keys. Search indexing consumes sanitized metadata for search. Backups read encrypted storage and DB content while preserving encryption and tenancy boundaries.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "End Users & Admins",
+          "External Identity Providers"
+        ],
+        "boundary_type": "Untrusted",
+        "security_controls": [
+          "TLS 1.2+/HTTPS",
+          "Client-side validation",
+          "Rate limiting and bot detection",
+          "MFA and strong password policies"
+        ]
+      },
+      {
+        "name": "Edge / DMZ",
+        "components": [
+          "CDN & WAF",
+          "API Gateway"
+        ],
+        "boundary_type": "Perimeter/Ingress",
+        "security_controls": [
+          "WAF rules and OWASP protections",
+          "IP allowlists/denylists",
+          "Mutual TLS for integrations",
+          "Request validation and rate limiting",
+          "Initial AuthN/AuthZ checks"
+        ]
+      },
+      {
+        "name": "Application Tier",
+        "components": [
+          "Core API Services",
+          "Auth Service",
+          "File/Version Service",
+          "Permissions Service",
+          "Signature Service",
+          "Notification Service",
+          "Audit Service"
+        ],
+        "boundary_type": "Trusted Internal",
+        "security_controls": [
+          "Service-to-service mTLS",
+          "Least-privilege service roles",
+          "Runtime monitoring & anomaly detection",
+          "Input sanitization and content sanitizers",
+          "Centralized authorization checks"
+        ]
+      },
+      {
+        "name": "Data Tier",
+        "components": [
+          "Metadata DB",
+          "Object Storage",
+          "Immutable Audit Store",
+          "KMS"
+        ],
+        "boundary_type": "Highly Trusted / Confidential",
+        "security_controls": [
+          "Encryption at rest (per-tenant keys where required)",
+          "Encryption in transit",
+          "KMS access control and logging",
+          "Network isolation/VPCs and private endpoints",
+          "WORM or append-only audit storage"
+        ]
+      },
+      {
+        "name": "External Service Integrations",
+        "components": [
+          "Email Provider",
+          "Search Indexing",
+          "Backup/Archive",
+          "Third-Party ESign Provider"
+        ],
+        "boundary_type": "Third-Party",
+        "security_controls": [
+          "Scoped API keys and short-lived tokens",
+          "Limited data sharing (metadata-only for email)",
+          "Contractual SLA/security requirements",
+          "Encrypted transport and payloads"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Primary attack surfaces: 1) Web UI/API Gateway: exposure to the Internet; risks include XSS, CSRF, auth bypass, and credential theft \u2014 mitigations: WAF, CSP, strong auth, MFA, rate limiting, SSO hardened configs. Risk level: High. 2) Auth & Identity integrations: SAML/OIDC endpoints and token flows; risks include token theft, SSO misconfigurations \u2014 mitigations: signed assertions, replay protections, short token TTLs. Risk level: High. 3) File upload processing: upload/parsing/preview generation may allow malware or content-based exploits; mitigate with sandboxed processors, content-type validation, antivirus/scanning, and sanitization. Risk level: High. 4) APIs for file/metadata operations: exposed REST APIs for automation; risks include excessive privileges, insecure direct object references (IDOR), and mass data exfiltration \u2014 mitigations: strict RBAC, per-request company-scoped authorization, rate-limiting, and audit logging. Risk level: High. 5) Third-party integrations (email/esign/search/backup): risks include data leakage and compromised credentials \u2014 mitigations: least-privilege credentials, metadata-only emails with safe links, encrypted backups, and contractual security reviews. Risk level: Medium. 6) Data stores and keys: compromise of DB/storage/KMS would expose data; mitigations: strong key management, BYOK options, network isolation, monitoring, and immutable audit stores. Risk level: Critical. 7) Admin console and delegation features: privileged actions can cause privilege escalation; mitigations: just-in-time admin access, approval workflows, and audited delegation events. Risk level: High. Overall the system must implement defense-in-depth, centralized authorization enforcement, immutable audit trails, strong KMS integration, and hardened third-party integration patterns to reduce attack surface and meet compliance needs."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A cloud-capable web application for secure file and folder management that enforces company-level data segregation, fine-grained, role- and object-level access controls, file versioning and sharing, electronic document signing with signer identity and timestamp recording, in-app and optional email notifications, and immutable audit logging \u2014 all with encryption and controls to ensure that users can only access and act on resources within their assigned company and permissions.\",\n  \"high_level_requirements\": [\n    \"User registration and login with company association and optional multi-factor authentication\",\n    \"Company management with strict data isolation (company-scoped tenancy)\",\n    \"Role-based access control (RBAC) within companies including role definitions and assignment\",\n    \"Fine-grained per-file and per-folder permissions (read, write, delete, share, sign, administer)\",\n    \"Delegation capability for users to grant/change permissions within company scope\",\n    \"File and folder lifecycle management (create, view, edit, move, delete) with workspace organization\",\n    \"File versioning and immutable version metadata per change\",\n    \"Support for multiple file types (documents, images, PDFs) with content-type validation and preview generation\",\n    \"Controlled file sharing only among authorized company users and groups with sharing audit trail\",\n    \"Access enforcement on every operation (authorization checks scoped by company and object permissions)\",\n    \"Electronic signature workflow: sign documents, record signer identity, timestamp, and signature metadata\",\n    \"Storage of signature artifacts and metadata as part of file/version history with tamper-detection\",\n    \"In-app notification system with optional email delivery, targeting relevant company users based on permissions and file events\",\n    \"Audit and reporting: comprehensive, immutable audit logs recording user actions, outcomes, timestamps, and affected objects\",\n    \"Encryption and key management: encryption at rest and in transit, and secure key lifecycle management\",\n    \"APIs and integrations (e.g., email delivery, identity providers, backup, search) with secure authentication and authorization\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"User registration and login with company association and optional multi-factor authentication (MFA). Accounts are tied to a single company and support onboarding (invitation or self-registration), password policies, account lockout, and MFA (TOTP/OTP or hardware tokens).\",\n      \"business_category\": \"Authentication\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Authentication is the primary gatekeeper for user access; tying accounts to a single company enforces tenancy and MFA mitigates credential compromise risks.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Company management with strict data isolation: create/manage companies, assign company ID to all company-scoped objects, and enforce logical or physical tenancy so data from one company is not accessible by another.\",\n      \"business_category\": \"Data Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Multi-company deployments require strong isolation to prevent accidental or malicious cross-tenant access and to meet contractual and regulatory obligations.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"Role-based access control (RBAC) within companies: define roles, group users, assign roles to users, and map roles to permission sets; support custom roles and role inheritance where applicable.\",\n      \"business_category\": \"Authorization\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"RBAC simplifies permission management, supports least privilege, and provides a scalable model for enforcing company-specific access policies.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Fine-grained per-file and per-folder permissions: assign read, write (edit), delete, share, sign, and administer permissions at file- and folder-level with group and user principals.\",\n      \"business_category\": \"Authorization\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Object-level permissions enable controlled collaboration and reduce risk of unauthorized disclosure or modification of sensitive documents.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"Delegation capabilities: some users may have delegation rights allowing them to grant or modify permissions for other users/projects within their company scope, with delegation actions audited.\",\n      \"business_category\": \"Administration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Delegation supports operational flexibility (e.g., managers granting access) while requiring tight controls and auditing to avoid privilege escalation.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"File and folder lifecycle management: create, upload, view, edit, rename, move, delete, restore (from soft-delete), and permanently purge files and folders within company workspaces; include hierarchical folder structure and tagging/metadata.\",\n      \"business_category\": \"File Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Standard file operations are core application capabilities; lifecycle controls must be secured and auditable to maintain integrity and availability of company data.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"File versioning: maintain version history for files with metadata (who, when, change summary), ability to view and restore prior versions, and tie signatures and events to specific versions.\",\n      \"business_category\": \"Data Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Versioning preserves an auditable history of changes and supports recovery and legal evidentiary requirements, especially when signatures are involved.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Support for multiple file types with validation and processing: accept and validate common document formats (Office documents, PDFs), images, and media; generate safe previews (sanitization) and extract metadata for indexing.\",\n      \"business_category\": \"File Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Supporting common file types with sanitization and preview generation improves usability but must be done securely to prevent malware or content-based attacks.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Controlled file sharing only among authorized company users/groups: share links or grant object-level access restricted to company users and enforce expiration, revocation, and sharing audit logs.\",\n      \"business_category\": \"Collaboration/Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Sharing is a common vector for data leakage; corporate-only sharing, expirations, and revocation reduce exposure and maintain company boundaries.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Access enforcement on every operation: implement authorization checks on every API and UI action, enforcing company scope and object permissions; fail-closed by default and log denied attempts.\",\n      \"business_category\": \"Authorization\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Consistent, centralized enforcement prevents privilege bypasses and ensures least-privilege controls are applied across the system.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Electronic signature workflow: allow designated users to electronically sign documents; capture signer identity (linked account), capture cryptographic/non-repudiation evidence where possible, and store timestamp and signature intent.\",\n      \"business_category\": \"Electronic Signature / Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Signatures change the legal status of documents; capturing identity, intent, and timestamp is required for non-repudiation and regulatory compliance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"Signature storage and metadata: store signature artifacts (signature block, signature hash, signing certificate references if applicable) and associate them with the specific file version; enable tamper-evidence for signed content and metadata.\",\n      \"business_category\": \"Data Management / Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Preserving signature artifacts tied to exact versions supports evidence integrity and auditability; tamper-detection supports trustworthiness of signed documents.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"Notifications: in-app notification feed and optional email notifications for events (create, edit, delete, share, sign); notifications should be targeted to relevant users (owners, users with permissions, delegates) and support user preferences and batching/rate limits.\",\n      \"business_category\": \"Notifications/UX\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Notifications improve user awareness and collaboration. Email delivery must be controlled to avoid leaking sensitive document content and respect user/company preferences.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Audit and reporting: generate immutable, tamper-evident audit logs recording user actions (user ID, action, timestamp, target object, outcome, source IP, actor role) and provide search/export/reporting for compliance reviews and incident investigations.\",\n      \"business_category\": \"Security/Audit/Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Auditable trails are required for forensic analysis, regulatory compliance, dispute resolution, and to prove enforcement of access controls.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"Encryption and key management: encrypt data at rest and in transit (TLS), support per-tenant or per-customer encryption keys where required, integrate with a secure Key Management Service (KMS) with proper key rotation, access controls, and key usage logging.\",\n      \"business_category\": \"Infrastructure/Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Encryption protects confidentiality of stored and communicated data; KMS integration enables control over encryption keys, supports compliance (e.g., client-controlled keys), and reduces exposure from storage compromise.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"Secure APIs and integrations: provide authenticated and authorized RESTful APIs for file operations, notifications, search, and administration; integrate securely with identity providers (SSO/SAML/OIDC), email services, backup systems, and optional third-party e-sign providers; apply rate-limiting and RBAC to API clients.\",\n      \"business_category\": \"Integration/Platform\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"APIs enable automation and integrations but expand the attack surface; proper authentication, authorization, and operational controls are required to prevent abuse and data exfiltration.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulations and standards will depend on customer industry and geography. Typical applicable frameworks include: GDPR (EU) and ePrivacy/CCPA (California) for personal data protection and cross-border data transfer rules; eIDAS (EU) and ESIGN/UETA (US) for legal validity of electronic signatures; SOC 2 and ISO 27001 for information security controls and customer trust; PCI-DSS if the system will store or process payment card data (avoid storing card data where possible); HIPAA if storing protected health information (PHI) requiring additional administrative, physical, and technical safeguards; local data residency laws for some countries (e.g., Russia, China); and NIST SP 800-53/800-63 guidelines for authentication and cryptographic controls. The platform should support evidence and controls needed for audits, data subject access requests (DSARs), breach notification timelines, and legal hold/retention requirements. Legal review is required to map e-signature flows to enforceable acceptance in target jurisdictions.\",\n  \"assumptions\": [\n    \"System will be cloud-hosted in a major cloud provider but must support tenant-level data segregation (logical tenancy) and optionally customer-managed keys (BYOK).\",\n    \"Users have internet access and access via modern web browsers; APIs available for automation and integration.\",\n    \"Each employee account is linked to a single company and cannot directly belong to multiple companies; cross-company collaboration is out-of-scope unless explicitly enabled via trusted external sharing agreements.\",\n    \"Identity providers (SAML/OIDC) integration will be available for enterprise customers; local account management will be supported for smaller customers.\",\n    \"Customers may have differing regulatory obligations; the platform must be configurable to enable features required by regulated customers (e.g., stronger key controls, retention, or audit export).\",\n    \"No payment processing is required by the core file management features (if payments are added later, PCI-DSS considerations will apply).\",\n    \"Electronic signature mechanism may rely on internal signing or third-party e-sign providers depending on customer compliance needs (e.g., advanced or qualified electronic signatures).\"\n  ],\n  \"constraints\": [\n    \"Must enforce company-scoped isolation at every layer (application, storage, and audit) to avoid cross-tenant leakage.\",\n    \"Immutable audit logs requirement constrains retention and storage design \u2014 logs must be immutable and tamper-evident (append-only storage or WORM-like capability) and searchable.\",\n    \"Encryption key management constraint: support for customer-managed keys (BYOK) may be required, which imposes integration and KMS compliance requirements.\",\n    \"Performance constraint: authorization checks on every operation and versioning may impact latency and must be optimized (caching authorization decisions safely, pagination for listings).\",\n    \"Operational constraint: email delivery must avoid leaking document contents \u2014 notifications should contain metadata and safe links; compliance requires opt-in/opt-out and suppression lists.\",\n    \"Integration constraint: must support enterprise SSO (SAML/OIDC) and possibly SCIM for user provisioning; design must allow pluggable identity provider connectors.\",\n    \"Legal/Compliance constraint: e-signature features must be configurable to meet differing jurisdictional requirements (e.g., capture additional identity proofing or certificate-based signatures for EU Qualified Electronic Signatures).\",\n    \"Data residency constraint: some customers may require data to be stored in specific regions; the architecture must support regional data segregation or dedicated instances.\",\n    \"Backup/retention constraint: backup and archival policies must preserve encryption and company segregation; restore and deletion flows must respect legal holds.\",\n    \"Operational scaling constraint: system must scale horizontally for storage, metadata, and audit indexing; rate-limiting and abuse protections must be in place to prevent DoS from tenant activity.\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A cloud-capable web application for secure file and folder management that enforces company-level data segregation, fine-grained, role- and object-level access controls, file versioning and sharing, electronic document signing with signer identity and timestamp recording, in-app and optional email notifications, and immutable audit logging \u2014 all with encryption and controls to ensure that users can only access and act on resources within their assigned company and permissions.",
+        "high_level_requirements": [
+          "User registration and login with company association and optional multi-factor authentication",
+          "Company management with strict data isolation (company-scoped tenancy)",
+          "Role-based access control (RBAC) within companies including role definitions and assignment",
+          "Fine-grained per-file and per-folder permissions (read, write, delete, share, sign, administer)",
+          "Delegation capability for users to grant/change permissions within company scope",
+          "File and folder lifecycle management (create, view, edit, move, delete) with workspace organization",
+          "File versioning and immutable version metadata per change",
+          "Support for multiple file types (documents, images, PDFs) with content-type validation and preview generation",
+          "Controlled file sharing only among authorized company users and groups with sharing audit trail",
+          "Access enforcement on every operation (authorization checks scoped by company and object permissions)",
+          "Electronic signature workflow: sign documents, record signer identity, timestamp, and signature metadata",
+          "Storage of signature artifacts and metadata as part of file/version history with tamper-detection",
+          "In-app notification system with optional email delivery, targeting relevant company users based on permissions and file events",
+          "Audit and reporting: comprehensive, immutable audit logs recording user actions, outcomes, timestamps, and affected objects",
+          "Encryption and key management: encryption at rest and in transit, and secure key lifecycle management",
+          "APIs and integrations (e.g., email delivery, identity providers, backup, search) with secure authentication and authorization"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "User registration and login with company association and optional multi-factor authentication (MFA). Accounts are tied to a single company and support onboarding (invitation or self-registration), password policies, account lockout, and MFA (TOTP/OTP or hardware tokens).",
+            "business_category": "Authentication",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Authentication is the primary gatekeeper for user access; tying accounts to a single company enforces tenancy and MFA mitigates credential compromise risks."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Company management with strict data isolation: create/manage companies, assign company ID to all company-scoped objects, and enforce logical or physical tenancy so data from one company is not accessible by another.",
+            "business_category": "Data Management",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Multi-company deployments require strong isolation to prevent accidental or malicious cross-tenant access and to meet contractual and regulatory obligations."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "Role-based access control (RBAC) within companies: define roles, group users, assign roles to users, and map roles to permission sets; support custom roles and role inheritance where applicable.",
+            "business_category": "Authorization",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "RBAC simplifies permission management, supports least privilege, and provides a scalable model for enforcing company-specific access policies."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Fine-grained per-file and per-folder permissions: assign read, write (edit), delete, share, sign, and administer permissions at file- and folder-level with group and user principals.",
+            "business_category": "Authorization",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Object-level permissions enable controlled collaboration and reduce risk of unauthorized disclosure or modification of sensitive documents."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "Delegation capabilities: some users may have delegation rights allowing them to grant or modify permissions for other users/projects within their company scope, with delegation actions audited.",
+            "business_category": "Administration",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Delegation supports operational flexibility (e.g., managers granting access) while requiring tight controls and auditing to avoid privilege escalation."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "File and folder lifecycle management: create, upload, view, edit, rename, move, delete, restore (from soft-delete), and permanently purge files and folders within company workspaces; include hierarchical folder structure and tagging/metadata.",
+            "business_category": "File Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Standard file operations are core application capabilities; lifecycle controls must be secured and auditable to maintain integrity and availability of company data."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "File versioning: maintain version history for files with metadata (who, when, change summary), ability to view and restore prior versions, and tie signatures and events to specific versions.",
+            "business_category": "Data Management",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Versioning preserves an auditable history of changes and supports recovery and legal evidentiary requirements, especially when signatures are involved."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Support for multiple file types with validation and processing: accept and validate common document formats (Office documents, PDFs), images, and media; generate safe previews (sanitization) and extract metadata for indexing.",
+            "business_category": "File Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Supporting common file types with sanitization and preview generation improves usability but must be done securely to prevent malware or content-based attacks."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Controlled file sharing only among authorized company users/groups: share links or grant object-level access restricted to company users and enforce expiration, revocation, and sharing audit logs.",
+            "business_category": "Collaboration/Security",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Sharing is a common vector for data leakage; corporate-only sharing, expirations, and revocation reduce exposure and maintain company boundaries."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Access enforcement on every operation: implement authorization checks on every API and UI action, enforcing company scope and object permissions; fail-closed by default and log denied attempts.",
+            "business_category": "Authorization",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Consistent, centralized enforcement prevents privilege bypasses and ensures least-privilege controls are applied across the system."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Electronic signature workflow: allow designated users to electronically sign documents; capture signer identity (linked account), capture cryptographic/non-repudiation evidence where possible, and store timestamp and signature intent.",
+            "business_category": "Electronic Signature / Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Signatures change the legal status of documents; capturing identity, intent, and timestamp is required for non-repudiation and regulatory compliance."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "Signature storage and metadata: store signature artifacts (signature block, signature hash, signing certificate references if applicable) and associate them with the specific file version; enable tamper-evidence for signed content and metadata.",
+            "business_category": "Data Management / Security",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Preserving signature artifacts tied to exact versions supports evidence integrity and auditability; tamper-detection supports trustworthiness of signed documents."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "Notifications: in-app notification feed and optional email notifications for events (create, edit, delete, share, sign); notifications should be targeted to relevant users (owners, users with permissions, delegates) and support user preferences and batching/rate limits.",
+            "business_category": "Notifications/UX",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Notifications improve user awareness and collaboration. Email delivery must be controlled to avoid leaking sensitive document content and respect user/company preferences."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Audit and reporting: generate immutable, tamper-evident audit logs recording user actions (user ID, action, timestamp, target object, outcome, source IP, actor role) and provide search/export/reporting for compliance reviews and incident investigations.",
+            "business_category": "Security/Audit/Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Auditable trails are required for forensic analysis, regulatory compliance, dispute resolution, and to prove enforcement of access controls."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "Encryption and key management: encrypt data at rest and in transit (TLS), support per-tenant or per-customer encryption keys where required, integrate with a secure Key Management Service (KMS) with proper key rotation, access controls, and key usage logging.",
+            "business_category": "Infrastructure/Security",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Encryption protects confidentiality of stored and communicated data; KMS integration enables control over encryption keys, supports compliance (e.g., client-controlled keys), and reduces exposure from storage compromise."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "Secure APIs and integrations: provide authenticated and authorized RESTful APIs for file operations, notifications, search, and administration; integrate securely with identity providers (SSO/SAML/OIDC), email services, backup systems, and optional third-party e-sign providers; apply rate-limiting and RBAC to API clients.",
+            "business_category": "Integration/Platform",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "APIs enable automation and integrations but expand the attack surface; proper authentication, authorization, and operational controls are required to prevent abuse and data exfiltration."
+          }
+        ],
+        "security_context": "Applicable regulations and standards will depend on customer industry and geography. Typical applicable frameworks include: GDPR (EU) and ePrivacy/CCPA (California) for personal data protection and cross-border data transfer rules; eIDAS (EU) and ESIGN/UETA (US) for legal validity of electronic signatures; SOC 2 and ISO 27001 for information security controls and customer trust; PCI-DSS if the system will store or process payment card data (avoid storing card data where possible); HIPAA if storing protected health information (PHI) requiring additional administrative, physical, and technical safeguards; local data residency laws for some countries (e.g., Russia, China); and NIST SP 800-53/800-63 guidelines for authentication and cryptographic controls. The platform should support evidence and controls needed for audits, data subject access requests (DSARs), breach notification timelines, and legal hold/retention requirements. Legal review is required to map e-signature flows to enforceable acceptance in target jurisdictions.",
+        "assumptions": [
+          "System will be cloud-hosted in a major cloud provider but must support tenant-level data segregation (logical tenancy) and optionally customer-managed keys (BYOK).",
+          "Users have internet access and access via modern web browsers; APIs available for automation and integration.",
+          "Each employee account is linked to a single company and cannot directly belong to multiple companies; cross-company collaboration is out-of-scope unless explicitly enabled via trusted external sharing agreements.",
+          "Identity providers (SAML/OIDC) integration will be available for enterprise customers; local account management will be supported for smaller customers.",
+          "Customers may have differing regulatory obligations; the platform must be configurable to enable features required by regulated customers (e.g., stronger key controls, retention, or audit export).",
+          "No payment processing is required by the core file management features (if payments are added later, PCI-DSS considerations will apply).",
+          "Electronic signature mechanism may rely on internal signing or third-party e-sign providers depending on customer compliance needs (e.g., advanced or qualified electronic signatures)."
+        ],
+        "constraints": [
+          "Must enforce company-scoped isolation at every layer (application, storage, and audit) to avoid cross-tenant leakage.",
+          "Immutable audit logs requirement constrains retention and storage design \u2014 logs must be immutable and tamper-evident (append-only storage or WORM-like capability) and searchable.",
+          "Encryption key management constraint: support for customer-managed keys (BYOK) may be required, which imposes integration and KMS compliance requirements.",
+          "Performance constraint: authorization checks on every operation and versioning may impact latency and must be optimized (caching authorization decisions safely, pagination for listings).",
+          "Operational constraint: email delivery must avoid leaking document contents \u2014 notifications should contain metadata and safe links; compliance requires opt-in/opt-out and suppression lists.",
+          "Integration constraint: must support enterprise SSO (SAML/OIDC) and possibly SCIM for user provisioning; design must allow pluggable identity provider connectors.",
+          "Legal/Compliance constraint: e-signature features must be configurable to meet differing jurisdictional requirements (e.g., capture additional identity proofing or certificate-based signatures for EU Qualified Electronic Signatures).",
+          "Data residency constraint: some customers may require data to be stored in specific regions; the architecture must support regional data segregation or dedicated instances.",
+          "Backup/retention constraint: backup and archival policies must preserve encryption and company segregation; restore and deletion flows must respect legal holds.",
+          "Operational scaling constraint: system must scale horizontally for storage, metadata, and audit indexing; rate-limiting and abuse protections must be in place to prevent DoS from tenant activity."
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"The system is a cloud-hosted, multi-tenant web application composed of user-facing frontends (Web SPA and Admin UI) served via an edge layer (CDN/WAF) to an API Gateway that enforces authentication/authorization and routes requests to a set of application services (Auth, Core API, File/Versioning, RBAC/Permissions, Signing, Notification, Audit). Application services persist encrypted metadata to a primary metadata database, files and versions to encrypted object storage, and write immutable audit events to an append-only audit store. A KMS manages encryption keys including optional customer-managed keys. External services (Identity Providers, Email, Search/Indexing, Backup, optional third-party e-sign providers) integrate via secure, authenticated APIs. Company-scoped tenancy and fine-grained authorization are enforced at the gateway and within services on every operation, while notifications and audit trails ensure visibility and compliance.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Users & Admins\\\"\\n  U[End Users & Admins]\\n  ADMIN[Company Admins]\\n  IDP[Identity Providers SSO/OIDC/SAML]\\nend\\nsubgraph \\\"Edge Layer\\\"\\n  CDN[CDN & WAF]\\n  GW[API Gateway & AuthZ]\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web SPA & Admin UI]\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[Core API Services]\\n  AUTH[Auth & Session Service]\\n  FILES[File Service & Versioning]\\n  PERM[Permissions & RBAC Service]\\n  SIGN[Electronic Signature Service]\\n  NOTIFY[Notification Service]\\n  AUDIT[Audit & Logging Service]\\nend\\nsubgraph \\\"Data Layer\\\"\\n  DB[Metadata DB (Encrypted)]\\n  STORAGE[Object Storage (Encrypted)]\\n  KMS[Key Management Service]\\n  AUDITSTORE[Immutable Audit Store]\\nend\\nsubgraph \\\"External Services\\\"\\n  EMAIL[Email Provider]\\n  SEARCH[Search / Indexing]\\n  BACKUP[Backup / Archive]\\n  ESIGN[Third-Party ESign Provider]\\nend\\n\\nU --> CDN\\nADMIN --> CDN\\nCDN --> FE\\nFE --> GW\\nIDP --> AUTH\\nFE --> GW\\nGW --> AUTH\\nGW --> API\\nAPI --> FILES\\nAPI --> PERM\\nAPI --> SIGN\\nAPI --> NOTIFY\\nAPI --> AUDIT\\nFILES --> STORAGE\\nFILES --> DB\\nDB --> KMS\\nSTORAGE --> KMS\\nAUDIT --> AUDITSTORE\\nNOTIFY --> EMAIL\\nAPI --> SEARCH\\nBACKUP --> STORAGE\\nSIGN --> ESIGN\\n\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Provide user interfaces for end users and administrators (Web SPA and Admin UI); present previews, upload/download flows, and initiate signing and sharing actions.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN/WAF\",\n        \"Identity Providers (OIDC/SAML)\"\n      ],\n      \"data_handled\": [\n        \"User interactions & UI state\",\n        \"Temporary upload chunks/metadata\",\n        \"Notification preferences\"\n      ]\n    },\n    {\n      \"name\": \"Edge Layer\",\n      \"responsibility\": \"Ingress controls including CDN, web application firewall, TLS termination, rate limiting, and API Gateway which performs authentication, initial authorization checks, request validation, and routing.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud CDN/WAF\",\n        \"API Gateway products\"\n      ],\n      \"data_handled\": [\n        \"Authenticated requests\",\n        \"Request/response metadata\",\n        \"Rate/abuse telemetry\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic including Auth & SSO, Core API, File & Version management, Permissions & RBAC engine, Electronic Signature flows, Notification handling, and Audit event generation.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Identity Providers (SSO/SCIM)\",\n        \"Third-party e-sign providers\"\n      ],\n      \"data_handled\": [\n        \"User identities & roles\",\n        \"File metadata & version records\",\n        \"Permission assignments\",\n        \"Signature metadata\",\n        \"Audit events\",\n        \"Notification events\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Persist encrypted metadata, file objects, versions, and immutable audit logs; enforce company-scoped identifiers on all persisted objects and support retention/legal-hold policies.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud object storage\",\n        \"Cloud-hosted databases\",\n        \"KMS for encryption keys\"\n      ],\n      \"data_handled\": [\n        \"Encrypted file blobs\",\n        \"Metadata records (company IDs, file attributes)\",\n        \"Version history\",\n        \"Audit logs\",\n        \"Signature artifacts\"\n      ]\n    },\n    {\n      \"name\": \"Key Management\",\n      \"responsibility\": \"Manage encryption keys for data at rest/encryption operations, support BYOK/customer-managed keys, key rotation, access controls and key usage audit logs.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud KMS (or customer-managed HSM)\"\n      ],\n      \"data_handled\": [\n        \"Encryption keys & key metadata\",\n        \"Key usage logs\"\n      ]\n    },\n    {\n      \"name\": \"External Integrations\",\n      \"responsibility\": \"Support auxiliary services such as email delivery, search/indexing, backup/archival, and optional third-party e-sign providers; integrations use authenticated APIs and limited scopes.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Email providers (SMTP/SES)\",\n        \"Search indexing services\",\n        \"Backup/archive services\",\n        \"Third-party e-sign vendors\"\n      ],\n      \"data_handled\": [\n        \"Notification messages (metadata/links)\",\n        \"Search indexes (metadata)\",\n        \"Backups (encrypted blobs & metadata)\",\n        \"Signature validations/certificates\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"A user interacts with the Web SPA which connects via CDN/WAF to the API Gateway. The gateway verifies authentication/authorization then forwards requests to application services. File uploads may be direct to object storage (pre-signed URLs) while metadata and version records are written to the encrypted metadata DB. File service writes version metadata and signature artifacts tied to exact versions and triggers the audit service and notification service. Notification service writes in-app notifications and sends email via the email provider (containing metadata and safe links, not full content). Audit events are appended to an immutable audit store. KMS is invoked for encryption/decryption operations and to manage customer keys. Search indexing consumes sanitized metadata for search. Backups read encrypted storage and DB content while preserving encryption and tenancy boundaries.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"End Users & Admins\",\n        \"External Identity Providers\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS 1.2+/HTTPS\",\n        \"Client-side validation\",\n        \"Rate limiting and bot detection\",\n        \"MFA and strong password policies\"\n      ]\n    },\n    {\n      \"name\": \"Edge / DMZ\",\n      \"components\": [\n        \"CDN & WAF\",\n        \"API Gateway\"\n      ],\n      \"boundary_type\": \"Perimeter/Ingress\",\n      \"security_controls\": [\n        \"WAF rules and OWASP protections\",\n        \"IP allowlists/denylists\",\n        \"Mutual TLS for integrations\",\n        \"Request validation and rate limiting\",\n        \"Initial AuthN/AuthZ checks\"\n      ]\n    },\n    {\n      \"name\": \"Application Tier\",\n      \"components\": [\n        \"Core API Services\",\n        \"Auth Service\",\n        \"File/Version Service\",\n        \"Permissions Service\",\n        \"Signature Service\",\n        \"Notification Service\",\n        \"Audit Service\"\n      ],\n      \"boundary_type\": \"Trusted Internal\",\n      \"security_controls\": [\n        \"Service-to-service mTLS\",\n        \"Least-privilege service roles\",\n        \"Runtime monitoring & anomaly detection\",\n        \"Input sanitization and content sanitizers\",\n        \"Centralized authorization checks\"\n      ]\n    },\n    {\n      \"name\": \"Data Tier\",\n      \"components\": [\n        \"Metadata DB\",\n        \"Object Storage\",\n        \"Immutable Audit Store\",\n        \"KMS\"\n      ],\n      \"boundary_type\": \"Highly Trusted / Confidential\",\n      \"security_controls\": [\n        \"Encryption at rest (per-tenant keys where required)\",\n        \"Encryption in transit\",\n        \"KMS access control and logging\",\n        \"Network isolation/VPCs and private endpoints\",\n        \"WORM or append-only audit storage\"\n      ]\n    },\n    {\n      \"name\": \"External Service Integrations\",\n      \"components\": [\n        \"Email Provider\",\n        \"Search Indexing\",\n        \"Backup/Archive\",\n        \"Third-Party ESign Provider\"\n      ],\n      \"boundary_type\": \"Third-Party\",\n      \"security_controls\": [\n        \"Scoped API keys and short-lived tokens\",\n        \"Limited data sharing (metadata-only for email)\",\n        \"Contractual SLA/security requirements\",\n        \"Encrypted transport and payloads\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary attack surfaces: 1) Web UI/API Gateway: exposure to the Internet; risks include XSS, CSRF, auth bypass, and credential theft \u2014 mitigations: WAF, CSP, strong auth, MFA, rate limiting, SSO hardened configs. Risk level: High. 2) Auth & Identity integrations: SAML/OIDC endpoints and token flows; risks include token theft, SSO misconfigurations \u2014 mitigations: signed assertions, replay protections, short token TTLs. Risk level: High. 3) File upload processing: upload/parsing/preview generation may allow malware or content-based exploits; mitigate with sandboxed processors, content-type validation, antivirus/scanning, and sanitization. Risk level: High. 4) APIs for file/metadata operations: exposed REST APIs for automation; risks include excessive privileges, insecure direct object references (IDOR), and mass data exfiltration \u2014 mitigations: strict RBAC, per-request company-scoped authorization, rate-limiting, and audit logging. Risk level: High. 5) Third-party integrations (email/esign/search/backup): risks include data leakage and compromised credentials \u2014 mitigations: least-privilege credentials, metadata-only emails with safe links, encrypted backups, and contractual security reviews. Risk level: Medium. 6) Data stores and keys: compromise of DB/storage/KMS would expose data; mitigations: strong key management, BYOK options, network isolation, monitoring, and immutable audit stores. Risk level: Critical. 7) Admin console and delegation features: privileged actions can cause privilege escalation; mitigations: just-in-time admin access, approval workflows, and audited delegation events. Risk level: High. Overall the system must implement defense-in-depth, centralized authorization enforcement, immutable audit trails, strong KMS integration, and hardened third-party integration patterns to reduce attack surface and meet compliance needs.\"\n}",
+      "pydantic": {
+        "architecture_summary": "The system is a cloud-hosted, multi-tenant web application composed of user-facing frontends (Web SPA and Admin UI) served via an edge layer (CDN/WAF) to an API Gateway that enforces authentication/authorization and routes requests to a set of application services (Auth, Core API, File/Versioning, RBAC/Permissions, Signing, Notification, Audit). Application services persist encrypted metadata to a primary metadata database, files and versions to encrypted object storage, and write immutable audit events to an append-only audit store. A KMS manages encryption keys including optional customer-managed keys. External services (Identity Providers, Email, Search/Indexing, Backup, optional third-party e-sign providers) integrate via secure, authenticated APIs. Company-scoped tenancy and fine-grained authorization are enforced at the gateway and within services on every operation, while notifications and audit trails ensure visibility and compliance.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Users & Admins\"\n  U[End Users & Admins]\n  ADMIN[Company Admins]\n  IDP[Identity Providers SSO/OIDC/SAML]\nend\nsubgraph \"Edge Layer\"\n  CDN[CDN & WAF]\n  GW[API Gateway & AuthZ]\nend\nsubgraph \"Frontend Layer\"\n  FE[Web SPA & Admin UI]\nend\nsubgraph \"Application Services\"\n  API[Core API Services]\n  AUTH[Auth & Session Service]\n  FILES[File Service & Versioning]\n  PERM[Permissions & RBAC Service]\n  SIGN[Electronic Signature Service]\n  NOTIFY[Notification Service]\n  AUDIT[Audit & Logging Service]\nend\nsubgraph \"Data Layer\"\n  DB[Metadata DB (Encrypted)]\n  STORAGE[Object Storage (Encrypted)]\n  KMS[Key Management Service]\n  AUDITSTORE[Immutable Audit Store]\nend\nsubgraph \"External Services\"\n  EMAIL[Email Provider]\n  SEARCH[Search / Indexing]\n  BACKUP[Backup / Archive]\n  ESIGN[Third-Party ESign Provider]\nend\n\nU --> CDN\nADMIN --> CDN\nCDN --> FE\nFE --> GW\nIDP --> AUTH\nFE --> GW\nGW --> AUTH\nGW --> API\nAPI --> FILES\nAPI --> PERM\nAPI --> SIGN\nAPI --> NOTIFY\nAPI --> AUDIT\nFILES --> STORAGE\nFILES --> DB\nDB --> KMS\nSTORAGE --> KMS\nAUDIT --> AUDITSTORE\nNOTIFY --> EMAIL\nAPI --> SEARCH\nBACKUP --> STORAGE\nSIGN --> ESIGN\n",
+        "components": [
+          {
+            "name": "Frontend Layer",
+            "responsibility": "Provide user interfaces for end users and administrators (Web SPA and Admin UI); present previews, upload/download flows, and initiate signing and sharing actions.",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "CDN/WAF",
+              "Identity Providers (OIDC/SAML)"
+            ],
+            "data_handled": [
+              "User interactions & UI state",
+              "Temporary upload chunks/metadata",
+              "Notification preferences"
+            ]
+          },
+          {
+            "name": "Edge Layer",
+            "responsibility": "Ingress controls including CDN, web application firewall, TLS termination, rate limiting, and API Gateway which performs authentication, initial authorization checks, request validation, and routing.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Cloud CDN/WAF",
+              "API Gateway products"
+            ],
+            "data_handled": [
+              "Authenticated requests",
+              "Request/response metadata",
+              "Rate/abuse telemetry"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core business logic including Auth & SSO, Core API, File & Version management, Permissions & RBAC engine, Electronic Signature flows, Notification handling, and Audit event generation.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Identity Providers (SSO/SCIM)",
+              "Third-party e-sign providers"
+            ],
+            "data_handled": [
+              "User identities & roles",
+              "File metadata & version records",
+              "Permission assignments",
+              "Signature metadata",
+              "Audit events",
+              "Notification events"
+            ]
+          },
+          {
+            "name": "Data Storage",
+            "responsibility": "Persist encrypted metadata, file objects, versions, and immutable audit logs; enforce company-scoped identifiers on all persisted objects and support retention/legal-hold policies.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Cloud object storage",
+              "Cloud-hosted databases",
+              "KMS for encryption keys"
+            ],
+            "data_handled": [
+              "Encrypted file blobs",
+              "Metadata records (company IDs, file attributes)",
+              "Version history",
+              "Audit logs",
+              "Signature artifacts"
+            ]
+          },
+          {
+            "name": "Key Management",
+            "responsibility": "Manage encryption keys for data at rest/encryption operations, support BYOK/customer-managed keys, key rotation, access controls and key usage audit logs.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Cloud KMS (or customer-managed HSM)"
+            ],
+            "data_handled": [
+              "Encryption keys & key metadata",
+              "Key usage logs"
+            ]
+          },
+          {
+            "name": "External Integrations",
+            "responsibility": "Support auxiliary services such as email delivery, search/indexing, backup/archival, and optional third-party e-sign providers; integrations use authenticated APIs and limited scopes.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Email providers (SMTP/SES)",
+              "Search indexing services",
+              "Backup/archive services",
+              "Third-party e-sign vendors"
+            ],
+            "data_handled": [
+              "Notification messages (metadata/links)",
+              "Search indexes (metadata)",
+              "Backups (encrypted blobs & metadata)",
+              "Signature validations/certificates"
+            ]
+          }
+        ],
+        "data_flow_description": "A user interacts with the Web SPA which connects via CDN/WAF to the API Gateway. The gateway verifies authentication/authorization then forwards requests to application services. File uploads may be direct to object storage (pre-signed URLs) while metadata and version records are written to the encrypted metadata DB. File service writes version metadata and signature artifacts tied to exact versions and triggers the audit service and notification service. Notification service writes in-app notifications and sends email via the email provider (containing metadata and safe links, not full content). Audit events are appended to an immutable audit store. KMS is invoked for encryption/decryption operations and to manage customer keys. Search indexing consumes sanitized metadata for search. Backups read encrypted storage and DB content while preserving encryption and tenancy boundaries.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "End Users & Admins",
+              "External Identity Providers"
+            ],
+            "boundary_type": "Untrusted",
+            "security_controls": [
+              "TLS 1.2+/HTTPS",
+              "Client-side validation",
+              "Rate limiting and bot detection",
+              "MFA and strong password policies"
+            ]
+          },
+          {
+            "name": "Edge / DMZ",
+            "components": [
+              "CDN & WAF",
+              "API Gateway"
+            ],
+            "boundary_type": "Perimeter/Ingress",
+            "security_controls": [
+              "WAF rules and OWASP protections",
+              "IP allowlists/denylists",
+              "Mutual TLS for integrations",
+              "Request validation and rate limiting",
+              "Initial AuthN/AuthZ checks"
+            ]
+          },
+          {
+            "name": "Application Tier",
+            "components": [
+              "Core API Services",
+              "Auth Service",
+              "File/Version Service",
+              "Permissions Service",
+              "Signature Service",
+              "Notification Service",
+              "Audit Service"
+            ],
+            "boundary_type": "Trusted Internal",
+            "security_controls": [
+              "Service-to-service mTLS",
+              "Least-privilege service roles",
+              "Runtime monitoring & anomaly detection",
+              "Input sanitization and content sanitizers",
+              "Centralized authorization checks"
+            ]
+          },
+          {
+            "name": "Data Tier",
+            "components": [
+              "Metadata DB",
+              "Object Storage",
+              "Immutable Audit Store",
+              "KMS"
+            ],
+            "boundary_type": "Highly Trusted / Confidential",
+            "security_controls": [
+              "Encryption at rest (per-tenant keys where required)",
+              "Encryption in transit",
+              "KMS access control and logging",
+              "Network isolation/VPCs and private endpoints",
+              "WORM or append-only audit storage"
+            ]
+          },
+          {
+            "name": "External Service Integrations",
+            "components": [
+              "Email Provider",
+              "Search Indexing",
+              "Backup/Archive",
+              "Third-Party ESign Provider"
+            ],
+            "boundary_type": "Third-Party",
+            "security_controls": [
+              "Scoped API keys and short-lived tokens",
+              "Limited data sharing (metadata-only for email)",
+              "Contractual SLA/security requirements",
+              "Encrypted transport and payloads"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Primary attack surfaces: 1) Web UI/API Gateway: exposure to the Internet; risks include XSS, CSRF, auth bypass, and credential theft \u2014 mitigations: WAF, CSP, strong auth, MFA, rate limiting, SSO hardened configs. Risk level: High. 2) Auth & Identity integrations: SAML/OIDC endpoints and token flows; risks include token theft, SSO misconfigurations \u2014 mitigations: signed assertions, replay protections, short token TTLs. Risk level: High. 3) File upload processing: upload/parsing/preview generation may allow malware or content-based exploits; mitigate with sandboxed processors, content-type validation, antivirus/scanning, and sanitization. Risk level: High. 4) APIs for file/metadata operations: exposed REST APIs for automation; risks include excessive privileges, insecure direct object references (IDOR), and mass data exfiltration \u2014 mitigations: strict RBAC, per-request company-scoped authorization, rate-limiting, and audit logging. Risk level: High. 5) Third-party integrations (email/esign/search/backup): risks include data leakage and compromised credentials \u2014 mitigations: least-privilege credentials, metadata-only emails with safe links, encrypted backups, and contractual security reviews. Risk level: Medium. 6) Data stores and keys: compromise of DB/storage/KMS would expose data; mitigations: strong key management, BYOK options, network isolation, monitoring, and immutable audit stores. Risk level: Critical. 7) Admin console and delegation features: privileged actions can cause privilege escalation; mitigations: just-in-time admin access, approval workflows, and audited delegation events. Risk level: High. Overall the system must implement defense-in-depth, centralized authorization enforcement, immutable audit trails, strong KMS integration, and hardened third-party integration patterns to reduce attack surface and meet compliance needs."
+      }
+    }
+  ]
+}

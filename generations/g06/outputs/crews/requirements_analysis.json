@@ -1,0 +1,794 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"A cloud-hosted, browser-first multi-tenant web platform composed of a secured frontend SPA served via an edge CDN/WAF, a central API gateway and application service layer that implements project/experiment/model management, an AI assistant orchestration layer that mediates LLM usage, real-time collaboration services, and integration adapters to external ML platforms and cloud storage. Persistent storage is split into relational metadata, object artifact storage, vector/search store for embeddings, time-series metrics, and append-only audit logs. CI/CD and a deployment orchestrator target runtime clusters for model serving. Monitoring, SIEM and key management integrate for encryption, observability and compliance. All external interactions (identity providers, LLMs, cloud storage, ML infra) occur over secure, authenticated APIs with RBAC, tenant isolation and audit trails.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\n  subgraph \\\"Users\\\"\\n    U1[Users Browsers] --> EDGE[Edge CDN & WAF]\\n  end\\n\\n  subgraph \\\"Frontend Layer\\\"\\n    EDGE --> FE[Web App SPA & Admin UI]\\n    FE --> API[API Gateway & Auth Proxy]\\n  end\\n\\n  subgraph \\\"Application Services\\\"\\n    API --> AS[Core App Services Projects/Experiments/Models]\\n    AS --> AI[AI Assistant & LLM Orchestration]\\n    AS --> RT[Realtime Collaboration & Notifications]\\n    AS --> INTEG[Integration Adapters & Webhooks]\\n  end\\n\\n  subgraph \\\"Data Layer\\\"\\n    AS --> DB[Relational DB Tenancy RBAC Metadata]\\n    AS --> OBJ[Object Storage Artifacts/Datasets]\\n    AS --> TS[Time-series DB Metrics]\\n    AS --> VEC[Vector DB Search/Embeddings]\\n    AS --> AUDIT[Audit Logs AppendOnly Storage]\\n  end\\n\\n  subgraph \\\"Platform & Ops\\\"\\n    AS --> CI[CI/CD & Deployment Orchestrator]\\n    CI --> K8S[Runtime & Model Serving Platform]\\n    AS --> MON[Monitoring & SIEM]\\n    AS --> KMS[Key Management Service / BYOK]\\n  end\\n\\n  subgraph \\\"External Services\\\"\\n    AI --> LLM[External LLM Providers / Private LLMs]\\n    OBJ --> CloudStorage[S3 GCS Azure Blob]\\n    API --> IDP[Identity Providers OIDC SAML Social]\\n    INTEG --> ExtML[External ML Platforms SageMaker/Kubeflow]\\n    CI --> GitCI[CI Systems & Container Registries]\\n  end\\n\\n  %% cross links\\n  FE --> RT\\n  RT --> DB\\n  AUDIT --> MON\\n  K8S --> MON\\n  K8S --> OBJ\\n\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Provides the browser-first SPA and admin UI, handles client-side rendering, localization, file previews, upload initiation and offline-friendly UX.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"CDN/WAF providers\",\n        \"Identity Providers (OIDC/SAML/Social OAuth)\"\n      ],\n      \"data_handled\": [\n        \"User session tokens\",\n        \"UI requests/responses\",\n        \"Small metadata for previews and user preferences\"\n      ]\n    },\n    {\n      \"name\": \"Edge / API Gateway\",\n      \"responsibility\": \"Ingress control for traffic (TLS termination), request routing, authentication proxy, rate limiting, WAF protections and initial throttling.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud Load Balancers\",\n        \"WAF/CDN services\"\n      ],\n      \"data_handled\": [\n        \"Authenticated API requests\",\n        \"Rate/usage telemetry\",\n        \"Identity tokens and SSO assertions\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic for projects, experiments, model registry, templates, RBAC enforcement, activity feed and admin tenant controls.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Relational DB\",\n        \"Object Storage\",\n        \"Monitoring/SIEM\"\n      ],\n      \"data_handled\": [\n        \"Project/experiment metadata\",\n        \"RBAC policies\",\n        \"Audit-aware operational events\"\n      ]\n    },\n    {\n      \"name\": \"AI Assistant & LLM Orchestration\",\n      \"responsibility\": \"Middleware that sanitizes context, enforces data usage policies, manages prompts/embeddings, caches results, handles multi-LLM routing and per-tenant privacy options.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"External LLM providers\",\n        \"Vector DB for embeddings\"\n      ],\n      \"data_handled\": [\n        \"Chat transcripts\",\n        \"Embeddings\",\n        \"Context windows with experiment metadata (redacted as needed)\"\n      ]\n    },\n    {\n      \"name\": \"Realtime Collaboration & Notifications\",\n      \"responsibility\": \"Handles WebSocket/RTC or similar channels for presence, live editing, comments, @mentions, and push notifications.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Managed realtime services or self-hosted socket layer\"\n      ],\n      \"data_handled\": [\n        \"Transient collaborative state\",\n        \"Chat/comment messages\",\n        \"Presence events\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Stores persistent data: relational DB for metadata and tenancy; object storage for datasets and model artifacts; time-series DB for metrics; vector DB for search/embeddings; append-only audit logs.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud object stores (S3/GCS/Azure Blob)\",\n        \"Managed DB services\",\n        \"Vector DB providers\"\n      ],\n      \"data_handled\": [\n        \"User and tenant metadata\",\n        \"Datasets and artifacts\",\n        \"Metrics, logs, embeddings\",\n        \"Audit records\"\n      ]\n    },\n    {\n      \"name\": \"Integration & Deployment Services\",\n      \"responsibility\": \"Adapters to external ML platforms, cloud storage, CI/CD systems, and orchestrates model deployment to runtime targets with templating and controlled rollouts.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"SageMaker/Kubeflow/APIs\",\n        \"CI systems\",\n        \"Cloud provider deployment APIs\"\n      ],\n      \"data_handled\": [\n        \"Deployment configs\",\n        \"Service credentials (scoped)\",\n        \"Deployment telemetry\"\n      ]\n    },\n    {\n      \"name\": \"Platform & Ops\",\n      \"responsibility\": \"Operational tooling: CI/CD, runtime clusters, monitoring, SIEM, KMS/BYOK, backup and compliance controls.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"SIEM/Monitoring vendors\",\n        \"KMS providers\",\n        \"Cluster management (K8s)\"\n      ],\n      \"data_handled\": [\n        \"Operational logs\",\n        \"Alerts and incidents\",\n        \"Encryption keys (references only)\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Third-party dependencies used for identity, LLMs, cloud storage, external ML infra, and CI/CD integration.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Identity Providers (OIDC/SAML)\",\n        \"LLM APIs (OpenAI/Anthropic/private)\",\n        \"Cloud Storage (S3/GCS/Azure)\",\n        \"External ML platforms\"\n      ],\n      \"data_handled\": [\n        \"SSO assertions\",\n        \"Model inference requests/responses\",\n        \"Artifacts stored externally via connectors\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users interact via the SPA which calls the API Gateway after authentication. Requests go to Core App Services which enforce RBAC, fetch metadata from the relational DB and metrics from the time-series DB, and retrieve artifacts from object storage. The AI Assistant orchestrator requests embeddings from the vector DB and routes sanitized prompts to LLM providers, storing chat history and summaries in per-user storage with retention controls. Realtime collaboration messages traverse the realtime service and may be persisted as comments. Deployments are triggered through CI/CD to the runtime platform which pulls model artifacts from object storage. Audit logs and telemetry stream to append-only storage and monitoring/SIEM for detection and compliance. Integrations to cloud storage and external ML platforms use scoped service accounts and token-based APIs; sensitive keys are managed via KMS/BYOK.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users Browsers\",\n        \"External Identity Providers\",\n        \"External LLM Providers\",\n        \"Third-party CI/CD\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS everywhere\",\n        \"WAF and CDN\",\n        \"Strict CORS\",\n        \"Rate limiting and bot detection\",\n        \"Multi-factor authentication\"\n      ]\n    },\n    {\n      \"name\": \"Edge / DMZ\",\n      \"components\": [\n        \"Edge CDN & WAF\",\n        \"API Gateway & Auth Proxy\"\n      ],\n      \"boundary_type\": \"Perimeter/DMZ\",\n      \"security_controls\": [\n        \"Mutual TLS for upstream services\",\n        \"JWT/OIDC token validation\",\n        \"Request size limits and antivirus scanning for uploads\",\n        \"Web application firewall rules\"\n      ]\n    },\n    {\n      \"name\": \"Application & Internal Network\",\n      \"components\": [\n        \"Core App Services\",\n        \"AI Orchestrator\",\n        \"Realtime Services\",\n        \"Integration Adapters\"\n      ],\n      \"boundary_type\": \"Internal/Trusted\",\n      \"security_controls\": [\n        \"Network segmentation / VPCs\",\n        \"Service-to-service mTLS\",\n        \"RBAC and attribute-based access control\",\n        \"Input/output sanitization for LLM contexts\",\n        \"Secrets stored in KMS\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage Tier\",\n      \"components\": [\n        \"Relational DB\",\n        \"Object Storage\",\n        \"Vector DB\",\n        \"Time-series DB\",\n        \"Audit Logs\",\n        \"KMS\"\n      ],\n      \"boundary_type\": \"Highly Trusted / Confidential\",\n      \"security_controls\": [\n        \"Encryption at rest (customer-managed keys option)\",\n        \"Least-privilege IAM roles\",\n        \"Immutable append-only audit storage\",\n        \"Database activity monitoring and backups\",\n        \"Tenant isolation and row-level security\"\n      ]\n    },\n    {\n      \"name\": \"External Partner Networks\",\n      \"components\": [\n        \"External ML Platforms\",\n        \"Customer Cloud Storage\",\n        \"Customer Identity Providers\"\n      ],\n      \"boundary_type\": \"Third-party\",\n      \"security_controls\": [\n        \"Scoped service accounts with limited privileges\",\n        \"Short-lived tokens and credential rotation\",\n        \"Signed requests and logging\",\n        \"Clear SLA/data processing agreements\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: Web UI (SPA) and public API Gateway (REST/GraphQL) \u2014 high risk if auth or input validation is weak; mitigate with strong auth, rate limiting, WAF, and strict content scanning. Authentication flows and SSO endpoints (OIDC/SAML/social) are critical compromise targets \u2014 use hardened libraries, signature validation, JWS/JWT checks and monitoring. File upload pipeline (dataset/artifact uploads) presents malware and exfiltration risk \u2014 require virus scanning, content-type validation, PII/PHI detection, and staging quarantine. AI Assistant and LLM integrations expose potential data leakage and prompt injection risks \u2014 use context redaction, allowlist/blocklist, response filtering, prompt integrity checks, per-tenant opt-outs and logging. Integration adapters (cloud storage, external ML infra, CI/CD) and webhooks are lateral movement vectors \u2014 enforce least privilege, scoped tokens, IP allowlists and robust auditing. Realtime collaboration endpoints (WebSocket/RTC) require authentication and message size/validation controls to avoid abuse and data leakage. Exposed telemetry/monitoring endpoints must be authenticated and rate-limited to prevent information disclosure. Overall risk levels: Authentication & data storage (Critical), API surface & integrations (High), AI assistant & LLM paths (High), File upload & preview (High), Realtime/notifications (Medium), Public project showcase/export features (Medium) \u2014 mitigations include strong encryption, RBAC, tenant isolation, KMS/BYOK, privacy controls, input/output sanitization, SIEM integration and incident response runbooks.\"\n}",
+  "pydantic": {
+    "architecture_summary": "A cloud-hosted, browser-first multi-tenant web platform composed of a secured frontend SPA served via an edge CDN/WAF, a central API gateway and application service layer that implements project/experiment/model management, an AI assistant orchestration layer that mediates LLM usage, real-time collaboration services, and integration adapters to external ML platforms and cloud storage. Persistent storage is split into relational metadata, object artifact storage, vector/search store for embeddings, time-series metrics, and append-only audit logs. CI/CD and a deployment orchestrator target runtime clusters for model serving. Monitoring, SIEM and key management integrate for encryption, observability and compliance. All external interactions (identity providers, LLMs, cloud storage, ML infra) occur over secure, authenticated APIs with RBAC, tenant isolation and audit trails.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\n  subgraph \"Users\"\n    U1[Users Browsers] --> EDGE[Edge CDN & WAF]\n  end\n\n  subgraph \"Frontend Layer\"\n    EDGE --> FE[Web App SPA & Admin UI]\n    FE --> API[API Gateway & Auth Proxy]\n  end\n\n  subgraph \"Application Services\"\n    API --> AS[Core App Services Projects/Experiments/Models]\n    AS --> AI[AI Assistant & LLM Orchestration]\n    AS --> RT[Realtime Collaboration & Notifications]\n    AS --> INTEG[Integration Adapters & Webhooks]\n  end\n\n  subgraph \"Data Layer\"\n    AS --> DB[Relational DB Tenancy RBAC Metadata]\n    AS --> OBJ[Object Storage Artifacts/Datasets]\n    AS --> TS[Time-series DB Metrics]\n    AS --> VEC[Vector DB Search/Embeddings]\n    AS --> AUDIT[Audit Logs AppendOnly Storage]\n  end\n\n  subgraph \"Platform & Ops\"\n    AS --> CI[CI/CD & Deployment Orchestrator]\n    CI --> K8S[Runtime & Model Serving Platform]\n    AS --> MON[Monitoring & SIEM]\n    AS --> KMS[Key Management Service / BYOK]\n  end\n\n  subgraph \"External Services\"\n    AI --> LLM[External LLM Providers / Private LLMs]\n    OBJ --> CloudStorage[S3 GCS Azure Blob]\n    API --> IDP[Identity Providers OIDC SAML Social]\n    INTEG --> ExtML[External ML Platforms SageMaker/Kubeflow]\n    CI --> GitCI[CI Systems & Container Registries]\n  end\n\n  %% cross links\n  FE --> RT\n  RT --> DB\n  AUDIT --> MON\n  K8S --> MON\n  K8S --> OBJ\n",
+    "components": [
+      {
+        "name": "Frontend Layer",
+        "responsibility": "Provides the browser-first SPA and admin UI, handles client-side rendering, localization, file previews, upload initiation and offline-friendly UX.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "CDN/WAF providers",
+          "Identity Providers (OIDC/SAML/Social OAuth)"
+        ],
+        "data_handled": [
+          "User session tokens",
+          "UI requests/responses",
+          "Small metadata for previews and user preferences"
+        ]
+      },
+      {
+        "name": "Edge / API Gateway",
+        "responsibility": "Ingress control for traffic (TLS termination), request routing, authentication proxy, rate limiting, WAF protections and initial throttling.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Cloud Load Balancers",
+          "WAF/CDN services"
+        ],
+        "data_handled": [
+          "Authenticated API requests",
+          "Rate/usage telemetry",
+          "Identity tokens and SSO assertions"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core business logic for projects, experiments, model registry, templates, RBAC enforcement, activity feed and admin tenant controls.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Relational DB",
+          "Object Storage",
+          "Monitoring/SIEM"
+        ],
+        "data_handled": [
+          "Project/experiment metadata",
+          "RBAC policies",
+          "Audit-aware operational events"
+        ]
+      },
+      {
+        "name": "AI Assistant & LLM Orchestration",
+        "responsibility": "Middleware that sanitizes context, enforces data usage policies, manages prompts/embeddings, caches results, handles multi-LLM routing and per-tenant privacy options.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "External LLM providers",
+          "Vector DB for embeddings"
+        ],
+        "data_handled": [
+          "Chat transcripts",
+          "Embeddings",
+          "Context windows with experiment metadata (redacted as needed)"
+        ]
+      },
+      {
+        "name": "Realtime Collaboration & Notifications",
+        "responsibility": "Handles WebSocket/RTC or similar channels for presence, live editing, comments, @mentions, and push notifications.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Managed realtime services or self-hosted socket layer"
+        ],
+        "data_handled": [
+          "Transient collaborative state",
+          "Chat/comment messages",
+          "Presence events"
+        ]
+      },
+      {
+        "name": "Data Storage",
+        "responsibility": "Stores persistent data: relational DB for metadata and tenancy; object storage for datasets and model artifacts; time-series DB for metrics; vector DB for search/embeddings; append-only audit logs.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Cloud object stores (S3/GCS/Azure Blob)",
+          "Managed DB services",
+          "Vector DB providers"
+        ],
+        "data_handled": [
+          "User and tenant metadata",
+          "Datasets and artifacts",
+          "Metrics, logs, embeddings",
+          "Audit records"
+        ]
+      },
+      {
+        "name": "Integration & Deployment Services",
+        "responsibility": "Adapters to external ML platforms, cloud storage, CI/CD systems, and orchestrates model deployment to runtime targets with templating and controlled rollouts.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "SageMaker/Kubeflow/APIs",
+          "CI systems",
+          "Cloud provider deployment APIs"
+        ],
+        "data_handled": [
+          "Deployment configs",
+          "Service credentials (scoped)",
+          "Deployment telemetry"
+        ]
+      },
+      {
+        "name": "Platform & Ops",
+        "responsibility": "Operational tooling: CI/CD, runtime clusters, monitoring, SIEM, KMS/BYOK, backup and compliance controls.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "SIEM/Monitoring vendors",
+          "KMS providers",
+          "Cluster management (K8s)"
+        ],
+        "data_handled": [
+          "Operational logs",
+          "Alerts and incidents",
+          "Encryption keys (references only)"
+        ]
+      },
+      {
+        "name": "External Services",
+        "responsibility": "Third-party dependencies used for identity, LLMs, cloud storage, external ML infra, and CI/CD integration.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Identity Providers (OIDC/SAML)",
+          "LLM APIs (OpenAI/Anthropic/private)",
+          "Cloud Storage (S3/GCS/Azure)",
+          "External ML platforms"
+        ],
+        "data_handled": [
+          "SSO assertions",
+          "Model inference requests/responses",
+          "Artifacts stored externally via connectors"
+        ]
+      }
+    ],
+    "data_flow_description": "Users interact via the SPA which calls the API Gateway after authentication. Requests go to Core App Services which enforce RBAC, fetch metadata from the relational DB and metrics from the time-series DB, and retrieve artifacts from object storage. The AI Assistant orchestrator requests embeddings from the vector DB and routes sanitized prompts to LLM providers, storing chat history and summaries in per-user storage with retention controls. Realtime collaboration messages traverse the realtime service and may be persisted as comments. Deployments are triggered through CI/CD to the runtime platform which pulls model artifacts from object storage. Audit logs and telemetry stream to append-only storage and monitoring/SIEM for detection and compliance. Integrations to cloud storage and external ML platforms use scoped service accounts and token-based APIs; sensitive keys are managed via KMS/BYOK.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "Users Browsers",
+          "External Identity Providers",
+          "External LLM Providers",
+          "Third-party CI/CD"
+        ],
+        "boundary_type": "Untrusted",
+        "security_controls": [
+          "TLS everywhere",
+          "WAF and CDN",
+          "Strict CORS",
+          "Rate limiting and bot detection",
+          "Multi-factor authentication"
+        ]
+      },
+      {
+        "name": "Edge / DMZ",
+        "components": [
+          "Edge CDN & WAF",
+          "API Gateway & Auth Proxy"
+        ],
+        "boundary_type": "Perimeter/DMZ",
+        "security_controls": [
+          "Mutual TLS for upstream services",
+          "JWT/OIDC token validation",
+          "Request size limits and antivirus scanning for uploads",
+          "Web application firewall rules"
+        ]
+      },
+      {
+        "name": "Application & Internal Network",
+        "components": [
+          "Core App Services",
+          "AI Orchestrator",
+          "Realtime Services",
+          "Integration Adapters"
+        ],
+        "boundary_type": "Internal/Trusted",
+        "security_controls": [
+          "Network segmentation / VPCs",
+          "Service-to-service mTLS",
+          "RBAC and attribute-based access control",
+          "Input/output sanitization for LLM contexts",
+          "Secrets stored in KMS"
+        ]
+      },
+      {
+        "name": "Data Storage Tier",
+        "components": [
+          "Relational DB",
+          "Object Storage",
+          "Vector DB",
+          "Time-series DB",
+          "Audit Logs",
+          "KMS"
+        ],
+        "boundary_type": "Highly Trusted / Confidential",
+        "security_controls": [
+          "Encryption at rest (customer-managed keys option)",
+          "Least-privilege IAM roles",
+          "Immutable append-only audit storage",
+          "Database activity monitoring and backups",
+          "Tenant isolation and row-level security"
+        ]
+      },
+      {
+        "name": "External Partner Networks",
+        "components": [
+          "External ML Platforms",
+          "Customer Cloud Storage",
+          "Customer Identity Providers"
+        ],
+        "boundary_type": "Third-party",
+        "security_controls": [
+          "Scoped service accounts with limited privileges",
+          "Short-lived tokens and credential rotation",
+          "Signed requests and logging",
+          "Clear SLA/data processing agreements"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Primary entry points: Web UI (SPA) and public API Gateway (REST/GraphQL) \u2014 high risk if auth or input validation is weak; mitigate with strong auth, rate limiting, WAF, and strict content scanning. Authentication flows and SSO endpoints (OIDC/SAML/social) are critical compromise targets \u2014 use hardened libraries, signature validation, JWS/JWT checks and monitoring. File upload pipeline (dataset/artifact uploads) presents malware and exfiltration risk \u2014 require virus scanning, content-type validation, PII/PHI detection, and staging quarantine. AI Assistant and LLM integrations expose potential data leakage and prompt injection risks \u2014 use context redaction, allowlist/blocklist, response filtering, prompt integrity checks, per-tenant opt-outs and logging. Integration adapters (cloud storage, external ML infra, CI/CD) and webhooks are lateral movement vectors \u2014 enforce least privilege, scoped tokens, IP allowlists and robust auditing. Realtime collaboration endpoints (WebSocket/RTC) require authentication and message size/validation controls to avoid abuse and data leakage. Exposed telemetry/monitoring endpoints must be authenticated and rate-limited to prevent information disclosure. Overall risk levels: Authentication & data storage (Critical), API surface & integrations (High), AI assistant & LLM paths (High), File upload & preview (High), Realtime/notifications (Medium), Public project showcase/export features (Medium) \u2014 mitigations include strong encryption, RBAC, tenant isolation, KMS/BYOK, privacy controls, input/output sanitization, SIEM integration and incident response runbooks."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A browser-first, multi-tenant web application for teams to manage end-to-end machine learning workflows \u2014 including project & experiment tracking, dataset and model management, deployments, monitoring, and collaboration \u2014 augmented by an integrated conversational AI assistant that provides search, code suggestions, insights, summaries and context-aware help while integrating securely with external ML platforms and cloud storage.\",\n  \"high_level_requirements\": [\n    \"User registration and login with email/password and social OAuth (Google, GitHub)\",\n    \"Single Sign-On (SSO) via OIDC and SAML for enterprise customers\",\n    \"Role-based access control (Admin, Project Manager, Data Scientist, Viewer) and team workspaces\",\n    \"User profile management with avatar uploads, preferences, and 2FA support\",\n    \"Create and organize ML projects with metadata, tags, and access controls\",\n    \"Experiment tracking with versioning, metrics, artifacts, visualizations and comparison UI\",\n    \"Save and share experiment configurations as templates and project-level sharing settings\",\n    \"Activity feed and audit logs for project and system changes\",\n    \"Conversational AI assistant (LLM) with chat UI, multi-language support and saved chat history\",\n    \"Natural-language search across experiments, models, datasets and chat history\",\n    \"AI-powered code suggestions, explanations, experiment summaries, and automated insights\",\n    \"Context-aware help respecting current project context and user role\",\n    \"Chat export and per-user chat history controls (export/delete)\",\n    \"Dataset upload, preview (tables/images/structured data), and data versioning/lineage\",\n    \"Interactive metric visualization and drag-and-drop custom dashboards with export (image/PDF)\",\n    \"Model registry with metadata, versioning, comparison, and model card generation\",\n    \"Deploy models to staging and production via UI and support A/B testing and rolling deployments\",\n    \"Model monitoring dashboard (accuracy, drift, latency) and alerting\",\n    \"Commenting, threaded discussions, @mentions and real-time collaboration on projects\",\n    \"Public project showcase with opt-in sharing controls\",\n    \"Integration adapters for cloud storage (S3/GCS/Azure), external ML platforms and CI/CD\",\n    \"Secure APIs for artifact storage, model deployment, and telemetry ingestion\",\n    \"Data retention, export, deletion and data subject rights workflows for compliance\",\n    \"Audit, logging, encryption, and monitoring for security and operational observability\",\n    \"Administrative features: tenant settings, billing integration, usage reporting, and quota management\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"User registration and login supporting email/password and social OAuth providers (Google, GitHub), including secure password storage and account recovery\",\n      \"business_category\": \"Authentication\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Allows individuals to create accounts and access the platform; authentication is high-risk because credentials and account recovery are sensitive and can lead to account takeover if compromised.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Enterprise Single Sign-On (SSO) via OIDC and SAML with configurable identity providers per tenant\",\n      \"business_category\": \"Authentication\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Enterprise customers require centralized identity and compliance with corporate access controls; SSO integration must be secure and support logout, attribute mapping and provisioning.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"Role-based access control (RBAC) supporting Admin, Project Manager, Data Scientist, Viewer roles and fine-grained permissions at team and project level\",\n      \"business_category\": \"Authorization\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"RBAC ensures least privilege and protects sensitive experiments, data and models by restricting actions based on role and project membership.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Team workspaces allowing shared projects, membership management, and per-project permissions\",\n      \"business_category\": \"Collaboration\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Workspaces improve collaboration and must enforce boundaries between teams to prevent unintentional data leakage between tenants or teams.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"User profile management including avatar uploads, preferences, and support for enabling/disabling two-factor authentication (2FA)\",\n      \"business_category\": \"User Experience / Authentication\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Profiles improve UX and 2FA raises account security; avatar uploads must be validated/filtered to prevent malware or inappropriate content.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"Project creation and organization with descriptions, tags, templates, and project-level access controls\",\n      \"business_category\": \"Project Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Projects provide structure for ML work; metadata and access controls are needed to manage sharing and discovery while protecting IP.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Experiment tracking with artifact versioning, metric collection, structured metadata, and visualizations\",\n      \"business_category\": \"Experiment Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Experiment data often contains proprietary models, datasets and hyperparameters; protecting integrity and access is critical for IP protection and reproducibility.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Side-by-side experiment comparison UI with ability to select multiple runs, align metrics, and compare artifacts\",\n      \"business_category\": \"Experiment Management / UX\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Facilitates decision-making; the comparison of sensitive results must respect permissions and not leak across unauthorized users.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Save and share experiment configurations as reusable templates with permission controls\",\n      \"business_category\": \"Experiment Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Templates accelerate reproducibility and collaboration while requiring controls to prevent exposure of secrets or proprietary tooling.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Activity feed and audit logging for project events (create/update/delete), role changes, logins, deployments and data access with tamper-resistant storage\",\n      \"business_category\": \"Audit & Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Audit logs support forensics, compliance reporting and detection of suspicious activity; integrity and retention must be controlled to meet regulatory requirements.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Conversational AI assistant accessible via chat UI, integrated into project context and respecting RBAC\",\n      \"business_category\": \"AI Assistant\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"AI assistant improves productivity but may access sensitive project data; it must enforce access controls and prevent exposure of unauthorized content.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"Natural language search across experiments, models, datasets and chat history with access control filtering\",\n      \"business_category\": \"Search / Data Access\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Search must return only items the user is authorized to see; LLM or search backends must not leak protected content via cached results or prompt contexts.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"AI-powered code suggestions and explanations for ML workflows with guardrails to prevent unsafe or proprietary-information leakage\",\n      \"business_category\": \"AI Assistant / Developer Productivity\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Automation increases velocity but can suggest insecure code or reveal proprietary snippets; controls are needed to filter sensitive content and validate recommendations.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Automated insights and recommendations derived from experiment results, with provenance metadata and human-in-the-loop verification\",\n      \"business_category\": \"AI Assistant / Analytics\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Adds value via analysis; provenance and verification are required for auditability and to avoid blind trust in automated conclusions.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"Context-aware help that understands the current project, user role and dataset context while enforcing permission boundaries\",\n      \"business_category\": \"AI Assistant / UX\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Contextual assistance improves usability but must not surface unauthorized information across roles or teams.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"AI-generated experiment summaries and model cards with ability to review, edit and approve before publishing\",\n      \"business_category\": \"Reporting / Model Governance\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Automates documentation but requires human oversight for accuracy and to avoid accidental disclosure of sensitive or regulated information.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"Per-user chat history storage with export and deletion controls, retention policy and ability to opt-out of data usage for model fine-tuning\",\n      \"business_category\": \"AI Assistant / Data Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Chat history can contain proprietary code or datasets; users must control retention/export to meet privacy and IP requirements and regulatory rights.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"Multi-language support for the AI assistant including language detection and localization of system messages\",\n      \"business_category\": \"UX / Internationalization\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Supports global users; localization itself is low sensitivity but must ensure translations do not change security semantics.\"\n    },\n    {\n      \"requirement_id\": \"REQ-019\",\n      \"requirement_text\": \"Dataset upload and management via web UI and APIs with file validation, virus scanning, and optional PII/PHI detection\",\n      \"business_category\": \"Data Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"User-uploaded datasets may contain sensitive data; scanning and validation reduce risk of malware and unintentional regulatory exposure.\"\n    },\n    {\n      \"requirement_id\": \"REQ-020\",\n      \"requirement_text\": \"Data preview for tabular, image and structured data in browser with row/column-level access controls and sampling to limit exposure\",\n      \"business_category\": \"Data Management / UX\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Previews aid exploration but can leak sensitive values; sampling and access controls mitigate exposure risk.\"\n    },\n    {\n      \"requirement_id\": \"REQ-021\",\n      \"requirement_text\": \"Interactive charts and visualizations for experiment metrics, with ability to export graphs as images or PDFs under access controls\",\n      \"business_category\": \"Visualization\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Visualization supports analysis and reporting; exports must respect project-level sharing settings to avoid unauthorized distribution.\"\n    },\n    {\n      \"requirement_id\": \"REQ-022\",\n      \"requirement_text\": \"Data versioning and lineage tracking for datasets and derived artifacts, including provenance metadata and immutable references\",\n      \"business_category\": \"Data Management / Governance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Lineage enables reproducibility, debugging and regulatory compliance by tracking transformations and model inputs.\"\n    },\n    {\n      \"requirement_id\": \"REQ-023\",\n      \"requirement_text\": \"Model registry with metadata, artifact storage, versioning, lineage, and model comparison UI showing performance metrics\",\n      \"business_category\": \"Model Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Models are high-value IP and may be subject to regulatory scrutiny; registry provides governance, access controls and traceability.\"\n    },\n    {\n      \"requirement_id\": \"REQ-024\",\n      \"requirement_text\": \"Model deployment from UI to staging and production targets, with deployment templates, environment configuration and integration with CI/CD and cloud runtimes\",\n      \"business_category\": \"Deployment / Integrations\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Deployments must be auditable and secure to prevent unauthorized model exposure or misuse; supporting staging reduces risk of regressions in production.\"\n    },\n    {\n      \"requirement_id\": \"REQ-025\",\n      \"requirement_text\": \"Model monitoring dashboard including prediction accuracy, data drift detection, latency metrics, and alerting integrated with incident management\",\n      \"business_category\": \"Monitoring / Ops\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Monitoring ensures models remain reliable and safe in production; alerts support rapid response to performance and safety regressions.\"\n    },\n    {\n      \"requirement_id\": \"REQ-026\",\n      \"requirement_text\": \"A/B testing and traffic-splitting capabilities for comparing model versions with controlled rollout and rollback mechanisms\",\n      \"business_category\": \"Deployment / Experimentation\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Controlled experiments reduce business risk and allow measurement of real-world model impact while requiring safeguards to prevent biased or unsafe exposure.\"\n    },\n    {\n      \"requirement_id\": \"REQ-027\",\n      \"requirement_text\": \"Comments, threaded discussions, @mentions, notifications and real-time collaborative editing on shared workspaces with presence indicators\",\n      \"business_category\": \"Collaboration\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Enables team collaboration; communications may contain sensitive information so access controls, retention and moderation are required.\"\n    },\n    {\n      \"requirement_id\": \"REQ-028\",\n      \"requirement_text\": \"Public project showcase feature that allows opt-in publishing of selected projects with anonymization/privacy filters and explicit consent workflow\",\n      \"business_category\": \"Sharing / Publication\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Provides marketing and sharing capabilities while preventing accidental exposure by requiring opt-in and automated checks for sensitive content.\"\n    },\n    {\n      \"requirement_id\": \"REQ-029\",\n      \"requirement_text\": \"Integration adapters for cloud storage (S3, GCS, Azure Blob), external ML platforms (e.g., Kubeflow, SageMaker), and CI/CD systems via secure, scoped service accounts and token-based APIs\",\n      \"business_category\": \"Integrations\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Integrations enable end-to-end workflows; they must authenticate securely, limit privileges and not store credentials unsafely to avoid lateral breaches.\"\n    },\n    {\n      \"requirement_id\": \"REQ-030\",\n      \"requirement_text\": \"Secure REST/GraphQL APIs for programmatic access to projects, experiments, models, datasets and telemetry with rate limiting, authentication and audit logging\",\n      \"business_category\": \"APIs / Platform\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"APIs enable automation and integration and must be hardened to prevent abuse, data exfiltration and ensure accountability via logs.\"\n    },\n    {\n      \"requirement_id\": \"REQ-031\",\n      \"requirement_text\": \"Encryption in transit (TLS) for all communications and encryption at rest for sensitive artifacts (keys managed via customer-managed keys where required)\",\n      \"business_category\": \"Security / Data Protection\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Protects data confidentiality and meets regulatory requirements and enterprise expectations for key management and data protection.\"\n    },\n    {\n      \"requirement_id\": \"REQ-032\",\n      \"requirement_text\": \"Data retention, export, and deletion workflows to satisfy data subject rights (e.g., export personal data, right to be forgotten) and tenant-configurable retention policies\",\n      \"business_category\": \"Compliance / Data Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Regulatory compliance and customer trust require robust data lifecycle controls including export, erasure and retention settings.\"\n    },\n    {\n      \"requirement_id\": \"REQ-033\",\n      \"requirement_text\": \"Administrative controls for tenant settings, billing, usage reporting, quotas, and emergency access (break-glass) with strict logging and approval workflows\",\n      \"business_category\": \"Administration / Governance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Admins require management features; emergency access must be auditable to prevent misuse and comply with least-privilege principles.\"\n    },\n    {\n      \"requirement_id\": \"REQ-034\",\n      \"requirement_text\": \"Operational monitoring, alerting and incident response runbooks for security events, with integration to SIEM and SOC processes\",\n      \"business_category\": \"Security Operations\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Timely detection and response to incidents reduces impact and supports regulatory breach notification obligations.\"\n    },\n    {\n      \"requirement_id\": \"REQ-035\",\n      \"requirement_text\": \"Privacy and safety controls for the AI assistant and LLM usage including prompt injection protection, redaction of sensitive fields, query logging controls and opt-outs for model training\",\n      \"business_category\": \"AI Safety / Privacy\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"LLMs can leak sensitive content or be manipulated; explicit protections reduce IP exposure, privacy risk and regulatory issues related to training on customer data.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulations and compliance obligations include: GDPR (data subject rights, data minimization, DPIAs, data transfers) for EU users; CCPA/CPRA for California consumer data rights; SOC 2 and ISO 27001 as enterprise security/custodian standards for controls and audits; HIPAA when customers process protected health information (require BAAs, PHI controls, audit trails and encryption); PCI-DSS only if platform handles payment cardholder data (minimize/avoid storage); FedRAMP and government-specific requirements for US government tenants; export control and trade compliance for model/technology; NIST Cybersecurity Framework and emerging AI-specific frameworks (NIST AI RMF, EU AI Act considerations) for model governance, explainability and risk management. Additional obligations: data residency/localization enforced per-tenant, breach notification timelines, consent capture for personal data and user opt-outs for use of content in model training.\",\n  \"assumptions\": [\n    \"Platform will be cloud-hosted (public cloud with multi-region support) with support for customer-managed keys (BYOK) where required\",\n    \"Users have internet access and modern browsers (browser-first UI)\",\n    \"External LLMs and third-party services (storage, ML infra) may be used and are accessible via secure APIs\",\n    \"Enterprise customers will provide identity providers for SSO (OIDC/SAML) and may require SCIM for provisioning\",\n    \"Customers may upload sensitive or regulated data (PII/PHI/proprietary models)\",\n    \"Model deployment targets (staging/prod) will be reachable via secure network connectivity (VPC peering, private endpoints)\",\n    \"System will operate as a multi-tenant SaaS with logical isolation per tenant and optional dedicated tenancy for some enterprise customers\"\n  ],\n  \"constraints\": [\n    \"Must integrate with existing external ML platforms and cloud storage (S3/GCS/Azure) via available APIs and not require deep changes to customer infra\",\n    \"Needs to support large datasets and artifacts; storage and bandwidth costs are a constraint and may require tiered storage/archival policies\",\n    \"Latency and cost constraints for AI assistant when using remote LLM APIs \u2014 may require caching, on-prem or private LLM deployment options for enterprises\",\n    \"Regulatory constraints for data residency may require per-region deployments or customer-managed infrastructure\",\n    \"Support for enterprise SSO, SCIM and custom attribute mappings increases integration complexity and testing effort\",\n    \"Real-time collaboration and presence features create scalability and state-management constraints (WebSocket/RTC infrastructure)\",\n    \"Model deployment must support heterogeneous runtime targets (Kubernetes, managed inference services) and adhere to customer security policies, which constrains feature parity across targets\",\n    \"Retention and deletion requirements for audit/log data may conflict with forensic needs and require configurable retention profiles\",\n    \"Limited offline or air-gapped deployment capabilities unless offering a dedicated on-premises or isolated/cloud-stack option\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A browser-first, multi-tenant web application for teams to manage end-to-end machine learning workflows \u2014 including project & experiment tracking, dataset and model management, deployments, monitoring, and collaboration \u2014 augmented by an integrated conversational AI assistant that provides search, code suggestions, insights, summaries and context-aware help while integrating securely with external ML platforms and cloud storage.",
+        "high_level_requirements": [
+          "User registration and login with email/password and social OAuth (Google, GitHub)",
+          "Single Sign-On (SSO) via OIDC and SAML for enterprise customers",
+          "Role-based access control (Admin, Project Manager, Data Scientist, Viewer) and team workspaces",
+          "User profile management with avatar uploads, preferences, and 2FA support",
+          "Create and organize ML projects with metadata, tags, and access controls",
+          "Experiment tracking with versioning, metrics, artifacts, visualizations and comparison UI",
+          "Save and share experiment configurations as templates and project-level sharing settings",
+          "Activity feed and audit logs for project and system changes",
+          "Conversational AI assistant (LLM) with chat UI, multi-language support and saved chat history",
+          "Natural-language search across experiments, models, datasets and chat history",
+          "AI-powered code suggestions, explanations, experiment summaries, and automated insights",
+          "Context-aware help respecting current project context and user role",
+          "Chat export and per-user chat history controls (export/delete)",
+          "Dataset upload, preview (tables/images/structured data), and data versioning/lineage",
+          "Interactive metric visualization and drag-and-drop custom dashboards with export (image/PDF)",
+          "Model registry with metadata, versioning, comparison, and model card generation",
+          "Deploy models to staging and production via UI and support A/B testing and rolling deployments",
+          "Model monitoring dashboard (accuracy, drift, latency) and alerting",
+          "Commenting, threaded discussions, @mentions and real-time collaboration on projects",
+          "Public project showcase with opt-in sharing controls",
+          "Integration adapters for cloud storage (S3/GCS/Azure), external ML platforms and CI/CD",
+          "Secure APIs for artifact storage, model deployment, and telemetry ingestion",
+          "Data retention, export, deletion and data subject rights workflows for compliance",
+          "Audit, logging, encryption, and monitoring for security and operational observability",
+          "Administrative features: tenant settings, billing integration, usage reporting, and quota management"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "User registration and login supporting email/password and social OAuth providers (Google, GitHub), including secure password storage and account recovery",
+            "business_category": "Authentication",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Allows individuals to create accounts and access the platform; authentication is high-risk because credentials and account recovery are sensitive and can lead to account takeover if compromised."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Enterprise Single Sign-On (SSO) via OIDC and SAML with configurable identity providers per tenant",
+            "business_category": "Authentication",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Enterprise customers require centralized identity and compliance with corporate access controls; SSO integration must be secure and support logout, attribute mapping and provisioning."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "Role-based access control (RBAC) supporting Admin, Project Manager, Data Scientist, Viewer roles and fine-grained permissions at team and project level",
+            "business_category": "Authorization",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "RBAC ensures least privilege and protects sensitive experiments, data and models by restricting actions based on role and project membership."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Team workspaces allowing shared projects, membership management, and per-project permissions",
+            "business_category": "Collaboration",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Workspaces improve collaboration and must enforce boundaries between teams to prevent unintentional data leakage between tenants or teams."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "User profile management including avatar uploads, preferences, and support for enabling/disabling two-factor authentication (2FA)",
+            "business_category": "User Experience / Authentication",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Profiles improve UX and 2FA raises account security; avatar uploads must be validated/filtered to prevent malware or inappropriate content."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "Project creation and organization with descriptions, tags, templates, and project-level access controls",
+            "business_category": "Project Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Projects provide structure for ML work; metadata and access controls are needed to manage sharing and discovery while protecting IP."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Experiment tracking with artifact versioning, metric collection, structured metadata, and visualizations",
+            "business_category": "Experiment Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Experiment data often contains proprietary models, datasets and hyperparameters; protecting integrity and access is critical for IP protection and reproducibility."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Side-by-side experiment comparison UI with ability to select multiple runs, align metrics, and compare artifacts",
+            "business_category": "Experiment Management / UX",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Facilitates decision-making; the comparison of sensitive results must respect permissions and not leak across unauthorized users."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Save and share experiment configurations as reusable templates with permission controls",
+            "business_category": "Experiment Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Templates accelerate reproducibility and collaboration while requiring controls to prevent exposure of secrets or proprietary tooling."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Activity feed and audit logging for project events (create/update/delete), role changes, logins, deployments and data access with tamper-resistant storage",
+            "business_category": "Audit & Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Audit logs support forensics, compliance reporting and detection of suspicious activity; integrity and retention must be controlled to meet regulatory requirements."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Conversational AI assistant accessible via chat UI, integrated into project context and respecting RBAC",
+            "business_category": "AI Assistant",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "AI assistant improves productivity but may access sensitive project data; it must enforce access controls and prevent exposure of unauthorized content."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "Natural language search across experiments, models, datasets and chat history with access control filtering",
+            "business_category": "Search / Data Access",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Search must return only items the user is authorized to see; LLM or search backends must not leak protected content via cached results or prompt contexts."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "AI-powered code suggestions and explanations for ML workflows with guardrails to prevent unsafe or proprietary-information leakage",
+            "business_category": "AI Assistant / Developer Productivity",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Automation increases velocity but can suggest insecure code or reveal proprietary snippets; controls are needed to filter sensitive content and validate recommendations."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Automated insights and recommendations derived from experiment results, with provenance metadata and human-in-the-loop verification",
+            "business_category": "AI Assistant / Analytics",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Adds value via analysis; provenance and verification are required for auditability and to avoid blind trust in automated conclusions."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "Context-aware help that understands the current project, user role and dataset context while enforcing permission boundaries",
+            "business_category": "AI Assistant / UX",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Contextual assistance improves usability but must not surface unauthorized information across roles or teams."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "AI-generated experiment summaries and model cards with ability to review, edit and approve before publishing",
+            "business_category": "Reporting / Model Governance",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Automates documentation but requires human oversight for accuracy and to avoid accidental disclosure of sensitive or regulated information."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "Per-user chat history storage with export and deletion controls, retention policy and ability to opt-out of data usage for model fine-tuning",
+            "business_category": "AI Assistant / Data Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Chat history can contain proprietary code or datasets; users must control retention/export to meet privacy and IP requirements and regulatory rights."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "Multi-language support for the AI assistant including language detection and localization of system messages",
+            "business_category": "UX / Internationalization",
+            "security_sensitivity": "Low",
+            "data_classification": "Public",
+            "rationale": "Supports global users; localization itself is low sensitivity but must ensure translations do not change security semantics."
+          },
+          {
+            "requirement_id": "REQ-019",
+            "requirement_text": "Dataset upload and management via web UI and APIs with file validation, virus scanning, and optional PII/PHI detection",
+            "business_category": "Data Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "User-uploaded datasets may contain sensitive data; scanning and validation reduce risk of malware and unintentional regulatory exposure."
+          },
+          {
+            "requirement_id": "REQ-020",
+            "requirement_text": "Data preview for tabular, image and structured data in browser with row/column-level access controls and sampling to limit exposure",
+            "business_category": "Data Management / UX",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Previews aid exploration but can leak sensitive values; sampling and access controls mitigate exposure risk."
+          },
+          {
+            "requirement_id": "REQ-021",
+            "requirement_text": "Interactive charts and visualizations for experiment metrics, with ability to export graphs as images or PDFs under access controls",
+            "business_category": "Visualization",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Visualization supports analysis and reporting; exports must respect project-level sharing settings to avoid unauthorized distribution."
+          },
+          {
+            "requirement_id": "REQ-022",
+            "requirement_text": "Data versioning and lineage tracking for datasets and derived artifacts, including provenance metadata and immutable references",
+            "business_category": "Data Management / Governance",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Lineage enables reproducibility, debugging and regulatory compliance by tracking transformations and model inputs."
+          },
+          {
+            "requirement_id": "REQ-023",
+            "requirement_text": "Model registry with metadata, artifact storage, versioning, lineage, and model comparison UI showing performance metrics",
+            "business_category": "Model Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Models are high-value IP and may be subject to regulatory scrutiny; registry provides governance, access controls and traceability."
+          },
+          {
+            "requirement_id": "REQ-024",
+            "requirement_text": "Model deployment from UI to staging and production targets, with deployment templates, environment configuration and integration with CI/CD and cloud runtimes",
+            "business_category": "Deployment / Integrations",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Deployments must be auditable and secure to prevent unauthorized model exposure or misuse; supporting staging reduces risk of regressions in production."
+          },
+          {
+            "requirement_id": "REQ-025",
+            "requirement_text": "Model monitoring dashboard including prediction accuracy, data drift detection, latency metrics, and alerting integrated with incident management",
+            "business_category": "Monitoring / Ops",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Monitoring ensures models remain reliable and safe in production; alerts support rapid response to performance and safety regressions."
+          },
+          {
+            "requirement_id": "REQ-026",
+            "requirement_text": "A/B testing and traffic-splitting capabilities for comparing model versions with controlled rollout and rollback mechanisms",
+            "business_category": "Deployment / Experimentation",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Controlled experiments reduce business risk and allow measurement of real-world model impact while requiring safeguards to prevent biased or unsafe exposure."
+          },
+          {
+            "requirement_id": "REQ-027",
+            "requirement_text": "Comments, threaded discussions, @mentions, notifications and real-time collaborative editing on shared workspaces with presence indicators",
+            "business_category": "Collaboration",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Enables team collaboration; communications may contain sensitive information so access controls, retention and moderation are required."
+          },
+          {
+            "requirement_id": "REQ-028",
+            "requirement_text": "Public project showcase feature that allows opt-in publishing of selected projects with anonymization/privacy filters and explicit consent workflow",
+            "business_category": "Sharing / Publication",
+            "security_sensitivity": "Medium",
+            "data_classification": "Public",
+            "rationale": "Provides marketing and sharing capabilities while preventing accidental exposure by requiring opt-in and automated checks for sensitive content."
+          },
+          {
+            "requirement_id": "REQ-029",
+            "requirement_text": "Integration adapters for cloud storage (S3, GCS, Azure Blob), external ML platforms (e.g., Kubeflow, SageMaker), and CI/CD systems via secure, scoped service accounts and token-based APIs",
+            "business_category": "Integrations",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Integrations enable end-to-end workflows; they must authenticate securely, limit privileges and not store credentials unsafely to avoid lateral breaches."
+          },
+          {
+            "requirement_id": "REQ-030",
+            "requirement_text": "Secure REST/GraphQL APIs for programmatic access to projects, experiments, models, datasets and telemetry with rate limiting, authentication and audit logging",
+            "business_category": "APIs / Platform",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "APIs enable automation and integration and must be hardened to prevent abuse, data exfiltration and ensure accountability via logs."
+          },
+          {
+            "requirement_id": "REQ-031",
+            "requirement_text": "Encryption in transit (TLS) for all communications and encryption at rest for sensitive artifacts (keys managed via customer-managed keys where required)",
+            "business_category": "Security / Data Protection",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Protects data confidentiality and meets regulatory requirements and enterprise expectations for key management and data protection."
+          },
+          {
+            "requirement_id": "REQ-032",
+            "requirement_text": "Data retention, export, and deletion workflows to satisfy data subject rights (e.g., export personal data, right to be forgotten) and tenant-configurable retention policies",
+            "business_category": "Compliance / Data Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Regulatory compliance and customer trust require robust data lifecycle controls including export, erasure and retention settings."
+          },
+          {
+            "requirement_id": "REQ-033",
+            "requirement_text": "Administrative controls for tenant settings, billing, usage reporting, quotas, and emergency access (break-glass) with strict logging and approval workflows",
+            "business_category": "Administration / Governance",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Admins require management features; emergency access must be auditable to prevent misuse and comply with least-privilege principles."
+          },
+          {
+            "requirement_id": "REQ-034",
+            "requirement_text": "Operational monitoring, alerting and incident response runbooks for security events, with integration to SIEM and SOC processes",
+            "business_category": "Security Operations",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Timely detection and response to incidents reduces impact and supports regulatory breach notification obligations."
+          },
+          {
+            "requirement_id": "REQ-035",
+            "requirement_text": "Privacy and safety controls for the AI assistant and LLM usage including prompt injection protection, redaction of sensitive fields, query logging controls and opt-outs for model training",
+            "business_category": "AI Safety / Privacy",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "LLMs can leak sensitive content or be manipulated; explicit protections reduce IP exposure, privacy risk and regulatory issues related to training on customer data."
+          }
+        ],
+        "security_context": "Applicable regulations and compliance obligations include: GDPR (data subject rights, data minimization, DPIAs, data transfers) for EU users; CCPA/CPRA for California consumer data rights; SOC 2 and ISO 27001 as enterprise security/custodian standards for controls and audits; HIPAA when customers process protected health information (require BAAs, PHI controls, audit trails and encryption); PCI-DSS only if platform handles payment cardholder data (minimize/avoid storage); FedRAMP and government-specific requirements for US government tenants; export control and trade compliance for model/technology; NIST Cybersecurity Framework and emerging AI-specific frameworks (NIST AI RMF, EU AI Act considerations) for model governance, explainability and risk management. Additional obligations: data residency/localization enforced per-tenant, breach notification timelines, consent capture for personal data and user opt-outs for use of content in model training.",
+        "assumptions": [
+          "Platform will be cloud-hosted (public cloud with multi-region support) with support for customer-managed keys (BYOK) where required",
+          "Users have internet access and modern browsers (browser-first UI)",
+          "External LLMs and third-party services (storage, ML infra) may be used and are accessible via secure APIs",
+          "Enterprise customers will provide identity providers for SSO (OIDC/SAML) and may require SCIM for provisioning",
+          "Customers may upload sensitive or regulated data (PII/PHI/proprietary models)",
+          "Model deployment targets (staging/prod) will be reachable via secure network connectivity (VPC peering, private endpoints)",
+          "System will operate as a multi-tenant SaaS with logical isolation per tenant and optional dedicated tenancy for some enterprise customers"
+        ],
+        "constraints": [
+          "Must integrate with existing external ML platforms and cloud storage (S3/GCS/Azure) via available APIs and not require deep changes to customer infra",
+          "Needs to support large datasets and artifacts; storage and bandwidth costs are a constraint and may require tiered storage/archival policies",
+          "Latency and cost constraints for AI assistant when using remote LLM APIs \u2014 may require caching, on-prem or private LLM deployment options for enterprises",
+          "Regulatory constraints for data residency may require per-region deployments or customer-managed infrastructure",
+          "Support for enterprise SSO, SCIM and custom attribute mappings increases integration complexity and testing effort",
+          "Real-time collaboration and presence features create scalability and state-management constraints (WebSocket/RTC infrastructure)",
+          "Model deployment must support heterogeneous runtime targets (Kubernetes, managed inference services) and adhere to customer security policies, which constrains feature parity across targets",
+          "Retention and deletion requirements for audit/log data may conflict with forensic needs and require configurable retention profiles",
+          "Limited offline or air-gapped deployment capabilities unless offering a dedicated on-premises or isolated/cloud-stack option"
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"A cloud-hosted, browser-first multi-tenant web platform composed of a secured frontend SPA served via an edge CDN/WAF, a central API gateway and application service layer that implements project/experiment/model management, an AI assistant orchestration layer that mediates LLM usage, real-time collaboration services, and integration adapters to external ML platforms and cloud storage. Persistent storage is split into relational metadata, object artifact storage, vector/search store for embeddings, time-series metrics, and append-only audit logs. CI/CD and a deployment orchestrator target runtime clusters for model serving. Monitoring, SIEM and key management integrate for encryption, observability and compliance. All external interactions (identity providers, LLMs, cloud storage, ML infra) occur over secure, authenticated APIs with RBAC, tenant isolation and audit trails.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\n  subgraph \\\"Users\\\"\\n    U1[Users Browsers] --> EDGE[Edge CDN & WAF]\\n  end\\n\\n  subgraph \\\"Frontend Layer\\\"\\n    EDGE --> FE[Web App SPA & Admin UI]\\n    FE --> API[API Gateway & Auth Proxy]\\n  end\\n\\n  subgraph \\\"Application Services\\\"\\n    API --> AS[Core App Services Projects/Experiments/Models]\\n    AS --> AI[AI Assistant & LLM Orchestration]\\n    AS --> RT[Realtime Collaboration & Notifications]\\n    AS --> INTEG[Integration Adapters & Webhooks]\\n  end\\n\\n  subgraph \\\"Data Layer\\\"\\n    AS --> DB[Relational DB Tenancy RBAC Metadata]\\n    AS --> OBJ[Object Storage Artifacts/Datasets]\\n    AS --> TS[Time-series DB Metrics]\\n    AS --> VEC[Vector DB Search/Embeddings]\\n    AS --> AUDIT[Audit Logs AppendOnly Storage]\\n  end\\n\\n  subgraph \\\"Platform & Ops\\\"\\n    AS --> CI[CI/CD & Deployment Orchestrator]\\n    CI --> K8S[Runtime & Model Serving Platform]\\n    AS --> MON[Monitoring & SIEM]\\n    AS --> KMS[Key Management Service / BYOK]\\n  end\\n\\n  subgraph \\\"External Services\\\"\\n    AI --> LLM[External LLM Providers / Private LLMs]\\n    OBJ --> CloudStorage[S3 GCS Azure Blob]\\n    API --> IDP[Identity Providers OIDC SAML Social]\\n    INTEG --> ExtML[External ML Platforms SageMaker/Kubeflow]\\n    CI --> GitCI[CI Systems & Container Registries]\\n  end\\n\\n  %% cross links\\n  FE --> RT\\n  RT --> DB\\n  AUDIT --> MON\\n  K8S --> MON\\n  K8S --> OBJ\\n\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Provides the browser-first SPA and admin UI, handles client-side rendering, localization, file previews, upload initiation and offline-friendly UX.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"CDN/WAF providers\",\n        \"Identity Providers (OIDC/SAML/Social OAuth)\"\n      ],\n      \"data_handled\": [\n        \"User session tokens\",\n        \"UI requests/responses\",\n        \"Small metadata for previews and user preferences\"\n      ]\n    },\n    {\n      \"name\": \"Edge / API Gateway\",\n      \"responsibility\": \"Ingress control for traffic (TLS termination), request routing, authentication proxy, rate limiting, WAF protections and initial throttling.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud Load Balancers\",\n        \"WAF/CDN services\"\n      ],\n      \"data_handled\": [\n        \"Authenticated API requests\",\n        \"Rate/usage telemetry\",\n        \"Identity tokens and SSO assertions\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic for projects, experiments, model registry, templates, RBAC enforcement, activity feed and admin tenant controls.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Relational DB\",\n        \"Object Storage\",\n        \"Monitoring/SIEM\"\n      ],\n      \"data_handled\": [\n        \"Project/experiment metadata\",\n        \"RBAC policies\",\n        \"Audit-aware operational events\"\n      ]\n    },\n    {\n      \"name\": \"AI Assistant & LLM Orchestration\",\n      \"responsibility\": \"Middleware that sanitizes context, enforces data usage policies, manages prompts/embeddings, caches results, handles multi-LLM routing and per-tenant privacy options.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"External LLM providers\",\n        \"Vector DB for embeddings\"\n      ],\n      \"data_handled\": [\n        \"Chat transcripts\",\n        \"Embeddings\",\n        \"Context windows with experiment metadata (redacted as needed)\"\n      ]\n    },\n    {\n      \"name\": \"Realtime Collaboration & Notifications\",\n      \"responsibility\": \"Handles WebSocket/RTC or similar channels for presence, live editing, comments, @mentions, and push notifications.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Managed realtime services or self-hosted socket layer\"\n      ],\n      \"data_handled\": [\n        \"Transient collaborative state\",\n        \"Chat/comment messages\",\n        \"Presence events\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Stores persistent data: relational DB for metadata and tenancy; object storage for datasets and model artifacts; time-series DB for metrics; vector DB for search/embeddings; append-only audit logs.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud object stores (S3/GCS/Azure Blob)\",\n        \"Managed DB services\",\n        \"Vector DB providers\"\n      ],\n      \"data_handled\": [\n        \"User and tenant metadata\",\n        \"Datasets and artifacts\",\n        \"Metrics, logs, embeddings\",\n        \"Audit records\"\n      ]\n    },\n    {\n      \"name\": \"Integration & Deployment Services\",\n      \"responsibility\": \"Adapters to external ML platforms, cloud storage, CI/CD systems, and orchestrates model deployment to runtime targets with templating and controlled rollouts.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"SageMaker/Kubeflow/APIs\",\n        \"CI systems\",\n        \"Cloud provider deployment APIs\"\n      ],\n      \"data_handled\": [\n        \"Deployment configs\",\n        \"Service credentials (scoped)\",\n        \"Deployment telemetry\"\n      ]\n    },\n    {\n      \"name\": \"Platform & Ops\",\n      \"responsibility\": \"Operational tooling: CI/CD, runtime clusters, monitoring, SIEM, KMS/BYOK, backup and compliance controls.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"SIEM/Monitoring vendors\",\n        \"KMS providers\",\n        \"Cluster management (K8s)\"\n      ],\n      \"data_handled\": [\n        \"Operational logs\",\n        \"Alerts and incidents\",\n        \"Encryption keys (references only)\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Third-party dependencies used for identity, LLMs, cloud storage, external ML infra, and CI/CD integration.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Identity Providers (OIDC/SAML)\",\n        \"LLM APIs (OpenAI/Anthropic/private)\",\n        \"Cloud Storage (S3/GCS/Azure)\",\n        \"External ML platforms\"\n      ],\n      \"data_handled\": [\n        \"SSO assertions\",\n        \"Model inference requests/responses\",\n        \"Artifacts stored externally via connectors\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users interact via the SPA which calls the API Gateway after authentication. Requests go to Core App Services which enforce RBAC, fetch metadata from the relational DB and metrics from the time-series DB, and retrieve artifacts from object storage. The AI Assistant orchestrator requests embeddings from the vector DB and routes sanitized prompts to LLM providers, storing chat history and summaries in per-user storage with retention controls. Realtime collaboration messages traverse the realtime service and may be persisted as comments. Deployments are triggered through CI/CD to the runtime platform which pulls model artifacts from object storage. Audit logs and telemetry stream to append-only storage and monitoring/SIEM for detection and compliance. Integrations to cloud storage and external ML platforms use scoped service accounts and token-based APIs; sensitive keys are managed via KMS/BYOK.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users Browsers\",\n        \"External Identity Providers\",\n        \"External LLM Providers\",\n        \"Third-party CI/CD\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS everywhere\",\n        \"WAF and CDN\",\n        \"Strict CORS\",\n        \"Rate limiting and bot detection\",\n        \"Multi-factor authentication\"\n      ]\n    },\n    {\n      \"name\": \"Edge / DMZ\",\n      \"components\": [\n        \"Edge CDN & WAF\",\n        \"API Gateway & Auth Proxy\"\n      ],\n      \"boundary_type\": \"Perimeter/DMZ\",\n      \"security_controls\": [\n        \"Mutual TLS for upstream services\",\n        \"JWT/OIDC token validation\",\n        \"Request size limits and antivirus scanning for uploads\",\n        \"Web application firewall rules\"\n      ]\n    },\n    {\n      \"name\": \"Application & Internal Network\",\n      \"components\": [\n        \"Core App Services\",\n        \"AI Orchestrator\",\n        \"Realtime Services\",\n        \"Integration Adapters\"\n      ],\n      \"boundary_type\": \"Internal/Trusted\",\n      \"security_controls\": [\n        \"Network segmentation / VPCs\",\n        \"Service-to-service mTLS\",\n        \"RBAC and attribute-based access control\",\n        \"Input/output sanitization for LLM contexts\",\n        \"Secrets stored in KMS\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage Tier\",\n      \"components\": [\n        \"Relational DB\",\n        \"Object Storage\",\n        \"Vector DB\",\n        \"Time-series DB\",\n        \"Audit Logs\",\n        \"KMS\"\n      ],\n      \"boundary_type\": \"Highly Trusted / Confidential\",\n      \"security_controls\": [\n        \"Encryption at rest (customer-managed keys option)\",\n        \"Least-privilege IAM roles\",\n        \"Immutable append-only audit storage\",\n        \"Database activity monitoring and backups\",\n        \"Tenant isolation and row-level security\"\n      ]\n    },\n    {\n      \"name\": \"External Partner Networks\",\n      \"components\": [\n        \"External ML Platforms\",\n        \"Customer Cloud Storage\",\n        \"Customer Identity Providers\"\n      ],\n      \"boundary_type\": \"Third-party\",\n      \"security_controls\": [\n        \"Scoped service accounts with limited privileges\",\n        \"Short-lived tokens and credential rotation\",\n        \"Signed requests and logging\",\n        \"Clear SLA/data processing agreements\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: Web UI (SPA) and public API Gateway (REST/GraphQL) \u2014 high risk if auth or input validation is weak; mitigate with strong auth, rate limiting, WAF, and strict content scanning. Authentication flows and SSO endpoints (OIDC/SAML/social) are critical compromise targets \u2014 use hardened libraries, signature validation, JWS/JWT checks and monitoring. File upload pipeline (dataset/artifact uploads) presents malware and exfiltration risk \u2014 require virus scanning, content-type validation, PII/PHI detection, and staging quarantine. AI Assistant and LLM integrations expose potential data leakage and prompt injection risks \u2014 use context redaction, allowlist/blocklist, response filtering, prompt integrity checks, per-tenant opt-outs and logging. Integration adapters (cloud storage, external ML infra, CI/CD) and webhooks are lateral movement vectors \u2014 enforce least privilege, scoped tokens, IP allowlists and robust auditing. Realtime collaboration endpoints (WebSocket/RTC) require authentication and message size/validation controls to avoid abuse and data leakage. Exposed telemetry/monitoring endpoints must be authenticated and rate-limited to prevent information disclosure. Overall risk levels: Authentication & data storage (Critical), API surface & integrations (High), AI assistant & LLM paths (High), File upload & preview (High), Realtime/notifications (Medium), Public project showcase/export features (Medium) \u2014 mitigations include strong encryption, RBAC, tenant isolation, KMS/BYOK, privacy controls, input/output sanitization, SIEM integration and incident response runbooks.\"\n}",
+      "pydantic": {
+        "architecture_summary": "A cloud-hosted, browser-first multi-tenant web platform composed of a secured frontend SPA served via an edge CDN/WAF, a central API gateway and application service layer that implements project/experiment/model management, an AI assistant orchestration layer that mediates LLM usage, real-time collaboration services, and integration adapters to external ML platforms and cloud storage. Persistent storage is split into relational metadata, object artifact storage, vector/search store for embeddings, time-series metrics, and append-only audit logs. CI/CD and a deployment orchestrator target runtime clusters for model serving. Monitoring, SIEM and key management integrate for encryption, observability and compliance. All external interactions (identity providers, LLMs, cloud storage, ML infra) occur over secure, authenticated APIs with RBAC, tenant isolation and audit trails.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\n  subgraph \"Users\"\n    U1[Users Browsers] --> EDGE[Edge CDN & WAF]\n  end\n\n  subgraph \"Frontend Layer\"\n    EDGE --> FE[Web App SPA & Admin UI]\n    FE --> API[API Gateway & Auth Proxy]\n  end\n\n  subgraph \"Application Services\"\n    API --> AS[Core App Services Projects/Experiments/Models]\n    AS --> AI[AI Assistant & LLM Orchestration]\n    AS --> RT[Realtime Collaboration & Notifications]\n    AS --> INTEG[Integration Adapters & Webhooks]\n  end\n\n  subgraph \"Data Layer\"\n    AS --> DB[Relational DB Tenancy RBAC Metadata]\n    AS --> OBJ[Object Storage Artifacts/Datasets]\n    AS --> TS[Time-series DB Metrics]\n    AS --> VEC[Vector DB Search/Embeddings]\n    AS --> AUDIT[Audit Logs AppendOnly Storage]\n  end\n\n  subgraph \"Platform & Ops\"\n    AS --> CI[CI/CD & Deployment Orchestrator]\n    CI --> K8S[Runtime & Model Serving Platform]\n    AS --> MON[Monitoring & SIEM]\n    AS --> KMS[Key Management Service / BYOK]\n  end\n\n  subgraph \"External Services\"\n    AI --> LLM[External LLM Providers / Private LLMs]\n    OBJ --> CloudStorage[S3 GCS Azure Blob]\n    API --> IDP[Identity Providers OIDC SAML Social]\n    INTEG --> ExtML[External ML Platforms SageMaker/Kubeflow]\n    CI --> GitCI[CI Systems & Container Registries]\n  end\n\n  %% cross links\n  FE --> RT\n  RT --> DB\n  AUDIT --> MON\n  K8S --> MON\n  K8S --> OBJ\n",
+        "components": [
+          {
+            "name": "Frontend Layer",
+            "responsibility": "Provides the browser-first SPA and admin UI, handles client-side rendering, localization, file previews, upload initiation and offline-friendly UX.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "CDN/WAF providers",
+              "Identity Providers (OIDC/SAML/Social OAuth)"
+            ],
+            "data_handled": [
+              "User session tokens",
+              "UI requests/responses",
+              "Small metadata for previews and user preferences"
+            ]
+          },
+          {
+            "name": "Edge / API Gateway",
+            "responsibility": "Ingress control for traffic (TLS termination), request routing, authentication proxy, rate limiting, WAF protections and initial throttling.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Cloud Load Balancers",
+              "WAF/CDN services"
+            ],
+            "data_handled": [
+              "Authenticated API requests",
+              "Rate/usage telemetry",
+              "Identity tokens and SSO assertions"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core business logic for projects, experiments, model registry, templates, RBAC enforcement, activity feed and admin tenant controls.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Relational DB",
+              "Object Storage",
+              "Monitoring/SIEM"
+            ],
+            "data_handled": [
+              "Project/experiment metadata",
+              "RBAC policies",
+              "Audit-aware operational events"
+            ]
+          },
+          {
+            "name": "AI Assistant & LLM Orchestration",
+            "responsibility": "Middleware that sanitizes context, enforces data usage policies, manages prompts/embeddings, caches results, handles multi-LLM routing and per-tenant privacy options.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "External LLM providers",
+              "Vector DB for embeddings"
+            ],
+            "data_handled": [
+              "Chat transcripts",
+              "Embeddings",
+              "Context windows with experiment metadata (redacted as needed)"
+            ]
+          },
+          {
+            "name": "Realtime Collaboration & Notifications",
+            "responsibility": "Handles WebSocket/RTC or similar channels for presence, live editing, comments, @mentions, and push notifications.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Managed realtime services or self-hosted socket layer"
+            ],
+            "data_handled": [
+              "Transient collaborative state",
+              "Chat/comment messages",
+              "Presence events"
+            ]
+          },
+          {
+            "name": "Data Storage",
+            "responsibility": "Stores persistent data: relational DB for metadata and tenancy; object storage for datasets and model artifacts; time-series DB for metrics; vector DB for search/embeddings; append-only audit logs.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Cloud object stores (S3/GCS/Azure Blob)",
+              "Managed DB services",
+              "Vector DB providers"
+            ],
+            "data_handled": [
+              "User and tenant metadata",
+              "Datasets and artifacts",
+              "Metrics, logs, embeddings",
+              "Audit records"
+            ]
+          },
+          {
+            "name": "Integration & Deployment Services",
+            "responsibility": "Adapters to external ML platforms, cloud storage, CI/CD systems, and orchestrates model deployment to runtime targets with templating and controlled rollouts.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "SageMaker/Kubeflow/APIs",
+              "CI systems",
+              "Cloud provider deployment APIs"
+            ],
+            "data_handled": [
+              "Deployment configs",
+              "Service credentials (scoped)",
+              "Deployment telemetry"
+            ]
+          },
+          {
+            "name": "Platform & Ops",
+            "responsibility": "Operational tooling: CI/CD, runtime clusters, monitoring, SIEM, KMS/BYOK, backup and compliance controls.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "SIEM/Monitoring vendors",
+              "KMS providers",
+              "Cluster management (K8s)"
+            ],
+            "data_handled": [
+              "Operational logs",
+              "Alerts and incidents",
+              "Encryption keys (references only)"
+            ]
+          },
+          {
+            "name": "External Services",
+            "responsibility": "Third-party dependencies used for identity, LLMs, cloud storage, external ML infra, and CI/CD integration.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Identity Providers (OIDC/SAML)",
+              "LLM APIs (OpenAI/Anthropic/private)",
+              "Cloud Storage (S3/GCS/Azure)",
+              "External ML platforms"
+            ],
+            "data_handled": [
+              "SSO assertions",
+              "Model inference requests/responses",
+              "Artifacts stored externally via connectors"
+            ]
+          }
+        ],
+        "data_flow_description": "Users interact via the SPA which calls the API Gateway after authentication. Requests go to Core App Services which enforce RBAC, fetch metadata from the relational DB and metrics from the time-series DB, and retrieve artifacts from object storage. The AI Assistant orchestrator requests embeddings from the vector DB and routes sanitized prompts to LLM providers, storing chat history and summaries in per-user storage with retention controls. Realtime collaboration messages traverse the realtime service and may be persisted as comments. Deployments are triggered through CI/CD to the runtime platform which pulls model artifacts from object storage. Audit logs and telemetry stream to append-only storage and monitoring/SIEM for detection and compliance. Integrations to cloud storage and external ML platforms use scoped service accounts and token-based APIs; sensitive keys are managed via KMS/BYOK.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "Users Browsers",
+              "External Identity Providers",
+              "External LLM Providers",
+              "Third-party CI/CD"
+            ],
+            "boundary_type": "Untrusted",
+            "security_controls": [
+              "TLS everywhere",
+              "WAF and CDN",
+              "Strict CORS",
+              "Rate limiting and bot detection",
+              "Multi-factor authentication"
+            ]
+          },
+          {
+            "name": "Edge / DMZ",
+            "components": [
+              "Edge CDN & WAF",
+              "API Gateway & Auth Proxy"
+            ],
+            "boundary_type": "Perimeter/DMZ",
+            "security_controls": [
+              "Mutual TLS for upstream services",
+              "JWT/OIDC token validation",
+              "Request size limits and antivirus scanning for uploads",
+              "Web application firewall rules"
+            ]
+          },
+          {
+            "name": "Application & Internal Network",
+            "components": [
+              "Core App Services",
+              "AI Orchestrator",
+              "Realtime Services",
+              "Integration Adapters"
+            ],
+            "boundary_type": "Internal/Trusted",
+            "security_controls": [
+              "Network segmentation / VPCs",
+              "Service-to-service mTLS",
+              "RBAC and attribute-based access control",
+              "Input/output sanitization for LLM contexts",
+              "Secrets stored in KMS"
+            ]
+          },
+          {
+            "name": "Data Storage Tier",
+            "components": [
+              "Relational DB",
+              "Object Storage",
+              "Vector DB",
+              "Time-series DB",
+              "Audit Logs",
+              "KMS"
+            ],
+            "boundary_type": "Highly Trusted / Confidential",
+            "security_controls": [
+              "Encryption at rest (customer-managed keys option)",
+              "Least-privilege IAM roles",
+              "Immutable append-only audit storage",
+              "Database activity monitoring and backups",
+              "Tenant isolation and row-level security"
+            ]
+          },
+          {
+            "name": "External Partner Networks",
+            "components": [
+              "External ML Platforms",
+              "Customer Cloud Storage",
+              "Customer Identity Providers"
+            ],
+            "boundary_type": "Third-party",
+            "security_controls": [
+              "Scoped service accounts with limited privileges",
+              "Short-lived tokens and credential rotation",
+              "Signed requests and logging",
+              "Clear SLA/data processing agreements"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Primary entry points: Web UI (SPA) and public API Gateway (REST/GraphQL) \u2014 high risk if auth or input validation is weak; mitigate with strong auth, rate limiting, WAF, and strict content scanning. Authentication flows and SSO endpoints (OIDC/SAML/social) are critical compromise targets \u2014 use hardened libraries, signature validation, JWS/JWT checks and monitoring. File upload pipeline (dataset/artifact uploads) presents malware and exfiltration risk \u2014 require virus scanning, content-type validation, PII/PHI detection, and staging quarantine. AI Assistant and LLM integrations expose potential data leakage and prompt injection risks \u2014 use context redaction, allowlist/blocklist, response filtering, prompt integrity checks, per-tenant opt-outs and logging. Integration adapters (cloud storage, external ML infra, CI/CD) and webhooks are lateral movement vectors \u2014 enforce least privilege, scoped tokens, IP allowlists and robust auditing. Realtime collaboration endpoints (WebSocket/RTC) require authentication and message size/validation controls to avoid abuse and data leakage. Exposed telemetry/monitoring endpoints must be authenticated and rate-limited to prevent information disclosure. Overall risk levels: Authentication & data storage (Critical), API surface & integrations (High), AI assistant & LLM paths (High), File upload & preview (High), Realtime/notifications (Medium), Public project showcase/export features (Medium) \u2014 mitigations include strong encryption, RBAC, tenant isolation, KMS/BYOK, privacy controls, input/output sanitization, SIEM integration and incident response runbooks."
+      }
+    }
+  ]
+}

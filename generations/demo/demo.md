@@ -1,0 +1,51 @@
+E-Commerce Platform Requirements
+
+We need to build a modern e-commerce platform for selling consumer electronics online.
+
+Key Features:
+
+1. User Management
+   - User registration and login with email/password
+   - Social login (Google, Facebook)
+   - User profiles with shipping addresses and payment methods
+   - Order history tracking
+
+2. Product Catalog
+   - Browse products by category
+   - Search functionality with filters
+   - Product details with images and specifications
+   - Customer reviews and ratings
+
+3. Shopping Cart & Checkout
+   - Add/remove items from cart
+   - Apply discount codes and promotions
+   - Multiple payment methods (credit card, PayPal, Apple Pay)
+   - Guest checkout option
+   - Order confirmation emails
+
+4. Payment Processing
+   - Secure payment processing with Stripe integration
+   - Save payment methods for future use
+   - Handle refunds and chargebacks
+
+5. Admin Dashboard
+   - Product inventory management
+   - Order management and tracking
+   - Customer service tools
+   - Sales analytics and reportin
+
+6. AI Features
+   - Product recommendations based on browsing history
+   - Chatbot for customer support
+   - Automated product categorization
+
+7. Additional Requirements
+   - Mobile-responsive design
+   - Support for multiple currencies
+   - Integration with shipping carriers (FedEx, UPS)
+   - Email notifications for order updates
+   - Customer data for marketing campaigns
+   - Store customer behavior analytics
+
+The platform will primarily serve customers in the EU and US markets.
+

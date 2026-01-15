@@ -37,10 +37,7 @@ ENV/
 *~
 
 # Output files
-outputs/
-*.md
 !README.md
-!QUICKSTART.md
 
 test_outputs/
 _freeze/

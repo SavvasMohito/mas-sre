@@ -1,0 +1,326 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Edge & Auth",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Attackers steal or reuse OAuth2/OIDC tokens, API keys, or session cookies (via phishing, token leakage, or compromised client environments) to impersonate legitimate users and call synchronous and asy"
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge & Auth",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Malicious file uploads bypass malware scanning or safe parsing (e.g., crafted PDFs, polyglots, or archive bombs) to implant backdoors or trigger upstream processing faults that corrupt conversion/tran"
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Edge & Auth",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Misconfigured TLS or TLS termination at edge permits MITM or use of weak ciphers allowing eavesdropping on uploaded document binaries or tokens in transit."
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Edge & Auth",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "API key stuffing, excessive synchronous requests, or large uploads overwhelm the edge gateway causing degraded latency for real-time translations and blocking legitimate users."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Malicious or compromised SDK/CLI distributed to customers tricks users into sending credentials or files to attacker-controlled endpoints, impersonating the official frontend."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Client-side XSS or compromised UI allows modification of language tags or request payloads leading to malformed or malicious requests reaching backend endpoints, potentially bypassing BCP-47 validatio"
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Injection attacks (SQL/NoSQL, OS command, template injection) via unvalidated request fields or document metadata corrupt metadata DB or allow arbitrary code execution in orchestration components."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Insufficient or tamperable audit trails allow users or attackers to deny or erase actions (task submissions, deletions, translations) impacting compliance and non-repudiation requirements."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Excessive API responses or debug endpoints leak metadata or partial content (e.g., translation outputs, language tags, filenames) to unauthorized callers via misconfigured RBAC or open endpoints."
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Processing & Inference",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Sensitive content leaks to third-party model providers or to other tenants (multi-tenant GPU memory persistence, model provider telemetry, or proxied inference calls) exposing confidential document co"
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Processing & Inference",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Model poisoning or malicious third-party models insert commentary, change claims, or alter translations to add/extract meaning\u2014violating the 'no-addition' and patent fidelity requirements."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Processing & Inference",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Escaping sandboxed execution (container breakout or misconfigured VM) allows attacker-controlled preprocessing code or maliciously crafted documents to gain host-level privileges and access other tena"
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Processing & Inference",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Residual data in GPU or worker memory is accessible to subsequent jobs (data remanence), causing cross-request data leakage."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Orchestration & Task Queue",
+    "risk_level": "Critical",
+    "category": "Denial of Service",
+    "description": "Attackers submit many large asynchronous translation tasks or specially crafted tasks to exhaust queue/backlog resources and worker capacity, degrading service for legitimate asynchronous workflows an"
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Orchestration & Task Queue",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "An attacker manipulates task descriptors in the queue (e.g., altering target storage, outputs path, or status) to redirect outputs to attacker-controlled storage or cause data corruption."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Compromise or misconfiguration of cloud object storage or metadata DB exposes encrypted or unencrypted originals, outputs, or audit logs to attackers (e.g., public bucket or improper ACLs)."
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "An attacker or insider modifies or deletes encrypted outputs, metadata, or audit logs to cover tracks or alter history (including retention/deletion flows) undermining non-repudiation and compliance."
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Data Layer",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromise of KMS/HSM keys or improper BYOK processes allows attackers to decrypt stored outputs and originals."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Operations & Observability",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Logs, traces, or error messages inadvertently include sensitive document snippets or PII causing exposure when logs are stored in less-protected systems."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Operations & Observability",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "An attacker tampers with metrics/alerting to suppress alerts or hide resource abuse (e.g., disable GPU utilization alarms to continue exfiltration), delaying detection."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Services",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Third-party AV/Model providers exfiltrate scanned document metadata or inference prompts via telemetry or logs, leading to sensitive data disclosure off-platform."
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "External Services",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromised Identity Provider (IdP) or federated trust relationships allow attacker to mint valid tokens and access the translation service as legitimate customers."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "High-Level Requirement: Real-time translation performance",
+    "risk_level": "Critical",
+    "category": "Denial of Service",
+    "description": "Attackers exploit the strict \u22641 second sync latency by crafting many small rapid requests to exhaust low-latency worker pools and degrade real-time service."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "High-Level Requirement: Language Support & Input Validation",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Malformed BCP-47 language tags or deliberately crafted tags trigger parser bugs or route requests to incorrect models, causing incorrect translation or possible crash/injection into model pipeline."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "High-Level Requirement: Document Processing (fidelity & non-addition)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Model hallucination or automated post-processing adds commentary or reasoning sections to translated outputs (violating non-addition requirement) or intentionally inserts data from training sources."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "API & Integration (OpenAPI endpoints)",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Lack of signed requests or immutable logs at API level allows clients to repudiate performed actions or deny submitted content (e.g., claims that translation was not requested)."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Orchestration & Task Queue",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Task metadata (status endpoints) allow enumeration of tasks across tenants if identifiers are predictable, leaking workflow patterns or metadata."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Processing & Inference",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Crafted documents (e.g., extremely complex DOCX/XML with nested objects) intentionally trigger expensive preprocessing and inference loops consuming GPU/CPU leading to resource exhaustion."
+  },
+  {
+    "id": "THR-029",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Inadequate retention/deletion workflows leave copies of documents or outputs after customer-requested deletion, violating compliance and allowing later evidence of earlier content."
+  },
+  {
+    "id": "THR-030",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "External Services",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "A compromised cloud vendor control plane or misconfigured IAM roles grants attackers escalated privileges in cloud-managed services (e.g., ability to start instances or access storage), enabling large"
+  },
+  {
+    "id": "THR-031",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer / Application Services",
+    "risk_level": "Medium",
+    "category": "Spoofing",
+    "description": "CSRF attacks on authenticated user sessions cause unauthorized translation submissions or status queries on behalf of users."
+  },
+  {
+    "id": "THR-032",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Data Layer",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Broken access control (e.g., missing tenant checks, weak RBAC) permits an authenticated user to access or modify other tenants' tasks, results, or metadata (IDOR)."
+  },
+  {
+    "id": "THR-033",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Monitoring & Observability / External Services",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Sending telemetry to third-party monitoring services without filtering may inadvertently forward sensitive telemetry or aggregated patterns that enable reconstruction of document metadata."
+  },
+  {
+    "id": "THR-034",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Processing & Inference",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Weak internal service auth between application services and processing nodes allows a compromised service to call GPU/back-end APIs and perform privileged actions (e.g., access to KMS or other tenants"
+  },
+  {
+    "id": "THR-035",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "High-Level Requirement: Monitoring & Observability",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Over-collection of telemetry or misconfigured monitoring agents consume CPU/GPU resources on processing nodes, impacting translation throughput and latency."
+  },
+  {
+    "id": "THR-036",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "All Components / Architecture Requirements",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Insider threat (malicious employees or contractors) with privileged access to logs, keys, or storage exfiltrate sensitive documents or enable abuse via misconfiguration."
+  }
+]

@@ -1,0 +1,668 @@
+[
+  {
+    "control_id": "V2.1",
+    "standard": "OWASP",
+    "v_category": "Authentication Verification Requirements",
+    "requirement_id": "R1",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that multi-factor authentication is required for high value accounts and sensitive functions,"
+  },
+  {
+    "control_id": "V2.2",
+    "standard": "OWASP",
+    "v_category": "Authentication Verification Requirements",
+    "requirement_id": "R1",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Verify that the application supports secure password reset and account recovery processes that prote"
+  },
+  {
+    "control_id": "IA-2",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication",
+    "requirement_id": "R1",
+    "level": null,
+    "priority": "High",
+    "requirement": "Identify and authenticate organizational users (or processes acting on behalf of users)."
+  },
+  {
+    "control_id": "IA-2 (3)",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication",
+    "requirement_id": "R1",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Use multifactor authentication for local and network access to privileged accounts and for non-privi"
+  },
+  {
+    "control_id": "A.9.4.2",
+    "standard": "ISO27001",
+    "v_category": "Access Control",
+    "requirement_id": "R1",
+    "level": null,
+    "priority": "High",
+    "requirement": "Where required by the access control policy, access to systems and applications should be controlled"
+  },
+  {
+    "control_id": "A.9.2.3",
+    "standard": "ISO27001",
+    "v_category": "User Access Management",
+    "requirement_id": "R1",
+    "level": null,
+    "priority": "High",
+    "requirement": "The allocation and use of privileged access rights should be restricted and controlled."
+  },
+  {
+    "control_id": "A.18.1.4",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "R2",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Privacy and protection of personally identifiable information should be ensured as required in relev"
+  },
+  {
+    "control_id": "V5.1",
+    "standard": "OWASP",
+    "v_category": "Business Logic and Data Protection",
+    "requirement_id": "R2",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that privacy requirements are implemented (data minimization, purpose limitation, display and"
+  },
+  {
+    "control_id": "PL-2",
+    "standard": "NIST",
+    "v_category": "Planning",
+    "requirement_id": "R2",
+    "level": null,
+    "priority": "High",
+    "requirement": "Develop, document, and disseminate system security plans and privacy impact assessments for systems "
+  },
+  {
+    "control_id": "MP-6",
+    "standard": "NIST",
+    "v_category": "Media Protection",
+    "requirement_id": "R2",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Sanitize or destroy system media containing sensitive information before disposal or reuse."
+  },
+  {
+    "control_id": "A.18.1.4",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "R3",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Privacy and protection of personally identifiable information should be ensured as required in relev"
+  },
+  {
+    "control_id": "V11.1",
+    "standard": "OWASP",
+    "v_category": "Logging and Application Monitoring",
+    "requirement_id": "R3",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that all relevant user consent actions are logged with sufficient detail to support audits an"
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R3",
+    "level": null,
+    "priority": "High",
+    "requirement": "Determine which events are to be audited and logged to provide accountability and support investigat"
+  },
+  {
+    "control_id": "PL-8",
+    "standard": "NIST",
+    "v_category": "Planning",
+    "requirement_id": "R3",
+    "level": null,
+    "priority": "High",
+    "requirement": "Document privacy requirements and ensure the system architecture supports consent and privacy contro"
+  },
+  {
+    "control_id": "V5.5",
+    "standard": "OWASP",
+    "v_category": "Data Protection",
+    "requirement_id": "R4",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that uploaded files are validated for type, size and content, that dangerous content is rejec"
+  },
+  {
+    "control_id": "V5.6",
+    "standard": "OWASP",
+    "v_category": "Data Protection",
+    "requirement_id": "R4",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that file uploads are handled in a secure pipeline (isolation, storage outside webroot, type "
+  },
+  {
+    "control_id": "SI-3",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "R4",
+    "level": null,
+    "priority": "High",
+    "requirement": "Employ mechanisms that detect and protect against malicious code at appropriate locations within org"
+  },
+  {
+    "control_id": "A.12.2.1",
+    "standard": "ISO27001",
+    "v_category": "Operational Procedures",
+    "requirement_id": "R4",
+    "level": null,
+    "priority": "High",
+    "requirement": "Information systems should be protected against malware and appropriate detection, prevention and re"
+  },
+  {
+    "control_id": "V5.5",
+    "standard": "OWASP",
+    "v_category": "Data Protection",
+    "requirement_id": "R5",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that uploaded files are validated for type, size and content, that dangerous content is rejec"
+  },
+  {
+    "control_id": "V5.6",
+    "standard": "OWASP",
+    "v_category": "Data Protection",
+    "requirement_id": "R5",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that file uploads are handled in a secure pipeline (isolation, storage outside webroot, type "
+  },
+  {
+    "control_id": "SI-3",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "R5",
+    "level": null,
+    "priority": "High",
+    "requirement": "Employ mechanisms that detect and protect against malicious code at appropriate locations within org"
+  },
+  {
+    "control_id": "SC-12",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R5",
+    "level": null,
+    "priority": "High",
+    "requirement": "Implement cryptographic mechanisms to protect data in transit and at rest (useful for protecting upl"
+  },
+  {
+    "control_id": "V11.6",
+    "standard": "OWASP",
+    "v_category": "Logging and Application Monitoring",
+    "requirement_id": "R6",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that uploads and file handling actions are logged with sufficient metadata (timestamps, sourc"
+  },
+  {
+    "control_id": "AU-3",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R6",
+    "level": null,
+    "priority": "High",
+    "requirement": "Audit records should contain sufficient information to establish what events occurred, the sources o"
+  },
+  {
+    "control_id": "A.12.4.1",
+    "standard": "ISO27001",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "R6",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Event logs recording user activities, exceptions, faults and information security events should be p"
+  },
+  {
+    "control_id": "V14.3",
+    "standard": "OWASP",
+    "v_category": "API and Web Services",
+    "requirement_id": "R7",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that APIs support resumable and chunked uploads with integrity checks and proper authenticati"
+  },
+  {
+    "control_id": "CP-10",
+    "standard": "NIST",
+    "v_category": "Contingency Planning",
+    "requirement_id": "R7",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Implement backups and recovery mechanisms to ensure reliable completion of critical operations and d"
+  },
+  {
+    "control_id": "A.12.3.1",
+    "standard": "ISO27001",
+    "v_category": "Operations Security",
+    "requirement_id": "R7",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Backup copies of information, software, and systems necessary for business continuity should be esta"
+  },
+  {
+    "control_id": "SA-9",
+    "standard": "NIST",
+    "v_category": "System and Services Acquisition",
+    "requirement_id": "R8",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Ensure that external system services (e.g., AI/OCR vendors) are assessed for security and privacy im"
+  },
+  {
+    "control_id": "A.15.1.1",
+    "standard": "ISO27001",
+    "v_category": "Supplier Relationships",
+    "requirement_id": "R8",
+    "level": null,
+    "priority": "High",
+    "requirement": "Information security requirements for mitigating the risks associated with supplier's access to the "
+  },
+  {
+    "control_id": "V13.3",
+    "standard": "OWASP",
+    "v_category": "Business Logic",
+    "requirement_id": "R8",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that AI and algorithmic processing includes validation, bias checks, confidence scoring, and "
+  },
+  {
+    "control_id": "NIST AI RMF",
+    "standard": "NIST AI RMF",
+    "v_category": "AI Risk Management",
+    "requirement_id": "R8",
+    "level": null,
+    "priority": "High",
+    "requirement": "Establish processes for model assessment, monitoring, and governance (note: included here if databas"
+  },
+  {
+    "control_id": "V13.3",
+    "standard": "OWASP",
+    "v_category": "Business Logic",
+    "requirement_id": "R9",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that AI and algorithmic processing includes validation, bias checks, confidence scoring, and "
+  },
+  {
+    "control_id": "RA-5",
+    "standard": "NIST",
+    "v_category": "Risk Assessment",
+    "requirement_id": "R9",
+    "level": null,
+    "priority": "High",
+    "requirement": "Conduct vulnerability assessments and ensure systems identify anomalies; integrate risk scoring for "
+  },
+  {
+    "control_id": "A.12.4.3",
+    "standard": "ISO27001",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "R9",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Administrator and operator activities should be logged, including events that could reflect abnormal"
+  },
+  {
+    "control_id": "V13.3",
+    "standard": "OWASP",
+    "v_category": "Business Logic",
+    "requirement_id": "R10",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that AI and algorithmic processing includes validation, bias checks, confidence scoring, and "
+  },
+  {
+    "control_id": "A.18.1.4",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "R10",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Privacy and protection of personally identifiable information should be ensured as required in relev"
+  },
+  {
+    "control_id": "NIST AI RMF",
+    "standard": "NIST AI RMF",
+    "v_category": "AI Risk Management",
+    "requirement_id": "R10",
+    "level": null,
+    "priority": "High",
+    "requirement": "AI systems should provide explanations for outputs appropriate to the audience and risk level."
+  },
+  {
+    "control_id": "V11.6",
+    "standard": "OWASP",
+    "v_category": "Logging and Application Monitoring",
+    "requirement_id": "R11",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that uploads and file handling actions are logged with sufficient metadata (timestamps, sourc"
+  },
+  {
+    "control_id": "AU-9",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R11",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Protect audit information and tools from unauthorized access, modification, and deletion to preserve"
+  },
+  {
+    "control_id": "A.12.4.1",
+    "standard": "ISO27001",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "R11",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Event logs recording user activities, exceptions, faults and information security events should be p"
+  },
+  {
+    "control_id": "MP-5",
+    "standard": "NIST",
+    "v_category": "Media Protection",
+    "requirement_id": "R11",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Employ protections for media during transport to preserve integrity and provenance."
+  },
+  {
+    "control_id": "A.9.1.2",
+    "standard": "ISO27001",
+    "v_category": "Access Control",
+    "requirement_id": "R12",
+    "level": null,
+    "priority": "High",
+    "requirement": "Users should only be provided access to the network and services that they are authorized to use."
+  },
+  {
+    "control_id": "V5.1",
+    "standard": "OWASP",
+    "v_category": "Business Logic and Data Protection",
+    "requirement_id": "R12",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that privacy requirements are implemented (data minimization, purpose limitation, display and"
+  },
+  {
+    "control_id": "AC-3",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R12",
+    "level": null,
+    "priority": "High",
+    "requirement": "Enforce approved authorizations for logical access to information and system resources in accordance"
+  },
+  {
+    "control_id": "V5.1",
+    "standard": "OWASP",
+    "v_category": "Business Logic and Data Protection",
+    "requirement_id": "R13",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that privacy requirements are implemented (data minimization, purpose limitation, display and"
+  },
+  {
+    "control_id": "SC-13",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R13",
+    "level": null,
+    "priority": "High",
+    "requirement": "Use cryptographic mechanisms to protect the confidentiality and integrity of information during expo"
+  },
+  {
+    "control_id": "A.18.1.4",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "R13",
+    "level": null,
+    "priority": "High",
+    "requirement": "Privacy and protection of personally identifiable information should be ensured as required in relev"
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R14",
+    "level": null,
+    "priority": "High",
+    "requirement": "Determine which events are to be audited and logged to provide accountability and support investigat"
+  },
+  {
+    "control_id": "A.13.2.1",
+    "standard": "ISO27001",
+    "v_category": "Communications Security",
+    "requirement_id": "R14",
+    "level": null,
+    "priority": "High",
+    "requirement": "Responsibilities and procedures for information transfer should be established to protect informatio"
+  },
+  {
+    "control_id": "SA-9",
+    "standard": "NIST",
+    "v_category": "System and Services Acquisition",
+    "requirement_id": "R14",
+    "level": null,
+    "priority": "High",
+    "requirement": "Ensure that external system services (e.g., AI/OCR vendors, email gateways) are assessed for securit"
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R15",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Determine which events are to be audited and logged to provide accountability and support investigat"
+  },
+  {
+    "control_id": "V5.1",
+    "standard": "OWASP",
+    "v_category": "Business Logic and Data Protection",
+    "requirement_id": "R15",
+    "level": "L2",
+    "priority": "Medium",
+    "requirement": "Verify that privacy requirements are implemented (data minimization, purpose limitation, display and"
+  },
+  {
+    "control_id": "A.9.1.1",
+    "standard": "ISO27001",
+    "v_category": "Access Control",
+    "requirement_id": "R15",
+    "level": null,
+    "priority": "Low",
+    "requirement": "An access control policy should be established, based on business and security requirements."
+  },
+  {
+    "control_id": "AC-2",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R16",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Manage information system accounts, including account creation, enabling, disabling, and removal."
+  },
+  {
+    "control_id": "AC-5",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R16",
+    "level": null,
+    "priority": "High",
+    "requirement": "Divide responsibilities and duties among different individuals to reduce the risk of malevolent acti"
+  },
+  {
+    "control_id": "V1.2",
+    "standard": "OWASP",
+    "v_category": "Architecture, Design and Threat Modeling",
+    "requirement_id": "R16",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that authentication and authorization controls are enforced server-side and that role-based a"
+  },
+  {
+    "control_id": "A.9.1.1",
+    "standard": "ISO27001",
+    "v_category": "Access Control",
+    "requirement_id": "R16",
+    "level": null,
+    "priority": "High",
+    "requirement": "An access control policy should be established, based on business and security requirements."
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R17",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Determine which events are to be audited and logged to provide accountability and support investigat"
+  },
+  {
+    "control_id": "AU-9",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R17",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Protect audit information and tools from unauthorized access, modification, and deletion to preserve"
+  },
+  {
+    "control_id": "V11.1",
+    "standard": "OWASP",
+    "v_category": "Logging and Application Monitoring",
+    "requirement_id": "R17",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that all relevant user consent actions are logged with sufficient detail to support audits an"
+  },
+  {
+    "control_id": "A.12.4.1",
+    "standard": "ISO27001",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "R17",
+    "level": null,
+    "priority": "High",
+    "requirement": "Event logs recording user activities, exceptions, faults and information security events should be p"
+  },
+  {
+    "control_id": "SC-13",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R18",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Employ cryptographic mechanisms to protect the confidentiality and integrity of information."
+  },
+  {
+    "control_id": "SC-12",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R18",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Implement cryptographic mechanisms to protect data in transit and at rest (useful for protecting upl"
+  },
+  {
+    "control_id": "V12.1",
+    "standard": "OWASP",
+    "v_category": "Secret Management and Cryptography",
+    "requirement_id": "R18",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that strong, industry-accepted cryptographic algorithms and correct implementations are used "
+  },
+  {
+    "control_id": "A.10.1.1",
+    "standard": "ISO27001",
+    "v_category": "Cryptography",
+    "requirement_id": "R18",
+    "level": null,
+    "priority": "High",
+    "requirement": "A policy on the use of cryptographic controls should be developed and implemented to protect the con"
+  },
+  {
+    "control_id": "A.15.1.1",
+    "standard": "ISO27001",
+    "v_category": "Supplier Relationships",
+    "requirement_id": "R19",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Information security requirements for mitigating the risks associated with supplier's access to the "
+  },
+  {
+    "control_id": "SA-12",
+    "standard": "NIST",
+    "v_category": "System and Services Acquisition",
+    "requirement_id": "R19",
+    "level": null,
+    "priority": "High",
+    "requirement": "Ensure that supply chain protections are in place for externally provided services and components."
+  },
+  {
+    "control_id": "SA-9",
+    "standard": "NIST",
+    "v_category": "System and Services Acquisition",
+    "requirement_id": "R19",
+    "level": null,
+    "priority": "High",
+    "requirement": "Ensure that external system services (e.g., AI/OCR vendors) are assessed for security and privacy im"
+  },
+  {
+    "control_id": "V13.3",
+    "standard": "OWASP",
+    "v_category": "Business Logic",
+    "requirement_id": "R19",
+    "level": "L2",
+    "priority": "Medium",
+    "requirement": "Verify that AI and algorithmic processing includes validation, bias checks, confidence scoring, and "
+  },
+  {
+    "control_id": "A.18.1.3",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "R20",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Records should be protected to ensure they remain available and accurate over their required retenti"
+  },
+  {
+    "control_id": "MP-6",
+    "standard": "NIST",
+    "v_category": "Media Protection",
+    "requirement_id": "R20",
+    "level": null,
+    "priority": "High",
+    "requirement": "Sanitize or destroy system media containing sensitive information before disposal or reuse."
+  },
+  {
+    "control_id": "CP-10",
+    "standard": "NIST",
+    "v_category": "Contingency Planning",
+    "requirement_id": "R20",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Implement backups and recovery mechanisms to ensure reliable completion of critical operations and d"
+  },
+  {
+    "control_id": "V11.6",
+    "standard": "OWASP",
+    "v_category": "Logging and Application Monitoring",
+    "requirement_id": "R20",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that uploads and file handling actions are logged with sufficient metadata (timestamps, sourc"
+  }
+]

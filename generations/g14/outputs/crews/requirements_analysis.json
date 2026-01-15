@@ -1,0 +1,554 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"A cloud-hosted, responsive web application composed of a client SPA and mobile responsive UI that talk to a central API layer protected by Azure AD SSO and an edge layer (CDN/WAF). The API layer implements core timesheet, approval, delegation, holiday, notification, reporting, and business-rule services; it uses a relational database for primary domain data (timesheets, users, audit), blob storage for attachments and immutable audit retention, a cache for performance, and an async queue for notifications and reporting jobs. External integrations include Azure AD for authentication, an email/transactional service for notifications, and optional HR/payroll APIs for exports. Access and data visibility are enforced by RBAC driven by team hierarchy and runtime business rules, and all lifecycle events are logged to tamper-resistant audit storage.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Users\\\"\\n  U1[Employees] --> Edge\\n  U2[Managers & Delegates] --> Edge\\n  U3[Administrators] --> Edge\\nend\\nsubgraph \\\"Edge Layer\\\"\\n  Edge[CDN & WAF] --> FE\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web App SPA & Admin UI] --> API\\n  Mobile[Mobile Responsive UI] --> API\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[Core API Timesheets/Approvals] --> Biz\\n  Biz[Business Rules & Approval Engine] --> Queue\\n  Queue[Message Queue] --> Notif\\n  Reports[Reporting Service] --> API\\n  AdminSvc[Admin Service] --> API\\n  API --> DB\\n  API --> Cache\\nend\\nsubgraph \\\"Data Layer\\\"\\n  DB[Relational DB Timesheets Users Audit]\\n  Blob[Blob Storage Attachments & AuditWORM]\\n  Cache[Redis Cache]\\n  DB --> Blob\\nend\\nsubgraph \\\"External Services\\\"\\n  Auth[Azure AD SSO] --> API\\n  Email[Email Service] --> Notif\\n  HR[HR Payroll API] --> API\\nend\\nNotif[Notification Service] --> Email\\n\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Deliver the responsive SPA and admin UI for employees, managers, delegates, and admins; client-side validation, draft saving UI, accessibility/WCAG compliance, and interacting with the core API.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN\",\n        \"Browser platform and client OS\"\n      ],\n      \"data_handled\": [\n        \"User session tokens (transient)\",\n        \"Timesheet form data (pending/draft)\",\n        \"UI preferences and working patterns (cached)\"\n      ]\n    },\n    {\n      \"name\": \"Edge Layer\",\n      \"responsibility\": \"Public perimeter with CDN for static content, WAF for request filtering, DDoS mitigation and TLS termination; route authenticated traffic to API gateway.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"CDN provider\",\n        \"WAF/DDoS protection (cloud provider)\"\n      ],\n      \"data_handled\": [\n        \"TLS encrypted traffic\",\n        \"Request metadata and telemetry\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core domain services including API gateway, timesheet and approval workflows, business rules engine, admin service, notification orchestrator, reporting jobs, delegation logic, and audit logging.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Azure AD (Auth)\",\n        \"Email/Transactional service\",\n        \"Message queue (cloud native)\"\n      ],\n      \"data_handled\": [\n        \"Timesheets and submission metadata\",\n        \"Approval decisions and comments\",\n        \"Delegation records and schedules\",\n        \"Business rules and configuration\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Persist domain data in a relational store, store attachments and immutable audit logs in blob storage (WORM/immutable), and provide caching for hot reads.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud RDBMS\",\n        \"Cloud Blob Storage\",\n        \"Managed Redis Cache\"\n      ],\n      \"data_handled\": [\n        \"User profiles and team hierarchy\",\n        \"Timesheet entries and history\",\n        \"Holiday requests and balances\",\n        \"Audit logs and tamper-evident records\",\n        \"Attachments\"\n      ]\n    },\n    {\n      \"name\": \"Integration & External Services\",\n      \"responsibility\": \"Third-party and org services for authentication (Azure AD), email delivery, HR/payroll exports, and optional public holiday feeds.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Azure AD SSO\",\n        \"Email/Transactional provider (SMTP/API)\",\n        \"HR/Payroll API providers\"\n      ],\n      \"data_handled\": [\n        \"Authentication claims and tokens\",\n        \"Notification metadata (no sensitive PII in emails)\",\n        \"Exported payroll timesheet summaries\"\n      ]\n    },\n    {\n      \"name\": \"Operational Services\",\n      \"responsibility\": \"Monitoring, logging, alerting, backup, and audit retention services used by admins and SREs to operate and secure the system.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Cloud monitoring/logging service\",\n        \"Immutable storage or log analytics\"\n      ],\n      \"data_handled\": [\n        \"Operational logs\",\n        \"Security/Audit logs\",\n        \"Metrics and alerts\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users interact via the SPA or mobile UI served through the CDN/WAF. The frontend authenticates users via Azure AD SSO (OIDC) and obtains tokens to call the Core API. The API enforces RBAC and team-hierarchy checks, validates data against the Business Rules Engine, persists timesheets and audit events to the relational DB, writes immutable audit copies and attachments to blob storage, and publishes async events to a message queue. The Notification Service consumes queue events and sends emails via a transactional email provider (without PII in body). Reporting jobs read aggregated data from the DB (and cache) or consume queued events to generate exports. HR/payroll integration uses secure API exports or scheduled file exports. All data in transit is TLS encrypted and data at rest is encrypted by the storage services.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users\",\n        \"Public endpoints via CDN\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS 1.2+/1.3 for all traffic\",\n        \"Content security policy and secure cookies on clients\",\n        \"MFA and Conditional Access enforced via Azure AD\"\n      ]\n    },\n    {\n      \"name\": \"Perimeter / DMZ\",\n      \"components\": [\n        \"CDN & WAF\",\n        \"API Gateway\"\n      ],\n      \"boundary_type\": \"Semi-Trusted\",\n      \"security_controls\": [\n        \"WAF rules and rate limiting\",\n        \"DDoS protection\",\n        \"IP allowlisting for admin APIs (optional)\",\n        \"TLS termination and request validation\"\n      ]\n    },\n    {\n      \"name\": \"Application Tier\",\n      \"components\": [\n        \"Core API\",\n        \"Business Rules Engine\",\n        \"Notification Service\",\n        \"Reporting Service\",\n        \"Message Queue\"\n      ],\n      \"boundary_type\": \"Trusted Internal\",\n      \"security_controls\": [\n        \"RBAC and attribute-based access control\",\n        \"Azure AD token validation and claim checks\",\n        \"Input validation, encoding, and server-side authorization\",\n        \"Secrets management for external credentials\"\n      ]\n    },\n    {\n      \"name\": \"Data Tier / Internal Network\",\n      \"components\": [\n        \"Relational DB\",\n        \"Blob Storage\",\n        \"Redis Cache\",\n        \"Immutable Audit Store\"\n      ],\n      \"boundary_type\": \"Highly Trusted\",\n      \"security_controls\": [\n        \"Network isolation (VNet/subnet rules)\",\n        \"Encryption at rest (AES-256)\",\n        \"Database access control and least-privilege service principals\",\n        \"Immutable/WORM storage for audit logs and retention policies\"\n      ]\n    },\n    {\n      \"name\": \"External Partner Zone\",\n      \"components\": [\n        \"Azure AD\",\n        \"Email Service\",\n        \"HR/Payroll API\"\n      ],\n      \"boundary_type\": \"Third-Party\",\n      \"security_controls\": [\n        \"Mutual TLS or API key + IP restrictions for integrations\",\n        \"Scoped integration accounts with least privilege\",\n        \"Audit logging of outbound exchanges\",\n        \"Data minimization and pseudonymization for exported records\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: client UI (browser/mobile) and public API endpoints (risk: High). Authentication depends on Azure AD SSO \u2014 compromise of identity tokens or misconfiguration of federation/claims is High risk. Exposed APIs: timesheet CRUD, submission/approval endpoints, admin/config APIs \u2014 these must enforce strong RBAC and input validation (risk: High). Edge-layer risks include DDoS and injection attacks mitigated by CDN/WAF (risk: Medium). Integration points (email service, HR/payroll API) present risk if credentials leaked or if outputs include PII (risk: Medium). The data tier is high value; DB credentials or blob access compromise could expose confidential data (risk: Critical). Additional risks: improper delegation logic or faulty team-hierarchy sync may enable unauthorized access (risk: High); email notifications leaking detailed PII \u2014 mitigate by sending minimal metadata with links; audit logging integrity threats require immutable storage and restricted admin access. Recommended mitigations: enforce Azure AD conditional access and MFA, strict RBAC and runtime claim checks, input/output validation, WAF and rate limiting, network segmentation, encryption in transit and at rest, immutable audit storage, regular SAST/DAST scans, and periodic access reviews and delegation audits.\"\n}",
+  "pydantic": {
+    "architecture_summary": "A cloud-hosted, responsive web application composed of a client SPA and mobile responsive UI that talk to a central API layer protected by Azure AD SSO and an edge layer (CDN/WAF). The API layer implements core timesheet, approval, delegation, holiday, notification, reporting, and business-rule services; it uses a relational database for primary domain data (timesheets, users, audit), blob storage for attachments and immutable audit retention, a cache for performance, and an async queue for notifications and reporting jobs. External integrations include Azure AD for authentication, an email/transactional service for notifications, and optional HR/payroll APIs for exports. Access and data visibility are enforced by RBAC driven by team hierarchy and runtime business rules, and all lifecycle events are logged to tamper-resistant audit storage.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Users\"\n  U1[Employees] --> Edge\n  U2[Managers & Delegates] --> Edge\n  U3[Administrators] --> Edge\nend\nsubgraph \"Edge Layer\"\n  Edge[CDN & WAF] --> FE\nend\nsubgraph \"Frontend Layer\"\n  FE[Web App SPA & Admin UI] --> API\n  Mobile[Mobile Responsive UI] --> API\nend\nsubgraph \"Application Services\"\n  API[Core API Timesheets/Approvals] --> Biz\n  Biz[Business Rules & Approval Engine] --> Queue\n  Queue[Message Queue] --> Notif\n  Reports[Reporting Service] --> API\n  AdminSvc[Admin Service] --> API\n  API --> DB\n  API --> Cache\nend\nsubgraph \"Data Layer\"\n  DB[Relational DB Timesheets Users Audit]\n  Blob[Blob Storage Attachments & AuditWORM]\n  Cache[Redis Cache]\n  DB --> Blob\nend\nsubgraph \"External Services\"\n  Auth[Azure AD SSO] --> API\n  Email[Email Service] --> Notif\n  HR[HR Payroll API] --> API\nend\nNotif[Notification Service] --> Email\n",
+    "components": [
+      {
+        "name": "Frontend Layer",
+        "responsibility": "Deliver the responsive SPA and admin UI for employees, managers, delegates, and admins; client-side validation, draft saving UI, accessibility/WCAG compliance, and interacting with the core API.",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "CDN",
+          "Browser platform and client OS"
+        ],
+        "data_handled": [
+          "User session tokens (transient)",
+          "Timesheet form data (pending/draft)",
+          "UI preferences and working patterns (cached)"
+        ]
+      },
+      {
+        "name": "Edge Layer",
+        "responsibility": "Public perimeter with CDN for static content, WAF for request filtering, DDoS mitigation and TLS termination; route authenticated traffic to API gateway.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "CDN provider",
+          "WAF/DDoS protection (cloud provider)"
+        ],
+        "data_handled": [
+          "TLS encrypted traffic",
+          "Request metadata and telemetry"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core domain services including API gateway, timesheet and approval workflows, business rules engine, admin service, notification orchestrator, reporting jobs, delegation logic, and audit logging.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Azure AD (Auth)",
+          "Email/Transactional service",
+          "Message queue (cloud native)"
+        ],
+        "data_handled": [
+          "Timesheets and submission metadata",
+          "Approval decisions and comments",
+          "Delegation records and schedules",
+          "Business rules and configuration"
+        ]
+      },
+      {
+        "name": "Data Storage",
+        "responsibility": "Persist domain data in a relational store, store attachments and immutable audit logs in blob storage (WORM/immutable), and provide caching for hot reads.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Cloud RDBMS",
+          "Cloud Blob Storage",
+          "Managed Redis Cache"
+        ],
+        "data_handled": [
+          "User profiles and team hierarchy",
+          "Timesheet entries and history",
+          "Holiday requests and balances",
+          "Audit logs and tamper-evident records",
+          "Attachments"
+        ]
+      },
+      {
+        "name": "Integration & External Services",
+        "responsibility": "Third-party and org services for authentication (Azure AD), email delivery, HR/payroll exports, and optional public holiday feeds.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Azure AD SSO",
+          "Email/Transactional provider (SMTP/API)",
+          "HR/Payroll API providers"
+        ],
+        "data_handled": [
+          "Authentication claims and tokens",
+          "Notification metadata (no sensitive PII in emails)",
+          "Exported payroll timesheet summaries"
+        ]
+      },
+      {
+        "name": "Operational Services",
+        "responsibility": "Monitoring, logging, alerting, backup, and audit retention services used by admins and SREs to operate and secure the system.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Cloud monitoring/logging service",
+          "Immutable storage or log analytics"
+        ],
+        "data_handled": [
+          "Operational logs",
+          "Security/Audit logs",
+          "Metrics and alerts"
+        ]
+      }
+    ],
+    "data_flow_description": "Users interact via the SPA or mobile UI served through the CDN/WAF. The frontend authenticates users via Azure AD SSO (OIDC) and obtains tokens to call the Core API. The API enforces RBAC and team-hierarchy checks, validates data against the Business Rules Engine, persists timesheets and audit events to the relational DB, writes immutable audit copies and attachments to blob storage, and publishes async events to a message queue. The Notification Service consumes queue events and sends emails via a transactional email provider (without PII in body). Reporting jobs read aggregated data from the DB (and cache) or consume queued events to generate exports. HR/payroll integration uses secure API exports or scheduled file exports. All data in transit is TLS encrypted and data at rest is encrypted by the storage services.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "Users",
+          "Public endpoints via CDN"
+        ],
+        "boundary_type": "Untrusted",
+        "security_controls": [
+          "TLS 1.2+/1.3 for all traffic",
+          "Content security policy and secure cookies on clients",
+          "MFA and Conditional Access enforced via Azure AD"
+        ]
+      },
+      {
+        "name": "Perimeter / DMZ",
+        "components": [
+          "CDN & WAF",
+          "API Gateway"
+        ],
+        "boundary_type": "Semi-Trusted",
+        "security_controls": [
+          "WAF rules and rate limiting",
+          "DDoS protection",
+          "IP allowlisting for admin APIs (optional)",
+          "TLS termination and request validation"
+        ]
+      },
+      {
+        "name": "Application Tier",
+        "components": [
+          "Core API",
+          "Business Rules Engine",
+          "Notification Service",
+          "Reporting Service",
+          "Message Queue"
+        ],
+        "boundary_type": "Trusted Internal",
+        "security_controls": [
+          "RBAC and attribute-based access control",
+          "Azure AD token validation and claim checks",
+          "Input validation, encoding, and server-side authorization",
+          "Secrets management for external credentials"
+        ]
+      },
+      {
+        "name": "Data Tier / Internal Network",
+        "components": [
+          "Relational DB",
+          "Blob Storage",
+          "Redis Cache",
+          "Immutable Audit Store"
+        ],
+        "boundary_type": "Highly Trusted",
+        "security_controls": [
+          "Network isolation (VNet/subnet rules)",
+          "Encryption at rest (AES-256)",
+          "Database access control and least-privilege service principals",
+          "Immutable/WORM storage for audit logs and retention policies"
+        ]
+      },
+      {
+        "name": "External Partner Zone",
+        "components": [
+          "Azure AD",
+          "Email Service",
+          "HR/Payroll API"
+        ],
+        "boundary_type": "Third-Party",
+        "security_controls": [
+          "Mutual TLS or API key + IP restrictions for integrations",
+          "Scoped integration accounts with least privilege",
+          "Audit logging of outbound exchanges",
+          "Data minimization and pseudonymization for exported records"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Primary entry points: client UI (browser/mobile) and public API endpoints (risk: High). Authentication depends on Azure AD SSO \u2014 compromise of identity tokens or misconfiguration of federation/claims is High risk. Exposed APIs: timesheet CRUD, submission/approval endpoints, admin/config APIs \u2014 these must enforce strong RBAC and input validation (risk: High). Edge-layer risks include DDoS and injection attacks mitigated by CDN/WAF (risk: Medium). Integration points (email service, HR/payroll API) present risk if credentials leaked or if outputs include PII (risk: Medium). The data tier is high value; DB credentials or blob access compromise could expose confidential data (risk: Critical). Additional risks: improper delegation logic or faulty team-hierarchy sync may enable unauthorized access (risk: High); email notifications leaking detailed PII \u2014 mitigate by sending minimal metadata with links; audit logging integrity threats require immutable storage and restricted admin access. Recommended mitigations: enforce Azure AD conditional access and MFA, strict RBAC and runtime claim checks, input/output validation, WAF and rate limiting, network segmentation, encryption in transit and at rest, immutable audit storage, regular SAST/DAST scans, and periodic access reviews and delegation audits."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A responsive web application for employees to record daily and weekly working hours, request and track holidays, and submit timesheets for managerial approval; managers can review, approve/reject (or delegate approvals), view team timesheet and leave history, and administrators configure system-wide rules, user management, and audit logs, while authentication is provided via Azure SSO and access controlled by organizational team hierarchy.\",\n  \"high_level_requirements\": [\n    \"Role-based access control with Employee, Manager, Delegate, and Administrator roles\",\n    \"Azure SSO integration for authentication and single sign-on\",\n    \"User management and team hierarchy mapping (assign managers, teams, delegates)\",\n    \"Daily and weekly timesheet entry supporting multiple projects/tasks\",\n    \"Save draft timesheets with validation preventing submission until required fields completed\",\n    \"Timesheet submission workflow with submission timestamp and read-only state after submission\",\n    \"Approval/rejection workflow for managers and delegates, including comments and logging\",\n    \"Manager delegation with start/end dates, scope of permissions, revocation, and notifications\",\n    \"Holiday and leave request management with leave balance tracking and manager approval\",\n    \"Public holiday preload and auto-application to timesheets\",\n    \"Business rules enforcement: configurable workweek, min/max hours, working patterns\",\n    \"Notifications via email for reminders, approval requests, approvals/rejections, and delegation changes\",\n    \"Reporting: weekly, monthly, and custom time reports for employees and managers\",\n    \"Audit logging of timesheet lifecycle events, approvals/rejections, delegation changes, and admin amendments\",\n    \"Administrator capabilities to configure system settings, working patterns, public holidays, and amend submitted timesheets\",\n    \"Responsive and accessible UI compliant with WCAG guidelines\",\n    \"Data access restrictions based on team hierarchy and least-privilege principles\",\n    \"Data retention, encryption, and export capabilities to support compliance and integrations with payroll/HR\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"Role-based access control with Employee, Manager, Delegate, and Administrator roles\",\n      \"business_category\": \"User Management / Authorization\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Different system functions and data visibility must be restricted by role to enforce least privilege and protect employee data and approval workflows.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Integrate with Azure SSO for authentication and support for enterprise identity (optionally enforce MFA via Azure AD policies)\",\n      \"business_category\": \"Authentication\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Using corporate SSO centralizes authentication, simplifies onboarding, and allows enforcement of organization security policies (e.g., MFA, conditional access).\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"User management and team hierarchy mapping to assign managers, team members, and delegate relationships\",\n      \"business_category\": \"User Management / Data Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Team hierarchy drives access to timesheets and approvals; accurate mapping is necessary for correct authorization and notification routing.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Daily and weekly timesheet entry supporting multiple projects/tasks and project/task codes\",\n      \"business_category\": \"Timesheet Management / Data Entry\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Employees must capture time allocation across tasks/projects for payroll, billing, and capacity tracking; project codes link to downstream systems.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"Save draft timesheets locally/server-side and prevent submission until all required fields are completed (validation)\",\n      \"business_category\": \"Data Validation / UX\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Drafts prevent data loss and validation ensures data quality before approval workflows are initiated, reducing rework and approval delays.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"Timesheet submission workflow that records submission timestamp and marks timesheets read-only after submission unless rejected or amended by an administrator\",\n      \"business_category\": \"Approval Workflow / Audit\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Immutable submission preserves evidentiary trail for payroll and compliance; timestamps are required for auditing and SLAs.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Managers and assigned delegates can approve or reject timesheets with mandatory comment field for rejection; all actions logged with identity and timestamp\",\n      \"business_category\": \"Approval Workflow / Audit\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Approval decisions affect payroll and compliance; comments provide context for rework, and comprehensive logs support non-repudiation and audits.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Manager delegation capabilities: assign delegates with start/end dates, permission scope, notification to delegate, and ability to revoke delegation immediately\",\n      \"business_category\": \"Delegation / Authorization\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Temporary delegation allows continuity during absences while limiting scope and duration reduces risk of unauthorized approvals.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Holiday and leave request management: request holidays via timesheet or dedicated interface, track leave balance, and integrate approved leave into timesheets as non-working hours\",\n      \"business_category\": \"Leave Management / Data Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Employees need to request and track leave; automatic integration into timesheets ensures accurate hours reporting and leave balance maintenance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Public holiday preload and automatic application to relevant timesheet days (configurable by region)\",\n      \"business_category\": \"Configuration / Leave Management\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Preloading public holidays reduces manual entry errors and ensures holidays are consistently applied across the organization.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Business rules engine to configure workweek, working patterns, and enforce configurable minimum/maximum weekly hours\",\n      \"business_category\": \"Business Rules / Data Validation\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Different teams and jurisdictions have varying working rules; configurable rules enforce policy and prevent incorrect submissions.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"Email notifications for timesheet submission reminders, pending approvals, approval/rejection confirmations, and delegation changes\",\n      \"business_category\": \"Notifications / Communications\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Timely notifications reduce overdue approvals and improve user experience; audit of notification deliveries supports operational monitoring.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"Reporting: generate weekly, monthly, and custom reports for employees and managers with export capability (CSV/PDF)\",\n      \"business_category\": \"Reporting / Analytics\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Reports support payroll, billing, capacity planning, and compliance; export formats enable integration with downstream systems.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Comprehensive audit logging capturing creation/updates of timesheets, submissions, approvals/rejections, leave requests, delegation changes, and administrative amendments\",\n      \"business_category\": \"Audit & Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Audit logs support regulatory compliance, forensic investigations, and prove integrity of approval chains; logs must be tamper-evident and retained per policy.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"Administrator capabilities to configure system settings, working patterns, public holidays, manage users, and amend timesheets after submission with an auditable reason\",\n      \"business_category\": \"Administration / Governance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Administrators require elevated capabilities to maintain the system; amendments to submitted timesheets must be controlled and auditable to prevent abuse.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"Responsive UI supporting desktop, tablet, and mobile with WCAG accessibility compliance\",\n      \"business_category\": \"UI/UX / Accessibility\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Employees use multiple device types and accessibility ensures legal compliance and inclusive access for all users.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"Enforce data access restrictions based on team hierarchy and least-privilege model (managers see their team only, delegates limited to scope)\",\n      \"business_category\": \"Authorization / Data Access Control\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Restricting visibility minimizes insider risk and ensures managers cannot access unrelated teams' confidential time data.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"Data retention, encryption at rest and in transit, and export capabilities to satisfy compliance and integration with payroll/HR systems\",\n      \"business_category\": \"Data Protection / Integration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Protecting sensitive employee data requires strong encryption and retention policies; export capabilities are necessary for payroll processing and audits.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulations and compliance considerations: GDPR (and relevant national data protection laws) for personal data processing and data subject rights (access, rectification, erasure); local employment and payroll regulations for recordkeeping; data residency requirements where organizational policy or law mandates storage in a specific jurisdiction; ISO 27001 / SOC 2 good practices for information security controls; organizational policies enforced via Azure AD (MFA/conditional access); retention and audit requirements for payroll records; encryption in transit (TLS 1.2+/TLS 1.3) and at rest (AES-256 or equivalent); logging and tamper-evident audit trails for non-repudiation; least privilege and role-based access controls; secure software development lifecycle (SAST/DAST) and vulnerability management; secure email handling (avoid leaking PII in notifications), and contractual/privacy notices to satisfy lawful basis for processing employee personal data.\",\n  \"assumptions\": [\n    \"System will be cloud-hosted (e.g., Azure) and accessible over the internet\",\n    \"Organization uses Azure Active Directory for identity and will provide required SSO configuration and claims\",\n    \"Users have regular internet access and modern browsers on desktop/tablet/mobile\",\n    \"Email delivery (SMTP or transactional email service) will be provided by the organization or cloud provider\",\n    \"Team membership, manager relationships, and organizational hierarchy can be synchronized from the identity provider or HR system\",\n    \"Payroll/HR integrations are out-of-scope initially but required in future (APIs available)\",\n    \"Time zones and locale differences must be supported for multi-region deployments\",\n    \"Administrators will define business rules (working patterns, public holidays, min/max hours) during configuration\",\n    \"Retention and deletion policies will be defined by the organization based on legal and business requirements\"\n  ],\n  \"constraints\": [\n    \"Must integrate with Azure SSO (Azure AD) as the authentication mechanism\",\n    \"UI must be responsive and comply with WCAG accessibility guidelines\",\n    \"Data residency or jurisdictional storage requirements may restrict cloud region selection\",\n    \"Limited initial integrations (payroll/HR) \u2014 exported files/APIs should be provided for later integration\",\n    \"Administrators must be able to amend submitted timesheets; such actions must be auditable and cannot be disabled entirely\",\n    \"System must enforce least-privilege access controlled by team hierarchy; cross-team access requires explicit admin configuration\",\n    \"Audit logs must be retained according to organizational policy and protected against tampering (write-once or immutable storage preferred)\",\n    \"Notifications must not contain sensitive personal data (e.g., detailed hours) to avoid email leakage; links to the system should require authentication\",\n    \"Performance: system should support expected concurrent user load (to be specified by stakeholders) and scale in cloud environment\",\n    \"Compliance testing (GDPR, security controls) must be completed prior to production rollout\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A responsive web application for employees to record daily and weekly working hours, request and track holidays, and submit timesheets for managerial approval; managers can review, approve/reject (or delegate approvals), view team timesheet and leave history, and administrators configure system-wide rules, user management, and audit logs, while authentication is provided via Azure SSO and access controlled by organizational team hierarchy.",
+        "high_level_requirements": [
+          "Role-based access control with Employee, Manager, Delegate, and Administrator roles",
+          "Azure SSO integration for authentication and single sign-on",
+          "User management and team hierarchy mapping (assign managers, teams, delegates)",
+          "Daily and weekly timesheet entry supporting multiple projects/tasks",
+          "Save draft timesheets with validation preventing submission until required fields completed",
+          "Timesheet submission workflow with submission timestamp and read-only state after submission",
+          "Approval/rejection workflow for managers and delegates, including comments and logging",
+          "Manager delegation with start/end dates, scope of permissions, revocation, and notifications",
+          "Holiday and leave request management with leave balance tracking and manager approval",
+          "Public holiday preload and auto-application to timesheets",
+          "Business rules enforcement: configurable workweek, min/max hours, working patterns",
+          "Notifications via email for reminders, approval requests, approvals/rejections, and delegation changes",
+          "Reporting: weekly, monthly, and custom time reports for employees and managers",
+          "Audit logging of timesheet lifecycle events, approvals/rejections, delegation changes, and admin amendments",
+          "Administrator capabilities to configure system settings, working patterns, public holidays, and amend submitted timesheets",
+          "Responsive and accessible UI compliant with WCAG guidelines",
+          "Data access restrictions based on team hierarchy and least-privilege principles",
+          "Data retention, encryption, and export capabilities to support compliance and integrations with payroll/HR"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "Role-based access control with Employee, Manager, Delegate, and Administrator roles",
+            "business_category": "User Management / Authorization",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Different system functions and data visibility must be restricted by role to enforce least privilege and protect employee data and approval workflows."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Integrate with Azure SSO for authentication and support for enterprise identity (optionally enforce MFA via Azure AD policies)",
+            "business_category": "Authentication",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Using corporate SSO centralizes authentication, simplifies onboarding, and allows enforcement of organization security policies (e.g., MFA, conditional access)."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "User management and team hierarchy mapping to assign managers, team members, and delegate relationships",
+            "business_category": "User Management / Data Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Team hierarchy drives access to timesheets and approvals; accurate mapping is necessary for correct authorization and notification routing."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Daily and weekly timesheet entry supporting multiple projects/tasks and project/task codes",
+            "business_category": "Timesheet Management / Data Entry",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Employees must capture time allocation across tasks/projects for payroll, billing, and capacity tracking; project codes link to downstream systems."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "Save draft timesheets locally/server-side and prevent submission until all required fields are completed (validation)",
+            "business_category": "Data Validation / UX",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Drafts prevent data loss and validation ensures data quality before approval workflows are initiated, reducing rework and approval delays."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "Timesheet submission workflow that records submission timestamp and marks timesheets read-only after submission unless rejected or amended by an administrator",
+            "business_category": "Approval Workflow / Audit",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Immutable submission preserves evidentiary trail for payroll and compliance; timestamps are required for auditing and SLAs."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Managers and assigned delegates can approve or reject timesheets with mandatory comment field for rejection; all actions logged with identity and timestamp",
+            "business_category": "Approval Workflow / Audit",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Approval decisions affect payroll and compliance; comments provide context for rework, and comprehensive logs support non-repudiation and audits."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Manager delegation capabilities: assign delegates with start/end dates, permission scope, notification to delegate, and ability to revoke delegation immediately",
+            "business_category": "Delegation / Authorization",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Temporary delegation allows continuity during absences while limiting scope and duration reduces risk of unauthorized approvals."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Holiday and leave request management: request holidays via timesheet or dedicated interface, track leave balance, and integrate approved leave into timesheets as non-working hours",
+            "business_category": "Leave Management / Data Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Employees need to request and track leave; automatic integration into timesheets ensures accurate hours reporting and leave balance maintenance."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Public holiday preload and automatic application to relevant timesheet days (configurable by region)",
+            "business_category": "Configuration / Leave Management",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Preloading public holidays reduces manual entry errors and ensures holidays are consistently applied across the organization."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Business rules engine to configure workweek, working patterns, and enforce configurable minimum/maximum weekly hours",
+            "business_category": "Business Rules / Data Validation",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Different teams and jurisdictions have varying working rules; configurable rules enforce policy and prevent incorrect submissions."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "Email notifications for timesheet submission reminders, pending approvals, approval/rejection confirmations, and delegation changes",
+            "business_category": "Notifications / Communications",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Timely notifications reduce overdue approvals and improve user experience; audit of notification deliveries supports operational monitoring."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "Reporting: generate weekly, monthly, and custom reports for employees and managers with export capability (CSV/PDF)",
+            "business_category": "Reporting / Analytics",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Reports support payroll, billing, capacity planning, and compliance; export formats enable integration with downstream systems."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Comprehensive audit logging capturing creation/updates of timesheets, submissions, approvals/rejections, leave requests, delegation changes, and administrative amendments",
+            "business_category": "Audit & Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Audit logs support regulatory compliance, forensic investigations, and prove integrity of approval chains; logs must be tamper-evident and retained per policy."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "Administrator capabilities to configure system settings, working patterns, public holidays, manage users, and amend timesheets after submission with an auditable reason",
+            "business_category": "Administration / Governance",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Administrators require elevated capabilities to maintain the system; amendments to submitted timesheets must be controlled and auditable to prevent abuse."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "Responsive UI supporting desktop, tablet, and mobile with WCAG accessibility compliance",
+            "business_category": "UI/UX / Accessibility",
+            "security_sensitivity": "Low",
+            "data_classification": "Public",
+            "rationale": "Employees use multiple device types and accessibility ensures legal compliance and inclusive access for all users."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "Enforce data access restrictions based on team hierarchy and least-privilege model (managers see their team only, delegates limited to scope)",
+            "business_category": "Authorization / Data Access Control",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Restricting visibility minimizes insider risk and ensures managers cannot access unrelated teams' confidential time data."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "Data retention, encryption at rest and in transit, and export capabilities to satisfy compliance and integration with payroll/HR systems",
+            "business_category": "Data Protection / Integration",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Protecting sensitive employee data requires strong encryption and retention policies; export capabilities are necessary for payroll processing and audits."
+          }
+        ],
+        "security_context": "Applicable regulations and compliance considerations: GDPR (and relevant national data protection laws) for personal data processing and data subject rights (access, rectification, erasure); local employment and payroll regulations for recordkeeping; data residency requirements where organizational policy or law mandates storage in a specific jurisdiction; ISO 27001 / SOC 2 good practices for information security controls; organizational policies enforced via Azure AD (MFA/conditional access); retention and audit requirements for payroll records; encryption in transit (TLS 1.2+/TLS 1.3) and at rest (AES-256 or equivalent); logging and tamper-evident audit trails for non-repudiation; least privilege and role-based access controls; secure software development lifecycle (SAST/DAST) and vulnerability management; secure email handling (avoid leaking PII in notifications), and contractual/privacy notices to satisfy lawful basis for processing employee personal data.",
+        "assumptions": [
+          "System will be cloud-hosted (e.g., Azure) and accessible over the internet",
+          "Organization uses Azure Active Directory for identity and will provide required SSO configuration and claims",
+          "Users have regular internet access and modern browsers on desktop/tablet/mobile",
+          "Email delivery (SMTP or transactional email service) will be provided by the organization or cloud provider",
+          "Team membership, manager relationships, and organizational hierarchy can be synchronized from the identity provider or HR system",
+          "Payroll/HR integrations are out-of-scope initially but required in future (APIs available)",
+          "Time zones and locale differences must be supported for multi-region deployments",
+          "Administrators will define business rules (working patterns, public holidays, min/max hours) during configuration",
+          "Retention and deletion policies will be defined by the organization based on legal and business requirements"
+        ],
+        "constraints": [
+          "Must integrate with Azure SSO (Azure AD) as the authentication mechanism",
+          "UI must be responsive and comply with WCAG accessibility guidelines",
+          "Data residency or jurisdictional storage requirements may restrict cloud region selection",
+          "Limited initial integrations (payroll/HR) \u2014 exported files/APIs should be provided for later integration",
+          "Administrators must be able to amend submitted timesheets; such actions must be auditable and cannot be disabled entirely",
+          "System must enforce least-privilege access controlled by team hierarchy; cross-team access requires explicit admin configuration",
+          "Audit logs must be retained according to organizational policy and protected against tampering (write-once or immutable storage preferred)",
+          "Notifications must not contain sensitive personal data (e.g., detailed hours) to avoid email leakage; links to the system should require authentication",
+          "Performance: system should support expected concurrent user load (to be specified by stakeholders) and scale in cloud environment",
+          "Compliance testing (GDPR, security controls) must be completed prior to production rollout"
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"A cloud-hosted, responsive web application composed of a client SPA and mobile responsive UI that talk to a central API layer protected by Azure AD SSO and an edge layer (CDN/WAF). The API layer implements core timesheet, approval, delegation, holiday, notification, reporting, and business-rule services; it uses a relational database for primary domain data (timesheets, users, audit), blob storage for attachments and immutable audit retention, a cache for performance, and an async queue for notifications and reporting jobs. External integrations include Azure AD for authentication, an email/transactional service for notifications, and optional HR/payroll APIs for exports. Access and data visibility are enforced by RBAC driven by team hierarchy and runtime business rules, and all lifecycle events are logged to tamper-resistant audit storage.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Users\\\"\\n  U1[Employees] --> Edge\\n  U2[Managers & Delegates] --> Edge\\n  U3[Administrators] --> Edge\\nend\\nsubgraph \\\"Edge Layer\\\"\\n  Edge[CDN & WAF] --> FE\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web App SPA & Admin UI] --> API\\n  Mobile[Mobile Responsive UI] --> API\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[Core API Timesheets/Approvals] --> Biz\\n  Biz[Business Rules & Approval Engine] --> Queue\\n  Queue[Message Queue] --> Notif\\n  Reports[Reporting Service] --> API\\n  AdminSvc[Admin Service] --> API\\n  API --> DB\\n  API --> Cache\\nend\\nsubgraph \\\"Data Layer\\\"\\n  DB[Relational DB Timesheets Users Audit]\\n  Blob[Blob Storage Attachments & AuditWORM]\\n  Cache[Redis Cache]\\n  DB --> Blob\\nend\\nsubgraph \\\"External Services\\\"\\n  Auth[Azure AD SSO] --> API\\n  Email[Email Service] --> Notif\\n  HR[HR Payroll API] --> API\\nend\\nNotif[Notification Service] --> Email\\n\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Deliver the responsive SPA and admin UI for employees, managers, delegates, and admins; client-side validation, draft saving UI, accessibility/WCAG compliance, and interacting with the core API.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN\",\n        \"Browser platform and client OS\"\n      ],\n      \"data_handled\": [\n        \"User session tokens (transient)\",\n        \"Timesheet form data (pending/draft)\",\n        \"UI preferences and working patterns (cached)\"\n      ]\n    },\n    {\n      \"name\": \"Edge Layer\",\n      \"responsibility\": \"Public perimeter with CDN for static content, WAF for request filtering, DDoS mitigation and TLS termination; route authenticated traffic to API gateway.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"CDN provider\",\n        \"WAF/DDoS protection (cloud provider)\"\n      ],\n      \"data_handled\": [\n        \"TLS encrypted traffic\",\n        \"Request metadata and telemetry\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core domain services including API gateway, timesheet and approval workflows, business rules engine, admin service, notification orchestrator, reporting jobs, delegation logic, and audit logging.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Azure AD (Auth)\",\n        \"Email/Transactional service\",\n        \"Message queue (cloud native)\"\n      ],\n      \"data_handled\": [\n        \"Timesheets and submission metadata\",\n        \"Approval decisions and comments\",\n        \"Delegation records and schedules\",\n        \"Business rules and configuration\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Persist domain data in a relational store, store attachments and immutable audit logs in blob storage (WORM/immutable), and provide caching for hot reads.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud RDBMS\",\n        \"Cloud Blob Storage\",\n        \"Managed Redis Cache\"\n      ],\n      \"data_handled\": [\n        \"User profiles and team hierarchy\",\n        \"Timesheet entries and history\",\n        \"Holiday requests and balances\",\n        \"Audit logs and tamper-evident records\",\n        \"Attachments\"\n      ]\n    },\n    {\n      \"name\": \"Integration & External Services\",\n      \"responsibility\": \"Third-party and org services for authentication (Azure AD), email delivery, HR/payroll exports, and optional public holiday feeds.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Azure AD SSO\",\n        \"Email/Transactional provider (SMTP/API)\",\n        \"HR/Payroll API providers\"\n      ],\n      \"data_handled\": [\n        \"Authentication claims and tokens\",\n        \"Notification metadata (no sensitive PII in emails)\",\n        \"Exported payroll timesheet summaries\"\n      ]\n    },\n    {\n      \"name\": \"Operational Services\",\n      \"responsibility\": \"Monitoring, logging, alerting, backup, and audit retention services used by admins and SREs to operate and secure the system.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Cloud monitoring/logging service\",\n        \"Immutable storage or log analytics\"\n      ],\n      \"data_handled\": [\n        \"Operational logs\",\n        \"Security/Audit logs\",\n        \"Metrics and alerts\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users interact via the SPA or mobile UI served through the CDN/WAF. The frontend authenticates users via Azure AD SSO (OIDC) and obtains tokens to call the Core API. The API enforces RBAC and team-hierarchy checks, validates data against the Business Rules Engine, persists timesheets and audit events to the relational DB, writes immutable audit copies and attachments to blob storage, and publishes async events to a message queue. The Notification Service consumes queue events and sends emails via a transactional email provider (without PII in body). Reporting jobs read aggregated data from the DB (and cache) or consume queued events to generate exports. HR/payroll integration uses secure API exports or scheduled file exports. All data in transit is TLS encrypted and data at rest is encrypted by the storage services.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users\",\n        \"Public endpoints via CDN\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS 1.2+/1.3 for all traffic\",\n        \"Content security policy and secure cookies on clients\",\n        \"MFA and Conditional Access enforced via Azure AD\"\n      ]\n    },\n    {\n      \"name\": \"Perimeter / DMZ\",\n      \"components\": [\n        \"CDN & WAF\",\n        \"API Gateway\"\n      ],\n      \"boundary_type\": \"Semi-Trusted\",\n      \"security_controls\": [\n        \"WAF rules and rate limiting\",\n        \"DDoS protection\",\n        \"IP allowlisting for admin APIs (optional)\",\n        \"TLS termination and request validation\"\n      ]\n    },\n    {\n      \"name\": \"Application Tier\",\n      \"components\": [\n        \"Core API\",\n        \"Business Rules Engine\",\n        \"Notification Service\",\n        \"Reporting Service\",\n        \"Message Queue\"\n      ],\n      \"boundary_type\": \"Trusted Internal\",\n      \"security_controls\": [\n        \"RBAC and attribute-based access control\",\n        \"Azure AD token validation and claim checks\",\n        \"Input validation, encoding, and server-side authorization\",\n        \"Secrets management for external credentials\"\n      ]\n    },\n    {\n      \"name\": \"Data Tier / Internal Network\",\n      \"components\": [\n        \"Relational DB\",\n        \"Blob Storage\",\n        \"Redis Cache\",\n        \"Immutable Audit Store\"\n      ],\n      \"boundary_type\": \"Highly Trusted\",\n      \"security_controls\": [\n        \"Network isolation (VNet/subnet rules)\",\n        \"Encryption at rest (AES-256)\",\n        \"Database access control and least-privilege service principals\",\n        \"Immutable/WORM storage for audit logs and retention policies\"\n      ]\n    },\n    {\n      \"name\": \"External Partner Zone\",\n      \"components\": [\n        \"Azure AD\",\n        \"Email Service\",\n        \"HR/Payroll API\"\n      ],\n      \"boundary_type\": \"Third-Party\",\n      \"security_controls\": [\n        \"Mutual TLS or API key + IP restrictions for integrations\",\n        \"Scoped integration accounts with least privilege\",\n        \"Audit logging of outbound exchanges\",\n        \"Data minimization and pseudonymization for exported records\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: client UI (browser/mobile) and public API endpoints (risk: High). Authentication depends on Azure AD SSO \u2014 compromise of identity tokens or misconfiguration of federation/claims is High risk. Exposed APIs: timesheet CRUD, submission/approval endpoints, admin/config APIs \u2014 these must enforce strong RBAC and input validation (risk: High). Edge-layer risks include DDoS and injection attacks mitigated by CDN/WAF (risk: Medium). Integration points (email service, HR/payroll API) present risk if credentials leaked or if outputs include PII (risk: Medium). The data tier is high value; DB credentials or blob access compromise could expose confidential data (risk: Critical). Additional risks: improper delegation logic or faulty team-hierarchy sync may enable unauthorized access (risk: High); email notifications leaking detailed PII \u2014 mitigate by sending minimal metadata with links; audit logging integrity threats require immutable storage and restricted admin access. Recommended mitigations: enforce Azure AD conditional access and MFA, strict RBAC and runtime claim checks, input/output validation, WAF and rate limiting, network segmentation, encryption in transit and at rest, immutable audit storage, regular SAST/DAST scans, and periodic access reviews and delegation audits.\"\n}",
+      "pydantic": {
+        "architecture_summary": "A cloud-hosted, responsive web application composed of a client SPA and mobile responsive UI that talk to a central API layer protected by Azure AD SSO and an edge layer (CDN/WAF). The API layer implements core timesheet, approval, delegation, holiday, notification, reporting, and business-rule services; it uses a relational database for primary domain data (timesheets, users, audit), blob storage for attachments and immutable audit retention, a cache for performance, and an async queue for notifications and reporting jobs. External integrations include Azure AD for authentication, an email/transactional service for notifications, and optional HR/payroll APIs for exports. Access and data visibility are enforced by RBAC driven by team hierarchy and runtime business rules, and all lifecycle events are logged to tamper-resistant audit storage.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Users\"\n  U1[Employees] --> Edge\n  U2[Managers & Delegates] --> Edge\n  U3[Administrators] --> Edge\nend\nsubgraph \"Edge Layer\"\n  Edge[CDN & WAF] --> FE\nend\nsubgraph \"Frontend Layer\"\n  FE[Web App SPA & Admin UI] --> API\n  Mobile[Mobile Responsive UI] --> API\nend\nsubgraph \"Application Services\"\n  API[Core API Timesheets/Approvals] --> Biz\n  Biz[Business Rules & Approval Engine] --> Queue\n  Queue[Message Queue] --> Notif\n  Reports[Reporting Service] --> API\n  AdminSvc[Admin Service] --> API\n  API --> DB\n  API --> Cache\nend\nsubgraph \"Data Layer\"\n  DB[Relational DB Timesheets Users Audit]\n  Blob[Blob Storage Attachments & AuditWORM]\n  Cache[Redis Cache]\n  DB --> Blob\nend\nsubgraph \"External Services\"\n  Auth[Azure AD SSO] --> API\n  Email[Email Service] --> Notif\n  HR[HR Payroll API] --> API\nend\nNotif[Notification Service] --> Email\n",
+        "components": [
+          {
+            "name": "Frontend Layer",
+            "responsibility": "Deliver the responsive SPA and admin UI for employees, managers, delegates, and admins; client-side validation, draft saving UI, accessibility/WCAG compliance, and interacting with the core API.",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "CDN",
+              "Browser platform and client OS"
+            ],
+            "data_handled": [
+              "User session tokens (transient)",
+              "Timesheet form data (pending/draft)",
+              "UI preferences and working patterns (cached)"
+            ]
+          },
+          {
+            "name": "Edge Layer",
+            "responsibility": "Public perimeter with CDN for static content, WAF for request filtering, DDoS mitigation and TLS termination; route authenticated traffic to API gateway.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "CDN provider",
+              "WAF/DDoS protection (cloud provider)"
+            ],
+            "data_handled": [
+              "TLS encrypted traffic",
+              "Request metadata and telemetry"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core domain services including API gateway, timesheet and approval workflows, business rules engine, admin service, notification orchestrator, reporting jobs, delegation logic, and audit logging.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Azure AD (Auth)",
+              "Email/Transactional service",
+              "Message queue (cloud native)"
+            ],
+            "data_handled": [
+              "Timesheets and submission metadata",
+              "Approval decisions and comments",
+              "Delegation records and schedules",
+              "Business rules and configuration"
+            ]
+          },
+          {
+            "name": "Data Storage",
+            "responsibility": "Persist domain data in a relational store, store attachments and immutable audit logs in blob storage (WORM/immutable), and provide caching for hot reads.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Cloud RDBMS",
+              "Cloud Blob Storage",
+              "Managed Redis Cache"
+            ],
+            "data_handled": [
+              "User profiles and team hierarchy",
+              "Timesheet entries and history",
+              "Holiday requests and balances",
+              "Audit logs and tamper-evident records",
+              "Attachments"
+            ]
+          },
+          {
+            "name": "Integration & External Services",
+            "responsibility": "Third-party and org services for authentication (Azure AD), email delivery, HR/payroll exports, and optional public holiday feeds.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Azure AD SSO",
+              "Email/Transactional provider (SMTP/API)",
+              "HR/Payroll API providers"
+            ],
+            "data_handled": [
+              "Authentication claims and tokens",
+              "Notification metadata (no sensitive PII in emails)",
+              "Exported payroll timesheet summaries"
+            ]
+          },
+          {
+            "name": "Operational Services",
+            "responsibility": "Monitoring, logging, alerting, backup, and audit retention services used by admins and SREs to operate and secure the system.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Cloud monitoring/logging service",
+              "Immutable storage or log analytics"
+            ],
+            "data_handled": [
+              "Operational logs",
+              "Security/Audit logs",
+              "Metrics and alerts"
+            ]
+          }
+        ],
+        "data_flow_description": "Users interact via the SPA or mobile UI served through the CDN/WAF. The frontend authenticates users via Azure AD SSO (OIDC) and obtains tokens to call the Core API. The API enforces RBAC and team-hierarchy checks, validates data against the Business Rules Engine, persists timesheets and audit events to the relational DB, writes immutable audit copies and attachments to blob storage, and publishes async events to a message queue. The Notification Service consumes queue events and sends emails via a transactional email provider (without PII in body). Reporting jobs read aggregated data from the DB (and cache) or consume queued events to generate exports. HR/payroll integration uses secure API exports or scheduled file exports. All data in transit is TLS encrypted and data at rest is encrypted by the storage services.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "Users",
+              "Public endpoints via CDN"
+            ],
+            "boundary_type": "Untrusted",
+            "security_controls": [
+              "TLS 1.2+/1.3 for all traffic",
+              "Content security policy and secure cookies on clients",
+              "MFA and Conditional Access enforced via Azure AD"
+            ]
+          },
+          {
+            "name": "Perimeter / DMZ",
+            "components": [
+              "CDN & WAF",
+              "API Gateway"
+            ],
+            "boundary_type": "Semi-Trusted",
+            "security_controls": [
+              "WAF rules and rate limiting",
+              "DDoS protection",
+              "IP allowlisting for admin APIs (optional)",
+              "TLS termination and request validation"
+            ]
+          },
+          {
+            "name": "Application Tier",
+            "components": [
+              "Core API",
+              "Business Rules Engine",
+              "Notification Service",
+              "Reporting Service",
+              "Message Queue"
+            ],
+            "boundary_type": "Trusted Internal",
+            "security_controls": [
+              "RBAC and attribute-based access control",
+              "Azure AD token validation and claim checks",
+              "Input validation, encoding, and server-side authorization",
+              "Secrets management for external credentials"
+            ]
+          },
+          {
+            "name": "Data Tier / Internal Network",
+            "components": [
+              "Relational DB",
+              "Blob Storage",
+              "Redis Cache",
+              "Immutable Audit Store"
+            ],
+            "boundary_type": "Highly Trusted",
+            "security_controls": [
+              "Network isolation (VNet/subnet rules)",
+              "Encryption at rest (AES-256)",
+              "Database access control and least-privilege service principals",
+              "Immutable/WORM storage for audit logs and retention policies"
+            ]
+          },
+          {
+            "name": "External Partner Zone",
+            "components": [
+              "Azure AD",
+              "Email Service",
+              "HR/Payroll API"
+            ],
+            "boundary_type": "Third-Party",
+            "security_controls": [
+              "Mutual TLS or API key + IP restrictions for integrations",
+              "Scoped integration accounts with least privilege",
+              "Audit logging of outbound exchanges",
+              "Data minimization and pseudonymization for exported records"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Primary entry points: client UI (browser/mobile) and public API endpoints (risk: High). Authentication depends on Azure AD SSO \u2014 compromise of identity tokens or misconfiguration of federation/claims is High risk. Exposed APIs: timesheet CRUD, submission/approval endpoints, admin/config APIs \u2014 these must enforce strong RBAC and input validation (risk: High). Edge-layer risks include DDoS and injection attacks mitigated by CDN/WAF (risk: Medium). Integration points (email service, HR/payroll API) present risk if credentials leaked or if outputs include PII (risk: Medium). The data tier is high value; DB credentials or blob access compromise could expose confidential data (risk: Critical). Additional risks: improper delegation logic or faulty team-hierarchy sync may enable unauthorized access (risk: High); email notifications leaking detailed PII \u2014 mitigate by sending minimal metadata with links; audit logging integrity threats require immutable storage and restricted admin access. Recommended mitigations: enforce Azure AD conditional access and MFA, strict RBAC and runtime claim checks, input/output validation, WAF and rate limiting, network segmentation, encryption in transit and at rest, immutable audit storage, regular SAST/DAST scans, and periodic access reviews and delegation audits."
+      }
+    }
+  ]
+}

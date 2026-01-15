@@ -1,0 +1,272 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Frontend Layer / User Management & Authentication",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Phishing or credential-theft attack (including stolen password or OAuth tokens) leading to account takeover. Social OAuth flows or email/password login can be abused; social engineering of SSO session"
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge / API Gateway",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Forged or replayed SSO/OIDC/SAML assertions or JWTs accepted by gateway due to missing signature validation, clock skew handling, or failure to check issuer/audience, allowing attackers to impersonate"
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Frontend Layer",
+    "risk_level": "Critical",
+    "category": "Tampering",
+    "description": "Cross-Site Scripting (XSS) or supply-side injection in the SPA allowing execution of attacker-controlled scripts, stealing session tokens, manipulating UI to submit actions on behalf of a user, or inj"
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (Relational DB access)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "SQL injection or other injection vulnerabilities in APIs or query builders allowing modification of project/experiment metadata, deletion of records, or unauthorized access to other tenants' data."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Realtime Collaboration & Notifications",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "WebSocket/real-time channels leaking sensitive project comments, chat content or data previews to unauthorized clients or other tenants because of missing per-connection auth, tenant checks, or improp"
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage (Object Storage)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Publicly exposed object storage (e.g., S3 bucket misconfiguration) or overly permissive ACLs result in datasets or model artifacts being publicly accessible, leading to IP loss or leakage of PII/train"
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "AI Assistant & LLM Orchestration",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Sensitive context (PII, secret keys, model IP) included in prompts or context windows is sent to external LLM providers and may be stored/used by them, causing data leakage or violation of tenant priv"
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Integration & Deployment Services (CI/CD)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Compromised CI/CD or deployment credentials are used to deploy malicious or backdoored models into staging/production, or to modify deployment configuration to elevate privileges of attacker code."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Platform & Ops (Audit logs / Backups)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Insider or compromised admin modifies or deletes audit logs and backups to cover tracks after malicious actions (e.g., data exfiltration or privilege escalation)."
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "External Services (Identity Providers)",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Identity provider outage (OIDC/SAML provider failure or network partition) prevents users from authenticating, blocking access to the web application for SSO-enabled tenants."
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Edge / API Gateway",
+    "risk_level": "Critical",
+    "category": "Denial of Service",
+    "description": "High-volume API abuse, bot attacks or amplification causing resource exhaustion on gateway or backend (API rate limits bypassed), degrading the service for legitimate users."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer / Application Services",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Cross-Site Request Forgery (CSRF) enabling unauthorized state-changing actions (project modification, model registration) from authenticated users without their knowledge."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "AI Assistant & LLM Orchestration",
+    "risk_level": "Critical",
+    "category": "Tampering",
+    "description": "Prompt injection attacks where user-supplied data or adversarial content manipulates the LLM to reveal secrets, override system instructions, or produce malicious code or guidance (e.g., 'ignore previ"
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage (Vector DB for embeddings)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Embeddings stored in vector DBs contain encoded PII or sensitive training data which can be probed or reconstructed by adversaries with query access, leaking private data across tenants."
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Model Registry & Deployment",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Attacker registers a malicious model artifact with forged metadata (faking provenance) then deploys it; users assume model is trustworthy and it performs malicious actions or leaks data."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (RBAC & Authorization)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Broken access control or RBAC misconfiguration allows a user (e.g., Data Scientist or Viewer) to escalate privileges and perform admin actions (modify RBAC, change tenant settings, access other tenant"
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "AI Assistant & Frontend (Chat history)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Chat history export feature or saved transcripts accessible without proper authorization, allowing users to download other users' chat logs containing sensitive project context or PII."
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Data Storage (Time-series DB for metrics)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Attacker manipulates time-series metrics (model accuracy, drift stats) to hide model degradation or to spoof performance metrics, leading to incorrect deployment decisions and harm to ML lifecycle int"
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge / API Gateway / Frontend",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "TLS misconfiguration (weak ciphers, missing HSTS) or compromised certificates allowing MITM attacks that intercept tokens, API calls, or LLM prompts between users and gateway or between services."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Realtime Collaboration & Notifications",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Resource exhaustion through many persistent websocket connections, presence events, or push notifications from malicious clients causing service degradation for collaboration features."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "External LLM Providers / AI Assistant",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Insufficient logging/auditing of prompts, LLM responses, and system decisions leads to inability to investigate incidents, attribute actions, or prove compliance when contested."
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend / Social OAuth flows",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "OAuth redirect_uri or client misconfiguration exploited to perform open redirect or token theft (redirect URI manipulation leading to code/token captured by attacker-controlled endpoint)."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Management & Visualization (Dataset uploads)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Malicious or poisoned dataset uploads (either by an attacker or by a careless user) that later poison models, leading to biased or vulnerable models or deliberate backdoors."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Integration & Deployment Services (CI/CD logs)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Secrets or service credentials accidentally exposed in CI/CD build logs or pipeline artifacts which are accessible to attackers or third-parties, enabling further compromise."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Platform & Ops (KMS/Key management)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Compromise of KMS admin credentials or misuse of key policy allows an attacker to decrypt data-at-rest (datasets, model artifacts, embeddings), breaking confidentiality across tenants."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Data Storage (Multi-tenant DB)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Insufficient tenant isolation (shared DB schema without row-level security or incorrect tenant ID use) leads to cross-tenant data access where one tenant can read another tenant's projects, experiment"
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage (Append-only Audit Logs)",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Audit logs are alterable or deletable by privileged agents; attackers remove evidence of malicious activity or administrators deny actions leading to compliance failures."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer / CDN",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Supply-chain attack or CDN compromise results in malicious JavaScript delivered to users (e.g., miner, credential siphon, content manipulator), affecting all tenants and allowing large-scale data exfi"
+  },
+  {
+    "id": "THR-029",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "AI Assistant & LLM Orchestration",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Abusive or scripted chat causing excessive LLM API calls, exhausting quotas or incurring high costs and causing degradation of AI assistant availability or high operational costs."
+  },
+  {
+    "id": "THR-030",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Services (External ML Platforms & Cloud Storage Connectors)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Misconfigured external ML platform connectors or cloud storage integrations expose artifacts, inference payloads, or customer data (e.g., wrong permissions on remote buckets or mistakenly public model"
+  }
+]

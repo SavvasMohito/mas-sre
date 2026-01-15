@@ -1,0 +1,11 @@
+{
+  "score": 0.81,
+  "dims": {
+    "completeness": 0.72,
+    "consistency": 0.88,
+    "correctness": 0.84,
+    "implementability": 0.76,
+    "alignment": 0.86
+  },
+  "passed": true
+}

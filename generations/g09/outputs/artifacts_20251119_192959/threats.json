@@ -1,0 +1,272 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Frontend Layer (SPA) - Calendar & Tables",
+    "risk_level": "Critical",
+    "category": "Information Disclosure / Spoofing",
+    "description": "Reflected or stored XSS in UI (calendar, shift preview, user profile) allows an attacker to run JS in another user's session, exfiltrate session tokens, hijack accounts, or perform actions on behalf o"
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer & Application Services (Forms & Actions)",
+    "risk_level": "Medium",
+    "category": "Tampering (CSRF)",
+    "description": "Cross-Site Request Forgery: authenticated users could be induced to submit state-changing requests (assignments, accept generated shifts) from another origin."
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer (Token Handling)",
+    "risk_level": "High",
+    "category": "Spoofing / Information Disclosure",
+    "description": "Session tokens or OAuth tokens stored insecurely in localStorage or accessible JS can be stolen via XSS or malicious extensions, enabling account takeover."
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer / External Services (Google OAuth)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Open redirect or incorrect OAuth redirect URI validation allows attackers to capture authorization codes or tokens via a malicious callback, leading to account takeover."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer (CDN/WAF/TLS)",
+    "risk_level": "High",
+    "category": "Information Disclosure / Tampering",
+    "description": "TLS termination or CDN misconfiguration (weak ciphers, expired certs, missing HSTS) could allow MitM, protocol downgrade, or data interception between clients and edge."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer (WAF & API Gateway)",
+    "risk_level": "High",
+    "category": "Tampering / Information Disclosure",
+    "description": "WAF rule bypass or insufficient WAF rules allow injection payloads (SQLi, XSS) to reach backend; misconfigured gateway could leak internal details via verbose errors."
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Edge Layer (Rate Limiting)",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Absence or weak rate limiting allows brute-force, enumeration, or abusive polling (e.g., optimizer polling) causing backend overload or service degradation."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Application Services - Authentication",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Credential stuffing, weak passwords, or lack of MFA leads to account takeover of ADMIN/MANAGER accounts allowing large-scale damage."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services - Password Reset",
+    "risk_level": "High",
+    "category": "Spoofing / Repudiation",
+    "description": "Weak or predictable password reset tokens, or emails sent with insufficient verification, allow attackers to reset passwords and take over accounts."
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services - OAuth Integration",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromised or replayed OAuth tokens from Google OAuth could be used to impersonate users if token validation is insufficient."
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services - RBAC / Multi-tenant Checks",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Broken access control or insufficient tenant scoping may allow a manager/admin/employee to view or modify data for other companies or elevate privileges."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services - Multi-Tenancy",
+    "risk_level": "High",
+    "category": "Information Disclosure / Tampering",
+    "description": "Data leakage across tenants due to incorrect SQL queries, shared caches, or improper tenant-scoped identifiers could expose PII and shift data of other companies."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services - Shift APIs / DB Layer",
+    "risk_level": "High",
+    "category": "Tampering (Injection)",
+    "description": "SQL injection, NoSQL injection or command injection via poorly validated parameters (search, filtering, sorting) could lead to data theft or corruption."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Auto-Assignment (Optimizer Orchestration)",
+    "risk_level": "High",
+    "category": "Tampering / Integrity",
+    "description": "An attacker could manipulate optimization payloads, acceptance flow, or solver responses (malformed or malicious solution) to force incorrect assignments (e.g., assign unauthorized employees to shifts"
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services - Background Jobs / Queue",
+    "risk_level": "Medium",
+    "category": "Denial of Service / Tampering",
+    "description": "Queue or job system abuse (poisoned jobs, replayed jobs, or malformed payloads) can cause failures in optimizer orchestration, duplicate processing, or resource exhaustion."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services - Audit & Logging",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Insufficient or tamperable audit logs allow malicious actors to erase traces of actions (shift changes, acceptance) or administrators to repudiate actions."
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer - Object Storage (Exports/Artifacts)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Misconfigured S3-like buckets or signed URLs with overly long TTLs could leak CSV/XLSX exports or optimizer artifacts publicly, exposing PII and shift data."
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer - Managed RDBMS",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Database credentials stored insecurely (in code, misconfigured secrets management) or overly-permissive DB accounts allow attackers or insiders to dump tenant data."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Data Layer - Backups & Export Files",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Backups, exported CSV/XLSX, or optimizer artifacts containing PII may be retained insecurely or sent to external systems without encryption, leading to data leakage."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer - Cache/Session Store (Redis)",
+    "risk_level": "High",
+    "category": "Spoofing / Information Disclosure",
+    "description": "Compromise of cache/session store could allow theft of session tokens or tenant-scoped cached data, enabling session hijacking or data leakage."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Services - Timefold Solver Integration",
+    "risk_level": "High",
+    "category": "Information Disclosure / Tampering",
+    "description": "Sensitive optimization payloads (employee availability, leave, skills) transmitted to or stored by the external solver may be exposed if the external service is compromised or communication is interce"
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Services - Timefold Solver / Solver Responses",
+    "risk_level": "High",
+    "category": "Tampering / Elevation of Privilege",
+    "description": "Malicious or malformed solver responses could instruct the application to create invalid/privileged assignments or bypass constraints if insufficiently validated."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Services - Email Delivery Provider",
+    "risk_level": "High",
+    "category": "Information Disclosure / Repudiation",
+    "description": "Compromised email provider or mis-sent transactional emails (password resets, verification) can be used for phishing or account takeover or accidental leakage of PII."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Services - Google OAuth Provider",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromise of Google OAuth accounts or misconfiguration (improperly mapped accounts) allowing attackers to authenticate as other users or link accounts incorrectly."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "External Services - Monitoring & Logging",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Sensitive data (PII, tokens) in logs or monitoring metrics sent to third-party services may leak across organizations or be accessible to unauthorized parties."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Data Export Feature (CSV/XLSX)",
+    "risk_level": "Medium",
+    "category": "Tampering / Information Disclosure",
+    "description": "Exported spreadsheets containing user-entered fields could include CSV injection (formula injection) or contain sensitive PII unexpectedly; exported files may be downloaded using unsecured links."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Auto-Assignment (Concurrency)",
+    "risk_level": "Medium",
+    "category": "Tampering / Denial of Service",
+    "description": "Race conditions between auto-assignment job acceptance and manual edits can create duplicate shifts, gaps, or inconsistent state across tenants."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "API Gateway / Frontend Polling (Optimizer Polling)",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Abuse of real-time polling endpoints (frequent polling for optimization status) can overwhelm backend services, increasing costs and causing outages."
+  },
+  {
+    "id": "THR-029",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Internationalization / Date-Time Handling",
+    "risk_level": "Medium",
+    "category": "Tampering / Information Disclosure",
+    "description": "Locale and timezone misparsing or injection of malformed locale strings could cause incorrect shift calculations, exposing different tenants' data or mis-scheduling employees."
+  },
+  {
+    "id": "THR-030",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "User Interface (Cookies / Session)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "XSS or insecure cookie settings allow session cookie theft leading to privilege escalation (e.g., attacker operates as manager/admin)."
+  }
+]

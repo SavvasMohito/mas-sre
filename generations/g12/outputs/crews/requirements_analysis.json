@@ -1,0 +1,697 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"The system is a browser-accessible single-page frontend that communicates with backend application services via a secured API and real-time gateway. Application services include core REST APIs for authentication, RBAC, task lifecycle, and integrations, plus background workers that orchestrate SLURM job submissions, manage logs/artifacts, and interact with FPGA controllers. A data layer (relational DB, object store, caches, metrics) preserves catalogs, artifacts, audit trails and analytics. External integrations include Active Directory for SSO, GitHub for source-driven CI, corporate SMTP for email, a secrets manager, and on-prem HPC/FPGA hardware reachable from protected backend zones. Components are containerized and deployed via Ansible with health checks, monitoring, and role-based admin controls.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Frontend Layer\\\"\\n  Users[Users Browser] --> FE[Web App SPA & Admin UI]\\n  FE --> WS[Real-time WS/SSE Gateway]\\nend\\nsubgraph \\\"Edge & Auth\\\"\\n  AD[Active Directory SSO]\\n  GH[GitHub OAuth & Webhooks]\\n  VAULT[Secrets Manager]\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[Core API Users/Tasks/RBAC]\\n  WORK[Background Workers & Orchestrator]\\n  FPGAAPI[FPGA Control API]\\nend\\nsubgraph \\\"Data Layer\\\"\\n  DB[PostgreSQL Catalog & Audit DB]\\n  OBJ[Artifact Object Store]\\n  CACHE[Cache & Metrics Redis/Prometheus]\\nend\\nsubgraph \\\"Hardware Zone\\\"\\n  SLURM[HPC Cluster (SLURM)]\\n  FPGA[FPGA Cards & UART Consoles]\\nend\\nsubgraph \\\"External Services\\\"\\n  SMTP[Corporate SMTP]\\nend\\n\\nFE --> API\\nWS --> API\\nAPI --> AD\\nAPI --> GH\\nAPI --> VAULT\\nAPI --> DB\\nAPI --> OBJ\\nAPI --> CACHE\\nWORK --> SLURM\\nWORK --> OBJ\\nWORK --> DB\\nWORK --> FPGAAPI\\nFPGAAPI --> FPGA\\nSLURM --> WORK\\nSLURM --> OBJ\\nAPI --> SMTP\\n\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Provide responsive SPA UI and admin console for users to create/manage builds, view logs, dashboards, file browser and notifications; real-time channel for status updates.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"Corporate AD for SSO\",\n        \"Browser WebSocket/SSE support\"\n      ],\n      \"data_handled\": [\n        \"User interaction events\",\n        \"Build status updates\",\n        \"Previewed files and logs (transient)\"\n      ]\n    },\n    {\n      \"name\": \"Edge & Auth\",\n      \"responsibility\": \"Handle authentication/authorization flows (AD SSO, GitHub OAuth), session management, and act as gateway for incoming webhooks and inbound client connections (WS/SSE).\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Active Directory/IdP\",\n        \"GitHub OAuth\"\n      ],\n      \"data_handled\": [\n        \"Identity assertions and tokens\",\n        \"Webhook payloads (GitHub)\",\n        \"Session metadata\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core REST APIs implementing RBAC, task CRUD, orchestration, approval workflows (FPGA programming), audit logging and admin configuration.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Secrets Manager (Vault)\",\n        \"Corporate SMTP\"\n      ],\n      \"data_handled\": [\n        \"User profiles and RBAC policies\",\n        \"Task definitions and parameters\",\n        \"Audit events and history\"\n      ]\n    },\n    {\n      \"name\": \"Background Workers & Orchestrator\",\n      \"responsibility\": \"Asynchronous job runners that submit and reconcile SLURM jobs, stream logs, collect artifacts, retry failed operations, and coordinate FPGA programming via controlled APIs.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"HPC (SLURM)\",\n        \"EDA tool licensing servers\"\n      ],\n      \"data_handled\": [\n        \"Job submission payloads\",\n        \"Runtime logs and job metadata\",\n        \"Artifacts staging info\"\n      ]\n    },\n    {\n      \"name\": \"HPC & FPGA Hardware Zone\",\n      \"responsibility\": \"On-premise HPC cluster for build execution and physical FPGA cards with UART/console access; accessible only from protected backend services for programming and console streaming.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"On-prem SLURM-managed compute nodes\",\n        \"FPGA programming interfaces\"\n      ],\n      \"data_handled\": [\n        \"Build execution payloads\",\n        \"Bitfiles and hardware state\",\n        \"UART console output\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage & Analytics\",\n      \"responsibility\": \"Persistent storage components including relational DB for catalog/audit, object store for artifacts, and time-series/metrics for monitoring and analytics.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Approved RDBMS (PostgreSQL)\",\n        \"Object storage system (S3-compatible)\"\n      ],\n      \"data_handled\": [\n        \"Build artifacts and checksums\",\n        \"Audit logs and compliance records\",\n        \"Metrics and analytics data\"\n      ]\n    },\n    {\n      \"name\": \"External Integrations\",\n      \"responsibility\": \"Third-party services used for identity, source control, notifications and secrets: AD for SSO, GitHub for repo/branch triggers, SMTP for emails, and Vault for secrets.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Active Directory/IdP\",\n        \"GitHub\",\n        \"Corporate SMTP\",\n        \"Secrets Manager (Vault)\"\n      ],\n      \"data_handled\": [\n        \"OAuth tokens and webhook payloads\",\n        \"Email notifications\",\n        \"Secrets and credentials (encrypted)\"\n      ]\n    },\n    {\n      \"name\": \"Deployment & Ops\",\n      \"responsibility\": \"Containerization, automated provisioning (Ansible), health endpoints, backup/restore, monitoring/alerting, and patching processes to maintain system availability and compliance.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Container runtime (Docker)\",\n        \"Ansible control plane\",\n        \"Monitoring stack (Prometheus/ELK)\"\n      ],\n      \"data_handled\": [\n        \"Deployment manifests\",\n        \"Health metrics\",\n        \"Backup artifacts and restore jobs\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users interact with the Web SPA which authenticates via AD/GitHub. The SPA calls Core APIs and connects to the WS gateway for real-time updates. Task creation and file uploads are stored in the DB and Object Store; background workers pick tasks and submit jobs to SLURM, stream logs back to workers, and store artifacts into the object store while updating DB records. FPGA programming requests flow from the API through an approval check to the FPGA control API, which executes programming inside the Hardware Zone. Audit logs and metrics are written to the DB and metrics store; notifications are sent via SMTP or in-app channels. Secrets are retrieved at runtime from a centralized secrets manager and never persisted in plaintext.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users Browser\",\n        \"GitHub Webhooks (public endpoint if used)\",\n        \"Browser Push Notifications\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS termination (strong ciphers)\",\n        \"WAF/Ingress rate limiting\",\n        \"OAuth flows and CSRF protection\",\n        \"Strict CORS and input validation\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge\",\n      \"components\": [\n        \"Web App Frontend\",\n        \"WS/SSE Gateway\",\n        \"Reverse Proxy / Load Balancer\"\n      ],\n      \"boundary_type\": \"Semi-Trusted\",\n      \"security_controls\": [\n        \"Authenticated sessions via AD SSO\",\n        \"Network ACLs restricting downstream access\",\n        \"Client certificate or JWT validation for webhooks\",\n        \"Request rate limiting and bot mitigation\"\n      ]\n    },\n    {\n      \"name\": \"Internal Application Network\",\n      \"components\": [\n        \"Core API\",\n        \"Background Workers\",\n        \"Admin Panel\",\n        \"Secrets Manager Proxy\"\n      ],\n      \"boundary_type\": \"Trusted/Internal\",\n      \"security_controls\": [\n        \"Mutual TLS between services\",\n        \"Service-level RBAC and least-privilege identities\",\n        \"Network segmentation and firewall rules\",\n        \"Logging, monitoring and intrusion detection\"\n      ]\n    },\n    {\n      \"name\": \"Hardware Zone / HPC Network\",\n      \"components\": [\n        \"SLURM Cluster\",\n        \"FPGA Cards and UART Consoles\"\n      ],\n      \"boundary_type\": \"Highly Trusted / Sensitive\",\n      \"security_controls\": [\n        \"Isolated VLANs / restricted subnet\",\n        \"Jump-host/bastion for admin access\",\n        \"Approval workflows and multi-person approval for FPGA programming\",\n        \"Strict audit logging and tamper-evident storage\"\n      ]\n    },\n    {\n      \"name\": \"Data Tier\",\n      \"components\": [\n        \"PostgreSQL DB\",\n        \"Object Store\",\n        \"Metrics Store\"\n      ],\n      \"boundary_type\": \"Sensitive/Protected\",\n      \"security_controls\": [\n        \"Encryption at rest (keys from Vault)\",\n        \"Access control lists and DB role separation\",\n        \"Regular backups with verification and encrypted storage\",\n        \"Database activity monitoring and retention policies\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary attack surfaces: 1) Web UI and APIs exposed to users and webhooks \u2014 risk: High. Controls: AD SSO, RBAC, TLS, WAF, rate limiting, CSRF/XSS protections and input validation. 2) OAuth and webhook endpoints (GitHub) \u2014 risk: Medium; secure with signed webhooks, OAuth scopes, and token lifecycle management. 3) Artifact upload endpoints for large files \u2014 risk: High for DoS and malware; mitigate with resumable uploads, content scanning, upload quotas, rate limits and integrity checks. 4) Backend REST APIs for SLURM and FPGA control \u2014 risk: High because they can trigger expensive jobs or hardware programming; protect with strict authZ, approval workflows, audit trails and service network isolation. 5) Secrets management and credentials \u2014 risk: Critical; use Vault, short-lived credentials, and avoid secret persistence. 6) Admin interfaces and deployment pipelines \u2014 risk: High; restrict via bastion hosts, MFA, and audit logging. 7) Monitoring and logging endpoints \u2014 risk: Medium; protect to prevent information leakage. Overall, prioritize hardening of authentication, authorization, input validation, network segmentation, and secrets handling to reduce exposure.\"\n}",
+  "pydantic": {
+    "architecture_summary": "The system is a browser-accessible single-page frontend that communicates with backend application services via a secured API and real-time gateway. Application services include core REST APIs for authentication, RBAC, task lifecycle, and integrations, plus background workers that orchestrate SLURM job submissions, manage logs/artifacts, and interact with FPGA controllers. A data layer (relational DB, object store, caches, metrics) preserves catalogs, artifacts, audit trails and analytics. External integrations include Active Directory for SSO, GitHub for source-driven CI, corporate SMTP for email, a secrets manager, and on-prem HPC/FPGA hardware reachable from protected backend zones. Components are containerized and deployed via Ansible with health checks, monitoring, and role-based admin controls.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Frontend Layer\"\n  Users[Users Browser] --> FE[Web App SPA & Admin UI]\n  FE --> WS[Real-time WS/SSE Gateway]\nend\nsubgraph \"Edge & Auth\"\n  AD[Active Directory SSO]\n  GH[GitHub OAuth & Webhooks]\n  VAULT[Secrets Manager]\nend\nsubgraph \"Application Services\"\n  API[Core API Users/Tasks/RBAC]\n  WORK[Background Workers & Orchestrator]\n  FPGAAPI[FPGA Control API]\nend\nsubgraph \"Data Layer\"\n  DB[PostgreSQL Catalog & Audit DB]\n  OBJ[Artifact Object Store]\n  CACHE[Cache & Metrics Redis/Prometheus]\nend\nsubgraph \"Hardware Zone\"\n  SLURM[HPC Cluster (SLURM)]\n  FPGA[FPGA Cards & UART Consoles]\nend\nsubgraph \"External Services\"\n  SMTP[Corporate SMTP]\nend\n\nFE --> API\nWS --> API\nAPI --> AD\nAPI --> GH\nAPI --> VAULT\nAPI --> DB\nAPI --> OBJ\nAPI --> CACHE\nWORK --> SLURM\nWORK --> OBJ\nWORK --> DB\nWORK --> FPGAAPI\nFPGAAPI --> FPGA\nSLURM --> WORK\nSLURM --> OBJ\nAPI --> SMTP\n",
+    "components": [
+      {
+        "name": "Frontend Layer",
+        "responsibility": "Provide responsive SPA UI and admin console for users to create/manage builds, view logs, dashboards, file browser and notifications; real-time channel for status updates.",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "Corporate AD for SSO",
+          "Browser WebSocket/SSE support"
+        ],
+        "data_handled": [
+          "User interaction events",
+          "Build status updates",
+          "Previewed files and logs (transient)"
+        ]
+      },
+      {
+        "name": "Edge & Auth",
+        "responsibility": "Handle authentication/authorization flows (AD SSO, GitHub OAuth), session management, and act as gateway for incoming webhooks and inbound client connections (WS/SSE).",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Active Directory/IdP",
+          "GitHub OAuth"
+        ],
+        "data_handled": [
+          "Identity assertions and tokens",
+          "Webhook payloads (GitHub)",
+          "Session metadata"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core REST APIs implementing RBAC, task CRUD, orchestration, approval workflows (FPGA programming), audit logging and admin configuration.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Secrets Manager (Vault)",
+          "Corporate SMTP"
+        ],
+        "data_handled": [
+          "User profiles and RBAC policies",
+          "Task definitions and parameters",
+          "Audit events and history"
+        ]
+      },
+      {
+        "name": "Background Workers & Orchestrator",
+        "responsibility": "Asynchronous job runners that submit and reconcile SLURM jobs, stream logs, collect artifacts, retry failed operations, and coordinate FPGA programming via controlled APIs.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "HPC (SLURM)",
+          "EDA tool licensing servers"
+        ],
+        "data_handled": [
+          "Job submission payloads",
+          "Runtime logs and job metadata",
+          "Artifacts staging info"
+        ]
+      },
+      {
+        "name": "HPC & FPGA Hardware Zone",
+        "responsibility": "On-premise HPC cluster for build execution and physical FPGA cards with UART/console access; accessible only from protected backend services for programming and console streaming.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "On-prem SLURM-managed compute nodes",
+          "FPGA programming interfaces"
+        ],
+        "data_handled": [
+          "Build execution payloads",
+          "Bitfiles and hardware state",
+          "UART console output"
+        ]
+      },
+      {
+        "name": "Data Storage & Analytics",
+        "responsibility": "Persistent storage components including relational DB for catalog/audit, object store for artifacts, and time-series/metrics for monitoring and analytics.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Approved RDBMS (PostgreSQL)",
+          "Object storage system (S3-compatible)"
+        ],
+        "data_handled": [
+          "Build artifacts and checksums",
+          "Audit logs and compliance records",
+          "Metrics and analytics data"
+        ]
+      },
+      {
+        "name": "External Integrations",
+        "responsibility": "Third-party services used for identity, source control, notifications and secrets: AD for SSO, GitHub for repo/branch triggers, SMTP for emails, and Vault for secrets.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Active Directory/IdP",
+          "GitHub",
+          "Corporate SMTP",
+          "Secrets Manager (Vault)"
+        ],
+        "data_handled": [
+          "OAuth tokens and webhook payloads",
+          "Email notifications",
+          "Secrets and credentials (encrypted)"
+        ]
+      },
+      {
+        "name": "Deployment & Ops",
+        "responsibility": "Containerization, automated provisioning (Ansible), health endpoints, backup/restore, monitoring/alerting, and patching processes to maintain system availability and compliance.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Container runtime (Docker)",
+          "Ansible control plane",
+          "Monitoring stack (Prometheus/ELK)"
+        ],
+        "data_handled": [
+          "Deployment manifests",
+          "Health metrics",
+          "Backup artifacts and restore jobs"
+        ]
+      }
+    ],
+    "data_flow_description": "Users interact with the Web SPA which authenticates via AD/GitHub. The SPA calls Core APIs and connects to the WS gateway for real-time updates. Task creation and file uploads are stored in the DB and Object Store; background workers pick tasks and submit jobs to SLURM, stream logs back to workers, and store artifacts into the object store while updating DB records. FPGA programming requests flow from the API through an approval check to the FPGA control API, which executes programming inside the Hardware Zone. Audit logs and metrics are written to the DB and metrics store; notifications are sent via SMTP or in-app channels. Secrets are retrieved at runtime from a centralized secrets manager and never persisted in plaintext.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "Users Browser",
+          "GitHub Webhooks (public endpoint if used)",
+          "Browser Push Notifications"
+        ],
+        "boundary_type": "Untrusted",
+        "security_controls": [
+          "TLS termination (strong ciphers)",
+          "WAF/Ingress rate limiting",
+          "OAuth flows and CSRF protection",
+          "Strict CORS and input validation"
+        ]
+      },
+      {
+        "name": "DMZ / Edge",
+        "components": [
+          "Web App Frontend",
+          "WS/SSE Gateway",
+          "Reverse Proxy / Load Balancer"
+        ],
+        "boundary_type": "Semi-Trusted",
+        "security_controls": [
+          "Authenticated sessions via AD SSO",
+          "Network ACLs restricting downstream access",
+          "Client certificate or JWT validation for webhooks",
+          "Request rate limiting and bot mitigation"
+        ]
+      },
+      {
+        "name": "Internal Application Network",
+        "components": [
+          "Core API",
+          "Background Workers",
+          "Admin Panel",
+          "Secrets Manager Proxy"
+        ],
+        "boundary_type": "Trusted/Internal",
+        "security_controls": [
+          "Mutual TLS between services",
+          "Service-level RBAC and least-privilege identities",
+          "Network segmentation and firewall rules",
+          "Logging, monitoring and intrusion detection"
+        ]
+      },
+      {
+        "name": "Hardware Zone / HPC Network",
+        "components": [
+          "SLURM Cluster",
+          "FPGA Cards and UART Consoles"
+        ],
+        "boundary_type": "Highly Trusted / Sensitive",
+        "security_controls": [
+          "Isolated VLANs / restricted subnet",
+          "Jump-host/bastion for admin access",
+          "Approval workflows and multi-person approval for FPGA programming",
+          "Strict audit logging and tamper-evident storage"
+        ]
+      },
+      {
+        "name": "Data Tier",
+        "components": [
+          "PostgreSQL DB",
+          "Object Store",
+          "Metrics Store"
+        ],
+        "boundary_type": "Sensitive/Protected",
+        "security_controls": [
+          "Encryption at rest (keys from Vault)",
+          "Access control lists and DB role separation",
+          "Regular backups with verification and encrypted storage",
+          "Database activity monitoring and retention policies"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Primary attack surfaces: 1) Web UI and APIs exposed to users and webhooks \u2014 risk: High. Controls: AD SSO, RBAC, TLS, WAF, rate limiting, CSRF/XSS protections and input validation. 2) OAuth and webhook endpoints (GitHub) \u2014 risk: Medium; secure with signed webhooks, OAuth scopes, and token lifecycle management. 3) Artifact upload endpoints for large files \u2014 risk: High for DoS and malware; mitigate with resumable uploads, content scanning, upload quotas, rate limits and integrity checks. 4) Backend REST APIs for SLURM and FPGA control \u2014 risk: High because they can trigger expensive jobs or hardware programming; protect with strict authZ, approval workflows, audit trails and service network isolation. 5) Secrets management and credentials \u2014 risk: Critical; use Vault, short-lived credentials, and avoid secret persistence. 6) Admin interfaces and deployment pipelines \u2014 risk: High; restrict via bastion hosts, MFA, and audit logging. 7) Monitoring and logging endpoints \u2014 risk: Medium; protect to prevent information leakage. Overall, prioritize hardening of authentication, authorization, input validation, network segmentation, and secrets handling to reduce exposure."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A browser-accessible web application that automates FPGA build flows by orchestrating source selection (including GitHub branches), invoking EDA toolchains (lint, synthesis, place & route, timing analysis), submitting and managing jobs on HPC clusters (SLURM), programming FPGA cards, and presenting real-time status, logs, artifacts and analytics via a responsive UI while maintaining inventory in a backend database and integrating with enterprise identity and notification systems.\",\n  \"high_level_requirements\": [\n    \"Active Directory (SSO) authentication and session management\",\n    \"Role-based access control (RBAC) and user profile management\",\n    \"Responsive web dashboard for build/task monitoring\",\n    \"Real-time updates to clients using WebSockets or Server-Sent Events\",\n    \"Interactive file browser with upload, drag-and-drop, previews, and versioning\",\n    \"Support for large file uploads with progress reporting and resumable uploads\",\n    \"Web-based task creation, editing, deletion and bulk task operations\",\n    \"Task queue management, prioritization and SLURM-based job submission API\",\n    \"Background worker service for HPC communication and job lifecycle management\",\n    \"REST API endpoints for submitting and managing jobs via SLURM\",\n    \"Web API for programming FPGAs (bitfile deployment) and UART integration\",\n    \"Live log streaming and log storage with export (PDF/CSV/TXT)\",\n    \"GitHub OAuth integration, repo/branch selection UI and webhook-driven automated builds\",\n    \"Linking builds to specific commits and PRs with commit metadata display\",\n    \"In-app, email and optional browser push notifications with user preferences\",\n    \"Reporting and analytics dashboard with charts, trends and exportable reports\",\n    \"Build artifact storage, download, retention policies and artifact versioning\",\n    \"Audit trail and task history for compliance and troubleshooting\",\n    \"Web-based administration panel for system configuration and health checks\",\n    \"Containerized deployment (Docker) and automated provisioning/upgrades via Ansible\",\n    \"Database backup/restore via web interface and health endpoints for monitoring\",\n    \"Session security, secure logout and protection against common web threats (CSRF/XSS/Injection)\",\n    \"Secrets management and secure storage of credentials (HPC, GitHub, FPGA controllers)\",\n    \"Access controls and isolation for FPGA hardware and HPC resources\",\n    \"Performance/scalability requirements for concurrent builds and real-time updates\",\n    \"Mobile-responsive design for tablets and phones\",\n    \"Rate-limiting and abuse prevention for APIs and uploads\",\n    \"Monitoring, alerting, and vulnerability/patch management processes\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"Active Directory single sign-on (SSO) integration for user authentication with support for enterprise AD/LDAP and SAML/OpenID Connect.\",\n      \"business_category\": \"Authentication\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Enterprises require centralized identity management for access control, compliance, and easier user provisioning/deprovisioning. Using AD SSO reduces password handling in the app and enables corporate policy enforcement.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Role-based access control (RBAC) with configurable roles and permissions (e.g., admin, build-owner, viewer, operator) and fine-grained authorization checks for UI and APIs.\",\n      \"business_category\": \"Authorization\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Different users need different privileges (e.g., who can submit builds, program FPGAs, change system config). RBAC enforces least privilege and reduces risk of unauthorized operations or IP leakage.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"User profile management allowing users to set preferences, notification settings, and view account attributes; support secure logout and session timeout configuration.\",\n      \"business_category\": \"User Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Profiles let users control notifications and personalization while session controls enforce security (prevent stale sessions, support logout).\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Responsive web dashboard for monitoring builds, tasks, system status and inventory with role-sensitive views.\",\n      \"business_category\": \"User Experience\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"A modern responsive UI improves productivity and supports remote/device access for engineers and operators.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"Real-time client updates using WebSockets or Server-Sent Events for build status, job progress, logs and metrics.\",\n      \"business_category\": \"Real-time Communication\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Real-time feedback is essential during long-running builds and for accurate monitoring; channels must be secured to prevent eavesdropping/spoofing.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"Interactive file browser with upload (drag-and-drop), folder organization, file preview for common types, download, file versioning and history.\",\n      \"business_category\": \"File Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Design files and bitfiles are company IP; users need to manage and retrieve artifacts safely. Versioning helps reproducibility and rollback.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Support large file uploads (multi-GB) with resumable uploads, progress indicators, server-side streaming to storage and integrity checks (checksums).\",\n      \"business_category\": \"File Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"FPGA builds often involve large binaries. Resumable uploads reduce failures, and integrity checks prevent corrupted artifacts and potential build errors.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Web-based creation, editing, deletion of build tasks with templates, parameterization, and ability to create multiple tasks in bulk.\",\n      \"business_category\": \"Task Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Users need an efficient way to configure and run many build variants and reuse common configurations to improve productivity.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Task lifecycle management with status tracking (To Do, In Progress, Done, Failed), visual indicators, task history, audit trail and ability to cancel or retry tasks (including bulk cancel).\",\n      \"business_category\": \"Task Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Clear lifecycle and audit trails are required for debugging, compliance and operational control over expensive HPC jobs and hardware usage.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Task queue management with priorities, scheduling hints and preemption policies; REST API to submit jobs to HPC scheduler (SLURM) including resource specifications (CPUs, memory, GPUs, node constraints).\",\n      \"business_category\": \"HPC Integration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Efficient use of shared HPC requires queue policies and scheduler integration; APIs must authenticate and authorize submission to prevent abuse and resource exhaustion.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Background worker service(s) responsible for communication with HPC (SLURM), job state reconciliation, log retrieval, artifact collection and retry logic.\",\n      \"business_category\": \"Backend Services\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Long-running and asynchronous interactions with HPC require robust backend processing to decouple UI responsiveness and provide recovery on failures.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"REST API endpoints to submit, query, cancel and manage SLURM jobs; APIs must enforce authentication, authorization, rate limits, and input validation.\",\n      \"business_category\": \"API\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Programmatic control of HPC must be exposed to UI and automation while protected to prevent unauthorized job execution or data exfiltration.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"Controlled Web API for programming FPGAs with bitfiles, requiring additional approval or role checks, pre-flight validation of bitfiles, and safe rollback capability.\",\n      \"business_category\": \"FPGA Integration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Programming hardware can have safety and security implications (device damage, IP exposure). Extra controls and checks reduce risk.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Integration with UART ports and console redirection via backend services, exposing console logs in the UI only to authorized users and logging all access.\",\n      \"business_category\": \"Hardware Access\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Console access can reveal sensitive system state and must be tightly controlled and audited to prevent misuse or leakage of secret data.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"Live log viewer providing streamed EDA tool outputs, searchable logs, persisted log storage and ability to export logs (PDF, CSV, TXT).\",\n      \"business_category\": \"Logging & Diagnostics\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"EDA tools produce verbose output; live streaming improves debugging, and exports aid reporting and incident analysis. Logs may include sensitive info so access must be controlled.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"GitHub OAuth authentication option and UI for linking GitHub accounts, selecting repositories and branches, with webhook handling to trigger automated builds.\",\n      \"business_category\": \"Source Control Integration\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Direct integration with source control supports CI workflows and reproducible builds; OAuth avoids storing GitHub passwords and webhooks automate triggers.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"Display commit metadata and ability to link builds to specific commits and pull requests, including commit diffs and author information in the build record.\",\n      \"business_category\": \"Source Control Integration\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public/Internal depending on repo\",\n      \"rationale\": \"Traceability between builds and source changes speeds debugging and supports code-review-driven CI processes.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"In-app notifications with a notifications center (read/unread status), email notifications on key events (e.g., build success/failure) and optional browser push notifications; preferences in user profile.\",\n      \"business_category\": \"Notifications\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Users need timely feedback on build state; preferences prevent notification fatigue and support cross-platform alerting.\"\n    },\n    {\n      \"requirement_id\": \"REQ-019\",\n      \"requirement_text\": \"Reporting and analytics dashboard showing build trends, success/failure rates, resource usage, per-user and per-team metrics, with exportable reports and scheduled report generation.\",\n      \"business_category\": \"Reporting & Analytics\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal/Confidential\",\n      \"rationale\": \"Operational KPIs help optimize cluster usage, identify flaky jobs, measure productivity, and support capacity planning; reports may contain sensitive usage patterns.\"\n    },\n    {\n      \"requirement_id\": \"REQ-020\",\n      \"requirement_text\": \"Artifact storage with lifecycle policies, retention settings, secure downloads, and access controls; artifacts must be checksummed and optionally signed.\",\n      \"business_category\": \"Data Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential/Restricted\",\n      \"rationale\": \"Build artifacts are IP; controlled storage, integrity checks and lifecycle management prevent accidental leaks and manage storage costs.\"\n    },\n    {\n      \"requirement_id\": \"REQ-021\",\n      \"requirement_text\": \"Comprehensive audit trail for user actions (login/logout, task submission, file access, FPGA programming, admin actions) with tamper-evident storage and retention policy.\",\n      \"business_category\": \"Compliance & Auditing\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal/Confidential\",\n      \"rationale\": \"Auditing supports investigations, compliance and accountability for critical actions such as hardware programming and job submissions.\"\n    },\n    {\n      \"requirement_id\": \"REQ-022\",\n      \"requirement_text\": \"Admin panel for system configuration (roles, RBAC policies, system-wide settings), health check endpoints and dashboards for service status and resource utilization.\",\n      \"business_category\": \"Administration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Operators need a secure interface to manage and observe the system; admin controls must be restricted and audited.\"\n    },\n    {\n      \"requirement_id\": \"REQ-023\",\n      \"requirement_text\": \"Containerized deployment using Docker images for services and orchestration of deployments/upgrades via Ansible playbooks with idempotent automation and rollback capability.\",\n      \"business_category\": \"Deployment\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Containers standardize deployment environments, and automated configuration management (Ansible) supports repeatable, auditable deployments and easier patching.\"\n    },\n    {\n      \"requirement_id\": \"REQ-024\",\n      \"requirement_text\": \"Database backup and restore features exposed via the admin UI and automated scheduled backups with encrypted storage and verification tests.\",\n      \"business_category\": \"Data Protection\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Backups protect against data loss. Encryption and verification minimize the risk of backup compromise or unusable restores.\"\n    },\n    {\n      \"requirement_id\": \"REQ-025\",\n      \"requirement_text\": \"Transport encryption (TLS) for all web and API traffic, encryption at rest for sensitive data (artifacts, DB backups, secrets), and centralized secrets management (e.g., HashiCorp Vault) for credentials and keys.\",\n      \"business_category\": \"Cryptography & Secrets Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential/Restricted\",\n      \"rationale\": \"Protecting data in transit and at rest reduces risk of IP theft and credential compromise; centralized secrets reduce hardcoded credentials and support key rotation.\"\n    },\n    {\n      \"requirement_id\": \"REQ-026\",\n      \"requirement_text\": \"Web application security controls including CSRF protection, XSS prevention, input validation, parameterized DB queries, secure cookies, CSP headers and automated scanning pipeline for vulnerabilities.\",\n      \"business_category\": \"Application Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Standard web app vulnerabilities can lead to full system compromise or data exfiltration; controls and regular scanning mitigate risks.\"\n    },\n    {\n      \"requirement_id\": \"REQ-027\",\n      \"requirement_text\": \"Network and infrastructure segmentation: backend services that access HPC and FPGA hardware must run in secured network zones with restricted inbound/outbound rules and jump-host/ bastion workflows for admin access.\",\n      \"business_category\": \"Network Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"HPC and hardware interfaces are sensitive resources; segmentation limits attack surface and lateral movement if components are compromised.\"\n    },\n    {\n      \"requirement_id\": \"REQ-028\",\n      \"requirement_text\": \"Operational monitoring, alerting and maintenance processes including health checks, metrics export (Prometheus), logs aggregation (ELK/EFK), scheduled vulnerability scans, patch management and incident response runbooks.\",\n      \"business_category\": \"Operations & Maintenance\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Ongoing observability and patching are required to maintain availability, detect incidents early, and comply with security best practices.\"\n    }\n  ],\n  \"security_context\": \"Primary regulatory and compliance considerations: GDPR (for personal data of EU users/accounts), corporate identity policies (Active Directory and SSO), ISO 27001 / SOC 2 controls for information security management, NIST Cybersecurity Framework for operational controls, and export-control considerations (EAR/ITAR) where FPGA designs or hardware may be subject to export restrictions. Additionally, privacy laws in user jurisdictions (e.g., CCPA) may apply to user profile data. Although PCI-DSS and HIPAA are not directly applicable unless payment or healthcare data are introduced, the system must follow corporate data classification, retention, and access-review policies. Security obligations include encryption in transit and at rest, centralized secrets management, strong authentication and authorization, audit logging, breach notification workflows, and periodic third-party security assessments.\",\n  \"assumptions\": [\n    \"System will be deployed in an enterprise environment with internal network access to HPC clusters and FPGA hardware (on-prem or cloud-connected bare-metal).\",\n    \"Active Directory or equivalent enterprise identity provider is available and reachable for SSO integration.\",\n    \"HPC scheduler is SLURM and provides APIs/CLI accessible from backend services.\",\n    \"GitHub is used for source repositories; OAuth app and webhook endpoints can be configured by admins.\",\n    \"Users have modern browsers with WebSocket/SSE support and reasonable internet connectivity.\",\n    \"Sufficient storage (object/block) and network bandwidth will be provisioned for large artifact uploads and downloads.\",\n    \"A secrets management solution (or the ability to deploy one) is available for storing credentials and keys.\",\n    \"FPGA programming and UART access must be performed from trusted backend services within protected network zones (not directly from public internet).\",\n    \"Container runtime (Docker) and orchestration/automation tooling (Ansible) will be available in target environment.\",\n    \"Legal and export-control restrictions for design data will be identified and enforced externally where applicable.\"\n  ],\n  \"constraints\": [\n    \"Must integrate with existing enterprise services: Active Directory/SSO, corporate email (SMTP), and GitHub; changes to these systems may be limited.\",\n    \"FPGA hardware and UART access must remain on-premises or in a secured data center; the application cannot directly expose hardware to the public internet.\",\n    \"Large file uploads must be supported despite possible network limitations; resumable uploads and chunking are required.\",\n    \"Deployment must use Docker containers and Ansible for automation; alternative deployment models require additional justification.\",\n    \"SLURM is the mandated scheduler for HPC; any non-SLURM clusters require adapter development.\",\n    \"Database technology is subject to corporate standardization/policies (e.g., PostgreSQL or an approved RDBMS); cross-vendor compatibility may be limited.\",\n    \"Data retention, backup frequency and encryption requirements must comply with corporate data governance and any applicable export-control policies.\",\n    \"Administrative operations (e.g., programming FPGAs) require additional human approvals and audit logging; automated unrestricted programming is not allowed.\",\n    \"System must adhere to corporate network segmentation and firewall constraints; backend services that need to reach external services (e.g., GitHub) may require proxies or jump-hosts.\",\n    \"Third-party dependencies (EDA tools, licensing servers) may impose license and network constraints that affect build orchestration and must be accommodated.\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A browser-accessible web application that automates FPGA build flows by orchestrating source selection (including GitHub branches), invoking EDA toolchains (lint, synthesis, place & route, timing analysis), submitting and managing jobs on HPC clusters (SLURM), programming FPGA cards, and presenting real-time status, logs, artifacts and analytics via a responsive UI while maintaining inventory in a backend database and integrating with enterprise identity and notification systems.",
+        "high_level_requirements": [
+          "Active Directory (SSO) authentication and session management",
+          "Role-based access control (RBAC) and user profile management",
+          "Responsive web dashboard for build/task monitoring",
+          "Real-time updates to clients using WebSockets or Server-Sent Events",
+          "Interactive file browser with upload, drag-and-drop, previews, and versioning",
+          "Support for large file uploads with progress reporting and resumable uploads",
+          "Web-based task creation, editing, deletion and bulk task operations",
+          "Task queue management, prioritization and SLURM-based job submission API",
+          "Background worker service for HPC communication and job lifecycle management",
+          "REST API endpoints for submitting and managing jobs via SLURM",
+          "Web API for programming FPGAs (bitfile deployment) and UART integration",
+          "Live log streaming and log storage with export (PDF/CSV/TXT)",
+          "GitHub OAuth integration, repo/branch selection UI and webhook-driven automated builds",
+          "Linking builds to specific commits and PRs with commit metadata display",
+          "In-app, email and optional browser push notifications with user preferences",
+          "Reporting and analytics dashboard with charts, trends and exportable reports",
+          "Build artifact storage, download, retention policies and artifact versioning",
+          "Audit trail and task history for compliance and troubleshooting",
+          "Web-based administration panel for system configuration and health checks",
+          "Containerized deployment (Docker) and automated provisioning/upgrades via Ansible",
+          "Database backup/restore via web interface and health endpoints for monitoring",
+          "Session security, secure logout and protection against common web threats (CSRF/XSS/Injection)",
+          "Secrets management and secure storage of credentials (HPC, GitHub, FPGA controllers)",
+          "Access controls and isolation for FPGA hardware and HPC resources",
+          "Performance/scalability requirements for concurrent builds and real-time updates",
+          "Mobile-responsive design for tablets and phones",
+          "Rate-limiting and abuse prevention for APIs and uploads",
+          "Monitoring, alerting, and vulnerability/patch management processes"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "Active Directory single sign-on (SSO) integration for user authentication with support for enterprise AD/LDAP and SAML/OpenID Connect.",
+            "business_category": "Authentication",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Enterprises require centralized identity management for access control, compliance, and easier user provisioning/deprovisioning. Using AD SSO reduces password handling in the app and enables corporate policy enforcement."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Role-based access control (RBAC) with configurable roles and permissions (e.g., admin, build-owner, viewer, operator) and fine-grained authorization checks for UI and APIs.",
+            "business_category": "Authorization",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Different users need different privileges (e.g., who can submit builds, program FPGAs, change system config). RBAC enforces least privilege and reduces risk of unauthorized operations or IP leakage."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "User profile management allowing users to set preferences, notification settings, and view account attributes; support secure logout and session timeout configuration.",
+            "business_category": "User Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Profiles let users control notifications and personalization while session controls enforce security (prevent stale sessions, support logout)."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Responsive web dashboard for monitoring builds, tasks, system status and inventory with role-sensitive views.",
+            "business_category": "User Experience",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "A modern responsive UI improves productivity and supports remote/device access for engineers and operators."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "Real-time client updates using WebSockets or Server-Sent Events for build status, job progress, logs and metrics.",
+            "business_category": "Real-time Communication",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Real-time feedback is essential during long-running builds and for accurate monitoring; channels must be secured to prevent eavesdropping/spoofing."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "Interactive file browser with upload (drag-and-drop), folder organization, file preview for common types, download, file versioning and history.",
+            "business_category": "File Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Design files and bitfiles are company IP; users need to manage and retrieve artifacts safely. Versioning helps reproducibility and rollback."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Support large file uploads (multi-GB) with resumable uploads, progress indicators, server-side streaming to storage and integrity checks (checksums).",
+            "business_category": "File Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "FPGA builds often involve large binaries. Resumable uploads reduce failures, and integrity checks prevent corrupted artifacts and potential build errors."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Web-based creation, editing, deletion of build tasks with templates, parameterization, and ability to create multiple tasks in bulk.",
+            "business_category": "Task Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Users need an efficient way to configure and run many build variants and reuse common configurations to improve productivity."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Task lifecycle management with status tracking (To Do, In Progress, Done, Failed), visual indicators, task history, audit trail and ability to cancel or retry tasks (including bulk cancel).",
+            "business_category": "Task Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Clear lifecycle and audit trails are required for debugging, compliance and operational control over expensive HPC jobs and hardware usage."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Task queue management with priorities, scheduling hints and preemption policies; REST API to submit jobs to HPC scheduler (SLURM) including resource specifications (CPUs, memory, GPUs, node constraints).",
+            "business_category": "HPC Integration",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Efficient use of shared HPC requires queue policies and scheduler integration; APIs must authenticate and authorize submission to prevent abuse and resource exhaustion."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Background worker service(s) responsible for communication with HPC (SLURM), job state reconciliation, log retrieval, artifact collection and retry logic.",
+            "business_category": "Backend Services",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Long-running and asynchronous interactions with HPC require robust backend processing to decouple UI responsiveness and provide recovery on failures."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "REST API endpoints to submit, query, cancel and manage SLURM jobs; APIs must enforce authentication, authorization, rate limits, and input validation.",
+            "business_category": "API",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Programmatic control of HPC must be exposed to UI and automation while protected to prevent unauthorized job execution or data exfiltration."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "Controlled Web API for programming FPGAs with bitfiles, requiring additional approval or role checks, pre-flight validation of bitfiles, and safe rollback capability.",
+            "business_category": "FPGA Integration",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Programming hardware can have safety and security implications (device damage, IP exposure). Extra controls and checks reduce risk."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Integration with UART ports and console redirection via backend services, exposing console logs in the UI only to authorized users and logging all access.",
+            "business_category": "Hardware Access",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Console access can reveal sensitive system state and must be tightly controlled and audited to prevent misuse or leakage of secret data."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "Live log viewer providing streamed EDA tool outputs, searchable logs, persisted log storage and ability to export logs (PDF, CSV, TXT).",
+            "business_category": "Logging & Diagnostics",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "EDA tools produce verbose output; live streaming improves debugging, and exports aid reporting and incident analysis. Logs may include sensitive info so access must be controlled."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "GitHub OAuth authentication option and UI for linking GitHub accounts, selecting repositories and branches, with webhook handling to trigger automated builds.",
+            "business_category": "Source Control Integration",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Direct integration with source control supports CI workflows and reproducible builds; OAuth avoids storing GitHub passwords and webhooks automate triggers."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "Display commit metadata and ability to link builds to specific commits and pull requests, including commit diffs and author information in the build record.",
+            "business_category": "Source Control Integration",
+            "security_sensitivity": "Low",
+            "data_classification": "Public/Internal depending on repo",
+            "rationale": "Traceability between builds and source changes speeds debugging and supports code-review-driven CI processes."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "In-app notifications with a notifications center (read/unread status), email notifications on key events (e.g., build success/failure) and optional browser push notifications; preferences in user profile.",
+            "business_category": "Notifications",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Users need timely feedback on build state; preferences prevent notification fatigue and support cross-platform alerting."
+          },
+          {
+            "requirement_id": "REQ-019",
+            "requirement_text": "Reporting and analytics dashboard showing build trends, success/failure rates, resource usage, per-user and per-team metrics, with exportable reports and scheduled report generation.",
+            "business_category": "Reporting & Analytics",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal/Confidential",
+            "rationale": "Operational KPIs help optimize cluster usage, identify flaky jobs, measure productivity, and support capacity planning; reports may contain sensitive usage patterns."
+          },
+          {
+            "requirement_id": "REQ-020",
+            "requirement_text": "Artifact storage with lifecycle policies, retention settings, secure downloads, and access controls; artifacts must be checksummed and optionally signed.",
+            "business_category": "Data Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential/Restricted",
+            "rationale": "Build artifacts are IP; controlled storage, integrity checks and lifecycle management prevent accidental leaks and manage storage costs."
+          },
+          {
+            "requirement_id": "REQ-021",
+            "requirement_text": "Comprehensive audit trail for user actions (login/logout, task submission, file access, FPGA programming, admin actions) with tamper-evident storage and retention policy.",
+            "business_category": "Compliance & Auditing",
+            "security_sensitivity": "High",
+            "data_classification": "Internal/Confidential",
+            "rationale": "Auditing supports investigations, compliance and accountability for critical actions such as hardware programming and job submissions."
+          },
+          {
+            "requirement_id": "REQ-022",
+            "requirement_text": "Admin panel for system configuration (roles, RBAC policies, system-wide settings), health check endpoints and dashboards for service status and resource utilization.",
+            "business_category": "Administration",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Operators need a secure interface to manage and observe the system; admin controls must be restricted and audited."
+          },
+          {
+            "requirement_id": "REQ-023",
+            "requirement_text": "Containerized deployment using Docker images for services and orchestration of deployments/upgrades via Ansible playbooks with idempotent automation and rollback capability.",
+            "business_category": "Deployment",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Containers standardize deployment environments, and automated configuration management (Ansible) supports repeatable, auditable deployments and easier patching."
+          },
+          {
+            "requirement_id": "REQ-024",
+            "requirement_text": "Database backup and restore features exposed via the admin UI and automated scheduled backups with encrypted storage and verification tests.",
+            "business_category": "Data Protection",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Backups protect against data loss. Encryption and verification minimize the risk of backup compromise or unusable restores."
+          },
+          {
+            "requirement_id": "REQ-025",
+            "requirement_text": "Transport encryption (TLS) for all web and API traffic, encryption at rest for sensitive data (artifacts, DB backups, secrets), and centralized secrets management (e.g., HashiCorp Vault) for credentials and keys.",
+            "business_category": "Cryptography & Secrets Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential/Restricted",
+            "rationale": "Protecting data in transit and at rest reduces risk of IP theft and credential compromise; centralized secrets reduce hardcoded credentials and support key rotation."
+          },
+          {
+            "requirement_id": "REQ-026",
+            "requirement_text": "Web application security controls including CSRF protection, XSS prevention, input validation, parameterized DB queries, secure cookies, CSP headers and automated scanning pipeline for vulnerabilities.",
+            "business_category": "Application Security",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Standard web app vulnerabilities can lead to full system compromise or data exfiltration; controls and regular scanning mitigate risks."
+          },
+          {
+            "requirement_id": "REQ-027",
+            "requirement_text": "Network and infrastructure segmentation: backend services that access HPC and FPGA hardware must run in secured network zones with restricted inbound/outbound rules and jump-host/ bastion workflows for admin access.",
+            "business_category": "Network Security",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "HPC and hardware interfaces are sensitive resources; segmentation limits attack surface and lateral movement if components are compromised."
+          },
+          {
+            "requirement_id": "REQ-028",
+            "requirement_text": "Operational monitoring, alerting and maintenance processes including health checks, metrics export (Prometheus), logs aggregation (ELK/EFK), scheduled vulnerability scans, patch management and incident response runbooks.",
+            "business_category": "Operations & Maintenance",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Ongoing observability and patching are required to maintain availability, detect incidents early, and comply with security best practices."
+          }
+        ],
+        "security_context": "Primary regulatory and compliance considerations: GDPR (for personal data of EU users/accounts), corporate identity policies (Active Directory and SSO), ISO 27001 / SOC 2 controls for information security management, NIST Cybersecurity Framework for operational controls, and export-control considerations (EAR/ITAR) where FPGA designs or hardware may be subject to export restrictions. Additionally, privacy laws in user jurisdictions (e.g., CCPA) may apply to user profile data. Although PCI-DSS and HIPAA are not directly applicable unless payment or healthcare data are introduced, the system must follow corporate data classification, retention, and access-review policies. Security obligations include encryption in transit and at rest, centralized secrets management, strong authentication and authorization, audit logging, breach notification workflows, and periodic third-party security assessments.",
+        "assumptions": [
+          "System will be deployed in an enterprise environment with internal network access to HPC clusters and FPGA hardware (on-prem or cloud-connected bare-metal).",
+          "Active Directory or equivalent enterprise identity provider is available and reachable for SSO integration.",
+          "HPC scheduler is SLURM and provides APIs/CLI accessible from backend services.",
+          "GitHub is used for source repositories; OAuth app and webhook endpoints can be configured by admins.",
+          "Users have modern browsers with WebSocket/SSE support and reasonable internet connectivity.",
+          "Sufficient storage (object/block) and network bandwidth will be provisioned for large artifact uploads and downloads.",
+          "A secrets management solution (or the ability to deploy one) is available for storing credentials and keys.",
+          "FPGA programming and UART access must be performed from trusted backend services within protected network zones (not directly from public internet).",
+          "Container runtime (Docker) and orchestration/automation tooling (Ansible) will be available in target environment.",
+          "Legal and export-control restrictions for design data will be identified and enforced externally where applicable."
+        ],
+        "constraints": [
+          "Must integrate with existing enterprise services: Active Directory/SSO, corporate email (SMTP), and GitHub; changes to these systems may be limited.",
+          "FPGA hardware and UART access must remain on-premises or in a secured data center; the application cannot directly expose hardware to the public internet.",
+          "Large file uploads must be supported despite possible network limitations; resumable uploads and chunking are required.",
+          "Deployment must use Docker containers and Ansible for automation; alternative deployment models require additional justification.",
+          "SLURM is the mandated scheduler for HPC; any non-SLURM clusters require adapter development.",
+          "Database technology is subject to corporate standardization/policies (e.g., PostgreSQL or an approved RDBMS); cross-vendor compatibility may be limited.",
+          "Data retention, backup frequency and encryption requirements must comply with corporate data governance and any applicable export-control policies.",
+          "Administrative operations (e.g., programming FPGAs) require additional human approvals and audit logging; automated unrestricted programming is not allowed.",
+          "System must adhere to corporate network segmentation and firewall constraints; backend services that need to reach external services (e.g., GitHub) may require proxies or jump-hosts.",
+          "Third-party dependencies (EDA tools, licensing servers) may impose license and network constraints that affect build orchestration and must be accommodated."
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"The system is a browser-accessible single-page frontend that communicates with backend application services via a secured API and real-time gateway. Application services include core REST APIs for authentication, RBAC, task lifecycle, and integrations, plus background workers that orchestrate SLURM job submissions, manage logs/artifacts, and interact with FPGA controllers. A data layer (relational DB, object store, caches, metrics) preserves catalogs, artifacts, audit trails and analytics. External integrations include Active Directory for SSO, GitHub for source-driven CI, corporate SMTP for email, a secrets manager, and on-prem HPC/FPGA hardware reachable from protected backend zones. Components are containerized and deployed via Ansible with health checks, monitoring, and role-based admin controls.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Frontend Layer\\\"\\n  Users[Users Browser] --> FE[Web App SPA & Admin UI]\\n  FE --> WS[Real-time WS/SSE Gateway]\\nend\\nsubgraph \\\"Edge & Auth\\\"\\n  AD[Active Directory SSO]\\n  GH[GitHub OAuth & Webhooks]\\n  VAULT[Secrets Manager]\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[Core API Users/Tasks/RBAC]\\n  WORK[Background Workers & Orchestrator]\\n  FPGAAPI[FPGA Control API]\\nend\\nsubgraph \\\"Data Layer\\\"\\n  DB[PostgreSQL Catalog & Audit DB]\\n  OBJ[Artifact Object Store]\\n  CACHE[Cache & Metrics Redis/Prometheus]\\nend\\nsubgraph \\\"Hardware Zone\\\"\\n  SLURM[HPC Cluster (SLURM)]\\n  FPGA[FPGA Cards & UART Consoles]\\nend\\nsubgraph \\\"External Services\\\"\\n  SMTP[Corporate SMTP]\\nend\\n\\nFE --> API\\nWS --> API\\nAPI --> AD\\nAPI --> GH\\nAPI --> VAULT\\nAPI --> DB\\nAPI --> OBJ\\nAPI --> CACHE\\nWORK --> SLURM\\nWORK --> OBJ\\nWORK --> DB\\nWORK --> FPGAAPI\\nFPGAAPI --> FPGA\\nSLURM --> WORK\\nSLURM --> OBJ\\nAPI --> SMTP\\n\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Provide responsive SPA UI and admin console for users to create/manage builds, view logs, dashboards, file browser and notifications; real-time channel for status updates.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"Corporate AD for SSO\",\n        \"Browser WebSocket/SSE support\"\n      ],\n      \"data_handled\": [\n        \"User interaction events\",\n        \"Build status updates\",\n        \"Previewed files and logs (transient)\"\n      ]\n    },\n    {\n      \"name\": \"Edge & Auth\",\n      \"responsibility\": \"Handle authentication/authorization flows (AD SSO, GitHub OAuth), session management, and act as gateway for incoming webhooks and inbound client connections (WS/SSE).\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Active Directory/IdP\",\n        \"GitHub OAuth\"\n      ],\n      \"data_handled\": [\n        \"Identity assertions and tokens\",\n        \"Webhook payloads (GitHub)\",\n        \"Session metadata\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core REST APIs implementing RBAC, task CRUD, orchestration, approval workflows (FPGA programming), audit logging and admin configuration.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Secrets Manager (Vault)\",\n        \"Corporate SMTP\"\n      ],\n      \"data_handled\": [\n        \"User profiles and RBAC policies\",\n        \"Task definitions and parameters\",\n        \"Audit events and history\"\n      ]\n    },\n    {\n      \"name\": \"Background Workers & Orchestrator\",\n      \"responsibility\": \"Asynchronous job runners that submit and reconcile SLURM jobs, stream logs, collect artifacts, retry failed operations, and coordinate FPGA programming via controlled APIs.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"HPC (SLURM)\",\n        \"EDA tool licensing servers\"\n      ],\n      \"data_handled\": [\n        \"Job submission payloads\",\n        \"Runtime logs and job metadata\",\n        \"Artifacts staging info\"\n      ]\n    },\n    {\n      \"name\": \"HPC & FPGA Hardware Zone\",\n      \"responsibility\": \"On-premise HPC cluster for build execution and physical FPGA cards with UART/console access; accessible only from protected backend services for programming and console streaming.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"On-prem SLURM-managed compute nodes\",\n        \"FPGA programming interfaces\"\n      ],\n      \"data_handled\": [\n        \"Build execution payloads\",\n        \"Bitfiles and hardware state\",\n        \"UART console output\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage & Analytics\",\n      \"responsibility\": \"Persistent storage components including relational DB for catalog/audit, object store for artifacts, and time-series/metrics for monitoring and analytics.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Approved RDBMS (PostgreSQL)\",\n        \"Object storage system (S3-compatible)\"\n      ],\n      \"data_handled\": [\n        \"Build artifacts and checksums\",\n        \"Audit logs and compliance records\",\n        \"Metrics and analytics data\"\n      ]\n    },\n    {\n      \"name\": \"External Integrations\",\n      \"responsibility\": \"Third-party services used for identity, source control, notifications and secrets: AD for SSO, GitHub for repo/branch triggers, SMTP for emails, and Vault for secrets.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Active Directory/IdP\",\n        \"GitHub\",\n        \"Corporate SMTP\",\n        \"Secrets Manager (Vault)\"\n      ],\n      \"data_handled\": [\n        \"OAuth tokens and webhook payloads\",\n        \"Email notifications\",\n        \"Secrets and credentials (encrypted)\"\n      ]\n    },\n    {\n      \"name\": \"Deployment & Ops\",\n      \"responsibility\": \"Containerization, automated provisioning (Ansible), health endpoints, backup/restore, monitoring/alerting, and patching processes to maintain system availability and compliance.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Container runtime (Docker)\",\n        \"Ansible control plane\",\n        \"Monitoring stack (Prometheus/ELK)\"\n      ],\n      \"data_handled\": [\n        \"Deployment manifests\",\n        \"Health metrics\",\n        \"Backup artifacts and restore jobs\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users interact with the Web SPA which authenticates via AD/GitHub. The SPA calls Core APIs and connects to the WS gateway for real-time updates. Task creation and file uploads are stored in the DB and Object Store; background workers pick tasks and submit jobs to SLURM, stream logs back to workers, and store artifacts into the object store while updating DB records. FPGA programming requests flow from the API through an approval check to the FPGA control API, which executes programming inside the Hardware Zone. Audit logs and metrics are written to the DB and metrics store; notifications are sent via SMTP or in-app channels. Secrets are retrieved at runtime from a centralized secrets manager and never persisted in plaintext.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users Browser\",\n        \"GitHub Webhooks (public endpoint if used)\",\n        \"Browser Push Notifications\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS termination (strong ciphers)\",\n        \"WAF/Ingress rate limiting\",\n        \"OAuth flows and CSRF protection\",\n        \"Strict CORS and input validation\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge\",\n      \"components\": [\n        \"Web App Frontend\",\n        \"WS/SSE Gateway\",\n        \"Reverse Proxy / Load Balancer\"\n      ],\n      \"boundary_type\": \"Semi-Trusted\",\n      \"security_controls\": [\n        \"Authenticated sessions via AD SSO\",\n        \"Network ACLs restricting downstream access\",\n        \"Client certificate or JWT validation for webhooks\",\n        \"Request rate limiting and bot mitigation\"\n      ]\n    },\n    {\n      \"name\": \"Internal Application Network\",\n      \"components\": [\n        \"Core API\",\n        \"Background Workers\",\n        \"Admin Panel\",\n        \"Secrets Manager Proxy\"\n      ],\n      \"boundary_type\": \"Trusted/Internal\",\n      \"security_controls\": [\n        \"Mutual TLS between services\",\n        \"Service-level RBAC and least-privilege identities\",\n        \"Network segmentation and firewall rules\",\n        \"Logging, monitoring and intrusion detection\"\n      ]\n    },\n    {\n      \"name\": \"Hardware Zone / HPC Network\",\n      \"components\": [\n        \"SLURM Cluster\",\n        \"FPGA Cards and UART Consoles\"\n      ],\n      \"boundary_type\": \"Highly Trusted / Sensitive\",\n      \"security_controls\": [\n        \"Isolated VLANs / restricted subnet\",\n        \"Jump-host/bastion for admin access\",\n        \"Approval workflows and multi-person approval for FPGA programming\",\n        \"Strict audit logging and tamper-evident storage\"\n      ]\n    },\n    {\n      \"name\": \"Data Tier\",\n      \"components\": [\n        \"PostgreSQL DB\",\n        \"Object Store\",\n        \"Metrics Store\"\n      ],\n      \"boundary_type\": \"Sensitive/Protected\",\n      \"security_controls\": [\n        \"Encryption at rest (keys from Vault)\",\n        \"Access control lists and DB role separation\",\n        \"Regular backups with verification and encrypted storage\",\n        \"Database activity monitoring and retention policies\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary attack surfaces: 1) Web UI and APIs exposed to users and webhooks \u2014 risk: High. Controls: AD SSO, RBAC, TLS, WAF, rate limiting, CSRF/XSS protections and input validation. 2) OAuth and webhook endpoints (GitHub) \u2014 risk: Medium; secure with signed webhooks, OAuth scopes, and token lifecycle management. 3) Artifact upload endpoints for large files \u2014 risk: High for DoS and malware; mitigate with resumable uploads, content scanning, upload quotas, rate limits and integrity checks. 4) Backend REST APIs for SLURM and FPGA control \u2014 risk: High because they can trigger expensive jobs or hardware programming; protect with strict authZ, approval workflows, audit trails and service network isolation. 5) Secrets management and credentials \u2014 risk: Critical; use Vault, short-lived credentials, and avoid secret persistence. 6) Admin interfaces and deployment pipelines \u2014 risk: High; restrict via bastion hosts, MFA, and audit logging. 7) Monitoring and logging endpoints \u2014 risk: Medium; protect to prevent information leakage. Overall, prioritize hardening of authentication, authorization, input validation, network segmentation, and secrets handling to reduce exposure.\"\n}",
+      "pydantic": {
+        "architecture_summary": "The system is a browser-accessible single-page frontend that communicates with backend application services via a secured API and real-time gateway. Application services include core REST APIs for authentication, RBAC, task lifecycle, and integrations, plus background workers that orchestrate SLURM job submissions, manage logs/artifacts, and interact with FPGA controllers. A data layer (relational DB, object store, caches, metrics) preserves catalogs, artifacts, audit trails and analytics. External integrations include Active Directory for SSO, GitHub for source-driven CI, corporate SMTP for email, a secrets manager, and on-prem HPC/FPGA hardware reachable from protected backend zones. Components are containerized and deployed via Ansible with health checks, monitoring, and role-based admin controls.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Frontend Layer\"\n  Users[Users Browser] --> FE[Web App SPA & Admin UI]\n  FE --> WS[Real-time WS/SSE Gateway]\nend\nsubgraph \"Edge & Auth\"\n  AD[Active Directory SSO]\n  GH[GitHub OAuth & Webhooks]\n  VAULT[Secrets Manager]\nend\nsubgraph \"Application Services\"\n  API[Core API Users/Tasks/RBAC]\n  WORK[Background Workers & Orchestrator]\n  FPGAAPI[FPGA Control API]\nend\nsubgraph \"Data Layer\"\n  DB[PostgreSQL Catalog & Audit DB]\n  OBJ[Artifact Object Store]\n  CACHE[Cache & Metrics Redis/Prometheus]\nend\nsubgraph \"Hardware Zone\"\n  SLURM[HPC Cluster (SLURM)]\n  FPGA[FPGA Cards & UART Consoles]\nend\nsubgraph \"External Services\"\n  SMTP[Corporate SMTP]\nend\n\nFE --> API\nWS --> API\nAPI --> AD\nAPI --> GH\nAPI --> VAULT\nAPI --> DB\nAPI --> OBJ\nAPI --> CACHE\nWORK --> SLURM\nWORK --> OBJ\nWORK --> DB\nWORK --> FPGAAPI\nFPGAAPI --> FPGA\nSLURM --> WORK\nSLURM --> OBJ\nAPI --> SMTP\n",
+        "components": [
+          {
+            "name": "Frontend Layer",
+            "responsibility": "Provide responsive SPA UI and admin console for users to create/manage builds, view logs, dashboards, file browser and notifications; real-time channel for status updates.",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "Corporate AD for SSO",
+              "Browser WebSocket/SSE support"
+            ],
+            "data_handled": [
+              "User interaction events",
+              "Build status updates",
+              "Previewed files and logs (transient)"
+            ]
+          },
+          {
+            "name": "Edge & Auth",
+            "responsibility": "Handle authentication/authorization flows (AD SSO, GitHub OAuth), session management, and act as gateway for incoming webhooks and inbound client connections (WS/SSE).",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Active Directory/IdP",
+              "GitHub OAuth"
+            ],
+            "data_handled": [
+              "Identity assertions and tokens",
+              "Webhook payloads (GitHub)",
+              "Session metadata"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core REST APIs implementing RBAC, task CRUD, orchestration, approval workflows (FPGA programming), audit logging and admin configuration.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Secrets Manager (Vault)",
+              "Corporate SMTP"
+            ],
+            "data_handled": [
+              "User profiles and RBAC policies",
+              "Task definitions and parameters",
+              "Audit events and history"
+            ]
+          },
+          {
+            "name": "Background Workers & Orchestrator",
+            "responsibility": "Asynchronous job runners that submit and reconcile SLURM jobs, stream logs, collect artifacts, retry failed operations, and coordinate FPGA programming via controlled APIs.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "HPC (SLURM)",
+              "EDA tool licensing servers"
+            ],
+            "data_handled": [
+              "Job submission payloads",
+              "Runtime logs and job metadata",
+              "Artifacts staging info"
+            ]
+          },
+          {
+            "name": "HPC & FPGA Hardware Zone",
+            "responsibility": "On-premise HPC cluster for build execution and physical FPGA cards with UART/console access; accessible only from protected backend services for programming and console streaming.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "On-prem SLURM-managed compute nodes",
+              "FPGA programming interfaces"
+            ],
+            "data_handled": [
+              "Build execution payloads",
+              "Bitfiles and hardware state",
+              "UART console output"
+            ]
+          },
+          {
+            "name": "Data Storage & Analytics",
+            "responsibility": "Persistent storage components including relational DB for catalog/audit, object store for artifacts, and time-series/metrics for monitoring and analytics.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Approved RDBMS (PostgreSQL)",
+              "Object storage system (S3-compatible)"
+            ],
+            "data_handled": [
+              "Build artifacts and checksums",
+              "Audit logs and compliance records",
+              "Metrics and analytics data"
+            ]
+          },
+          {
+            "name": "External Integrations",
+            "responsibility": "Third-party services used for identity, source control, notifications and secrets: AD for SSO, GitHub for repo/branch triggers, SMTP for emails, and Vault for secrets.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Active Directory/IdP",
+              "GitHub",
+              "Corporate SMTP",
+              "Secrets Manager (Vault)"
+            ],
+            "data_handled": [
+              "OAuth tokens and webhook payloads",
+              "Email notifications",
+              "Secrets and credentials (encrypted)"
+            ]
+          },
+          {
+            "name": "Deployment & Ops",
+            "responsibility": "Containerization, automated provisioning (Ansible), health endpoints, backup/restore, monitoring/alerting, and patching processes to maintain system availability and compliance.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Container runtime (Docker)",
+              "Ansible control plane",
+              "Monitoring stack (Prometheus/ELK)"
+            ],
+            "data_handled": [
+              "Deployment manifests",
+              "Health metrics",
+              "Backup artifacts and restore jobs"
+            ]
+          }
+        ],
+        "data_flow_description": "Users interact with the Web SPA which authenticates via AD/GitHub. The SPA calls Core APIs and connects to the WS gateway for real-time updates. Task creation and file uploads are stored in the DB and Object Store; background workers pick tasks and submit jobs to SLURM, stream logs back to workers, and store artifacts into the object store while updating DB records. FPGA programming requests flow from the API through an approval check to the FPGA control API, which executes programming inside the Hardware Zone. Audit logs and metrics are written to the DB and metrics store; notifications are sent via SMTP or in-app channels. Secrets are retrieved at runtime from a centralized secrets manager and never persisted in plaintext.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "Users Browser",
+              "GitHub Webhooks (public endpoint if used)",
+              "Browser Push Notifications"
+            ],
+            "boundary_type": "Untrusted",
+            "security_controls": [
+              "TLS termination (strong ciphers)",
+              "WAF/Ingress rate limiting",
+              "OAuth flows and CSRF protection",
+              "Strict CORS and input validation"
+            ]
+          },
+          {
+            "name": "DMZ / Edge",
+            "components": [
+              "Web App Frontend",
+              "WS/SSE Gateway",
+              "Reverse Proxy / Load Balancer"
+            ],
+            "boundary_type": "Semi-Trusted",
+            "security_controls": [
+              "Authenticated sessions via AD SSO",
+              "Network ACLs restricting downstream access",
+              "Client certificate or JWT validation for webhooks",
+              "Request rate limiting and bot mitigation"
+            ]
+          },
+          {
+            "name": "Internal Application Network",
+            "components": [
+              "Core API",
+              "Background Workers",
+              "Admin Panel",
+              "Secrets Manager Proxy"
+            ],
+            "boundary_type": "Trusted/Internal",
+            "security_controls": [
+              "Mutual TLS between services",
+              "Service-level RBAC and least-privilege identities",
+              "Network segmentation and firewall rules",
+              "Logging, monitoring and intrusion detection"
+            ]
+          },
+          {
+            "name": "Hardware Zone / HPC Network",
+            "components": [
+              "SLURM Cluster",
+              "FPGA Cards and UART Consoles"
+            ],
+            "boundary_type": "Highly Trusted / Sensitive",
+            "security_controls": [
+              "Isolated VLANs / restricted subnet",
+              "Jump-host/bastion for admin access",
+              "Approval workflows and multi-person approval for FPGA programming",
+              "Strict audit logging and tamper-evident storage"
+            ]
+          },
+          {
+            "name": "Data Tier",
+            "components": [
+              "PostgreSQL DB",
+              "Object Store",
+              "Metrics Store"
+            ],
+            "boundary_type": "Sensitive/Protected",
+            "security_controls": [
+              "Encryption at rest (keys from Vault)",
+              "Access control lists and DB role separation",
+              "Regular backups with verification and encrypted storage",
+              "Database activity monitoring and retention policies"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Primary attack surfaces: 1) Web UI and APIs exposed to users and webhooks \u2014 risk: High. Controls: AD SSO, RBAC, TLS, WAF, rate limiting, CSRF/XSS protections and input validation. 2) OAuth and webhook endpoints (GitHub) \u2014 risk: Medium; secure with signed webhooks, OAuth scopes, and token lifecycle management. 3) Artifact upload endpoints for large files \u2014 risk: High for DoS and malware; mitigate with resumable uploads, content scanning, upload quotas, rate limits and integrity checks. 4) Backend REST APIs for SLURM and FPGA control \u2014 risk: High because they can trigger expensive jobs or hardware programming; protect with strict authZ, approval workflows, audit trails and service network isolation. 5) Secrets management and credentials \u2014 risk: Critical; use Vault, short-lived credentials, and avoid secret persistence. 6) Admin interfaces and deployment pipelines \u2014 risk: High; restrict via bastion hosts, MFA, and audit logging. 7) Monitoring and logging endpoints \u2014 risk: Medium; protect to prevent information leakage. Overall, prioritize hardening of authentication, authorization, input validation, network segmentation, and secrets handling to reduce exposure."
+      }
+    }
+  ]
+}

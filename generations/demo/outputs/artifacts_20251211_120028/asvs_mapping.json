@@ -1,0 +1,794 @@
+[
+  {
+    "control_id": "V2.1.1",
+    "standard": "OWASP",
+    "v_category": "V2 Authentication",
+    "requirement_id": "R1",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Verify that the application uses a secure authentication mechanism and does not use custom or propri"
+  },
+  {
+    "control_id": "V2.2.4",
+    "standard": "OWASP",
+    "v_category": "V2 Authentication",
+    "requirement_id": "R1",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that password reset and recovery mechanisms are secure and do not disclose account existence."
+  },
+  {
+    "control_id": "IA-2",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication",
+    "requirement_id": "R1",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Identification and Authentication (Organizational Users)"
+  },
+  {
+    "control_id": "A.9.2.4",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R1",
+    "level": null,
+    "priority": "High",
+    "requirement": "Management of secret authentication information of users."
+  },
+  {
+    "control_id": "V2.1.7",
+    "standard": "OWASP",
+    "v_category": "V2 Authentication",
+    "requirement_id": "R2",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that the application supports step-up or multi-factor authentication where appropriate."
+  },
+  {
+    "control_id": "IA-2(1)",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication",
+    "requirement_id": "R2",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Multi-factor authentication for local access to privileged accounts."
+  },
+  {
+    "control_id": "IA-2(2)",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication",
+    "requirement_id": "R2",
+    "level": null,
+    "priority": "High",
+    "requirement": "Multi-factor authentication for network access to privileged accounts."
+  },
+  {
+    "control_id": "A.9.4.2",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R2",
+    "level": null,
+    "priority": "High",
+    "requirement": "Secure log-on procedures."
+  },
+  {
+    "control_id": "V3.4.1",
+    "standard": "OWASP",
+    "v_category": "V3 Sensitive Data",
+    "requirement_id": "R3",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Verify that sensitive data is stored encrypted using strong cryptography."
+  },
+  {
+    "control_id": "V3.3.1",
+    "standard": "OWASP",
+    "v_category": "V3 Sensitive Data",
+    "requirement_id": "R3",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that only the minimum data is collected and stored required for business purposes."
+  },
+  {
+    "control_id": "SC-28",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R3",
+    "level": null,
+    "priority": "High",
+    "requirement": "Protection of Information at Rest."
+  },
+  {
+    "control_id": "A.12.3.1",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R3",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information backup."
+  },
+  {
+    "control_id": "V10.1.1",
+    "standard": "OWASP",
+    "v_category": "V10 Logging and Monitoring",
+    "requirement_id": "R4",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that all security-relevant events are logged with sufficient detail."
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R4",
+    "level": null,
+    "priority": "High",
+    "requirement": "Event Logging."
+  },
+  {
+    "control_id": "SI-4",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "R4",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "System Monitoring."
+  },
+  {
+    "control_id": "A.12.4.1",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R4",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Event logging."
+  },
+  {
+    "control_id": "V5.1.1",
+    "standard": "OWASP",
+    "v_category": "V5 Validation, Sanitization and Encoding",
+    "requirement_id": "R5",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that input validation is enforced on all parameters and fields."
+  },
+  {
+    "control_id": "V5.3.2",
+    "standard": "OWASP",
+    "v_category": "V5 Validation, Sanitization and Encoding",
+    "requirement_id": "R5",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that output encoding is applied to user-controllable data in web pages."
+  },
+  {
+    "control_id": "SI-10",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "R5",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information Input Validation."
+  },
+  {
+    "control_id": "A.14.2.5",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R5",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Security in development and support processes."
+  },
+  {
+    "control_id": "V5.3.1",
+    "standard": "OWASP",
+    "v_category": "V5 Validation, Sanitization and Encoding",
+    "requirement_id": "R6",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that untrusted HTML input is properly sanitized and encoded."
+  },
+  {
+    "control_id": "V7.1.1",
+    "standard": "OWASP",
+    "v_category": "V7 Error Handling and Logging",
+    "requirement_id": "R6",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that the application does not leak sensitive information in error messages."
+  },
+  {
+    "control_id": "SI-11",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "R6",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Error Handling."
+  },
+  {
+    "control_id": "A.12.1.1",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R6",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Documented operating procedures."
+  },
+  {
+    "control_id": "V3.5.3",
+    "standard": "OWASP",
+    "v_category": "V3 Session Management",
+    "requirement_id": "R7",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Verify that session identifiers are not exposed in URLs and are bound to the user."
+  },
+  {
+    "control_id": "V3.2.2",
+    "standard": "OWASP",
+    "v_category": "V3 Session Management",
+    "requirement_id": "R7",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that session cookies are marked secure and HttpOnly with same-site attributes."
+  },
+  {
+    "control_id": "SC-23",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R7",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Session Authenticity."
+  },
+  {
+    "control_id": "A.14.1.2",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R7",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Securing application services on public networks."
+  },
+  {
+    "control_id": "V3.1.1",
+    "standard": "OWASP",
+    "v_category": "V3 Sensitive Data",
+    "requirement_id": "R8",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify a data classification scheme is in place and applied to all data."
+  },
+  {
+    "control_id": "V4.3.3",
+    "standard": "OWASP",
+    "v_category": "V4 Access Control",
+    "requirement_id": "R8",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that the principle of least privilege exists for application features."
+  },
+  {
+    "control_id": "AC-6",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R8",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Least Privilege."
+  },
+  {
+    "control_id": "A.18.1.4",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R8",
+    "level": null,
+    "priority": "High",
+    "requirement": "Privacy and protection of personally identifiable information (PII)."
+  },
+  {
+    "control_id": "V4.2.1",
+    "standard": "OWASP",
+    "v_category": "V4 Access Control",
+    "requirement_id": "R9",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that all requests enforce authorization checks for the current user."
+  },
+  {
+    "control_id": "V4.3.1",
+    "standard": "OWASP",
+    "v_category": "V4 Access Control",
+    "requirement_id": "R9",
+    "level": "L2",
+    "priority": "Medium",
+    "requirement": "Verify that role-based access control (RBAC) or attribute-based access control (ABAC) is enforced."
+  },
+  {
+    "control_id": "AC-3",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R9",
+    "level": null,
+    "priority": "High",
+    "requirement": "Access Enforcement."
+  },
+  {
+    "control_id": "A.9.1.2",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R9",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Access to networks and network services."
+  },
+  {
+    "control_id": "V9.1.1",
+    "standard": "OWASP",
+    "v_category": "V9 Communication",
+    "requirement_id": "R10",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Verify that all sensitive communications are encrypted using strong transport security."
+  },
+  {
+    "control_id": "V14.2.1",
+    "standard": "OWASP",
+    "v_category": "V14 Configuration",
+    "requirement_id": "R10",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that all external dependencies are identified and kept up to date."
+  },
+  {
+    "control_id": "SC-13",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R10",
+    "level": null,
+    "priority": "High",
+    "requirement": "Cryptographic Protection."
+  },
+  {
+    "control_id": "A.15.1.1",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R10",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information security policy for supplier relationships."
+  },
+  {
+    "control_id": "V4.2.2",
+    "standard": "OWASP",
+    "v_category": "V4 Access Control",
+    "requirement_id": "R11",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Verify that administrative functions are protected and separated from regular users."
+  },
+  {
+    "control_id": "V4.2.3",
+    "standard": "OWASP",
+    "v_category": "V4 Access Control",
+    "requirement_id": "R11",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that sensitive operations require re-authentication or step-up authentication."
+  },
+  {
+    "control_id": "AC-5",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R11",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Separation of Duties."
+  },
+  {
+    "control_id": "A.9.2.3",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R11",
+    "level": null,
+    "priority": "High",
+    "requirement": "Management of privileged access rights."
+  },
+  {
+    "control_id": "V3.4.2",
+    "standard": "OWASP",
+    "v_category": "V3 Sensitive Data",
+    "requirement_id": "R12",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that cryptographic controls protect sensitive data in storage and backups."
+  },
+  {
+    "control_id": "V4.1.2",
+    "standard": "OWASP",
+    "v_category": "V4 Access Control",
+    "requirement_id": "R12",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that access control is enforced at the data layer for all data export functions."
+  },
+  {
+    "control_id": "MP-5",
+    "standard": "NIST",
+    "v_category": "Media Protection",
+    "requirement_id": "R12",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Media Transport Protection."
+  },
+  {
+    "control_id": "A.13.2.1",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R12",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information transfer policies and procedures."
+  },
+  {
+    "control_id": "V9.1.2",
+    "standard": "OWASP",
+    "v_category": "V9 Communication",
+    "requirement_id": "R13",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that TLS is configured with secure ciphers and protocols."
+  },
+  {
+    "control_id": "V14.2.5",
+    "standard": "OWASP",
+    "v_category": "V14 Configuration",
+    "requirement_id": "R13",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that only necessary external services and APIs are allowed and configured securely."
+  },
+  {
+    "control_id": "SA-9",
+    "standard": "NIST",
+    "v_category": "System and Services Acquisition",
+    "requirement_id": "R13",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "External Information System Services."
+  },
+  {
+    "control_id": "A.15.1.2",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R13",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Addressing security within supplier agreements."
+  },
+  {
+    "control_id": "V9.1.3",
+    "standard": "OWASP",
+    "v_category": "V9 Communication",
+    "requirement_id": "R14",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that sensitive data is not sent via unencrypted channels."
+  },
+  {
+    "control_id": "V7.2.1",
+    "standard": "OWASP",
+    "v_category": "V7 Error Handling and Logging",
+    "requirement_id": "R14",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that logs and notifications do not contain sensitive information."
+  },
+  {
+    "control_id": "SC-8",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R14",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Transmission Confidentiality and Integrity."
+  },
+  {
+    "control_id": "A.13.2.3",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R14",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Electronic messaging."
+  },
+  {
+    "control_id": "V3.3.2",
+    "standard": "OWASP",
+    "v_category": "V3 Sensitive Data",
+    "requirement_id": "R15",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that personal data used for analytics or profiling is minimized and anonymized where possible"
+  },
+  {
+    "control_id": "PL-8",
+    "standard": "NIST",
+    "v_category": "Planning",
+    "requirement_id": "R15",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information Security Architecture."
+  },
+  {
+    "control_id": "A.18.1.5",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R15",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Regulation of cryptographic controls."
+  },
+  {
+    "control_id": "A.14.2.1",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R15",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Secure development policy."
+  },
+  {
+    "control_id": "V10.2.1",
+    "standard": "OWASP",
+    "v_category": "V10 Logging and Monitoring",
+    "requirement_id": "R16",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that monitoring is in place to detect and respond to suspicious activities."
+  },
+  {
+    "control_id": "A.9.4.1",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R16",
+    "level": null,
+    "priority": "High",
+    "requirement": "Information access restriction."
+  },
+  {
+    "control_id": "V1.2.2",
+    "standard": "OWASP",
+    "v_category": "V1 Architecture, Design and Threat Modeling",
+    "requirement_id": "R16",
+    "level": "L1",
+    "priority": "Medium",
+    "requirement": "Verify that data is protected in transit and at rest according to classification."
+  },
+  {
+    "control_id": "AC-21",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R16",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information Sharing."
+  },
+  {
+    "control_id": "V5.1.2",
+    "standard": "OWASP",
+    "v_category": "V5 Validation, Sanitization and Encoding",
+    "requirement_id": "R17",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that data is validated for type, length, format, and range."
+  },
+  {
+    "control_id": "V5.1.4",
+    "standard": "OWASP",
+    "v_category": "V5 Validation, Sanitization and Encoding",
+    "requirement_id": "R17",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that server-side validation enforces business rules."
+  },
+  {
+    "control_id": "SI-10",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "R17",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information Input Validation."
+  },
+  {
+    "control_id": "A.14.1.1",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R17",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Security requirements of information systems."
+  },
+  {
+    "control_id": "V11.1.3",
+    "standard": "OWASP",
+    "v_category": "V11 Business Logic and Security Headers",
+    "requirement_id": "R18",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that appropriate security headers (e.g., CSP, X-Frame-Options) are in place."
+  },
+  {
+    "control_id": "V8.2.1",
+    "standard": "OWASP",
+    "v_category": "V8 CSRF Protection",
+    "requirement_id": "R18",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that CSRF protection is in place for state-changing requests."
+  },
+  {
+    "control_id": "SC-18",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R18",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Mobile Code."
+  },
+  {
+    "control_id": "A.14.2.8",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R18",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "System security testing."
+  },
+  {
+    "control_id": "V3.3.3",
+    "standard": "OWASP",
+    "v_category": "V3 Sensitive Data",
+    "requirement_id": "R19",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that user consent is obtained and recorded for collection and processing of personal data."
+  },
+  {
+    "control_id": "AR-8",
+    "standard": "NIST",
+    "v_category": "Privacy",
+    "requirement_id": "R19",
+    "level": null,
+    "priority": "High",
+    "requirement": "Accounting of Disclosures."
+  },
+  {
+    "control_id": "A.18.1.4",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R19",
+    "level": null,
+    "priority": "High",
+    "requirement": "Privacy and protection of personally identifiable information (PII)."
+  },
+  {
+    "control_id": "V3.4.3",
+    "standard": "OWASP",
+    "v_category": "V3 Sensitive Data",
+    "requirement_id": "R19",
+    "level": "L2",
+    "priority": "Medium",
+    "requirement": "Verify that cryptographic keys and secrets are managed securely."
+  },
+  {
+    "control_id": "V3.2.1",
+    "standard": "OWASP",
+    "v_category": "V3 Session Management",
+    "requirement_id": "R20",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify that cookies are set with secure attributes (Secure, HttpOnly, SameSite)."
+  },
+  {
+    "control_id": "V3.3.4",
+    "standard": "OWASP",
+    "v_category": "V3 Sensitive Data",
+    "requirement_id": "R20",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that tracking and analytics respect user privacy choices and consent."
+  },
+  {
+    "control_id": "IP-1",
+    "standard": "NIST",
+    "v_category": "Privacy",
+    "requirement_id": "R20",
+    "level": null,
+    "priority": "High",
+    "requirement": "Notice and Awareness."
+  },
+  {
+    "control_id": "A.18.1.3",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R20",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Protection of records."
+  },
+  {
+    "control_id": "V10.1.2",
+    "standard": "OWASP",
+    "v_category": "V10 Logging and Monitoring",
+    "requirement_id": "R21",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Verify that logs are protected against tampering and unauthorized access."
+  },
+  {
+    "control_id": "IR-4",
+    "standard": "NIST",
+    "v_category": "Incident Response",
+    "requirement_id": "R21",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Incident Handling."
+  },
+  {
+    "control_id": "AU-6",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R21",
+    "level": null,
+    "priority": "High",
+    "requirement": "Audit Record Review, Analysis, and Reporting."
+  },
+  {
+    "control_id": "A.16.1.5",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R21",
+    "level": null,
+    "priority": "High",
+    "requirement": "Response to information security incidents."
+  },
+  {
+    "control_id": "V3.3.1",
+    "standard": "OWASP",
+    "v_category": "V3 Sensitive Data",
+    "requirement_id": "R22",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Verify that only necessary personal data is collected, processed, and retained."
+  },
+  {
+    "control_id": "DM-1",
+    "standard": "NIST",
+    "v_category": "Privacy",
+    "requirement_id": "R22",
+    "level": null,
+    "priority": "High",
+    "requirement": "Minimization of Personally Identifiable Information."
+  },
+  {
+    "control_id": "A.18.1.3",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R22",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Protection of records."
+  },
+  {
+    "control_id": "A.18.1.1",
+    "standard": "ISO27001",
+    "v_category": "Annex A",
+    "requirement_id": "R22",
+    "level": null,
+    "priority": "High",
+    "requirement": "Identification of applicable legislation and contractual requirements."
+  }
+]

@@ -1,0 +1,628 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"A cloud-hosted, multi-tenant web application providing agency workspaces for managing interpreter and translator bookings, document translation workflows, and collaboration. Users access a responsive Web SPA via a CDN/WAF and API gateway; authentication is handled by an Identity Service supporting SSO and MFA. Core application services (task API, assignment engine, workflow orchestration, real-time notifications, background jobs) run behind the API gateway and interact with encrypted data stores: a primary relational DB for transactional data, object storage for scanned/versioned files, an immutable audit/log store, and an analytics store for reporting. Integrations connect to third-party IdPs, email/SMS providers, calendar APIs (Outlook/Teams), DocuSign, CAT tools, and malware scanning. Security controls (RBAC, tenant isolation, encryption, DLP, malware scanning, logging) and accessibility requirements are applied across layers to protect sensitive government data and meet compliance and audit requirements.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Users & Devices\\\"\\n  EU[Agency & Provider Users]\\nend\\nsubgraph \\\"Edge Layer\\\"\\n  CDN[CDN & Web Application Firewall]\\n  API_GW[API Gateway & Rate Limiting]\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web App SPA & Admin UI]\\nend\\nsubgraph \\\"Application Services\\\"\\n  Auth[Identity Service SSO/OIDC/SAML MFA]\\n  API[Core API Users/Tasks/RBAC]\\n  WS[Real-time WS & Notifications]\\n  Matcher[Assignment Engine & Workflow Orchestration]\\n  Jobs[Background Jobs & Scheduler]\\nend\\nsubgraph \\\"Data Layer\\\"\\n  DB[Primary Relational DB - Encrypted]\\n  FS[Object Storage Files Scanned & Versioned]\\n  Audit[Immutable Audit & Log Store]\\n  Search[Analytics & Reporting Store]\\nend\\nsubgraph \\\"External Services\\\"\\n  IdP[Agency IdP SAML/OIDC]\\n  EmailSvc[Email & SMS Provider]\\n  CalSvc[Outlook/Teams API]\\n  DocuSignSvc[DocuSign API]\\n  CATsvc[CAT Tool APIs]\\n  Malware[Malware Scanning Service]\\nend\\n\\nEU --> CDN\\nCDN --> FE\\nFE --> API_GW\\nAPI_GW --> Auth\\nAPI_GW --> API\\nAPI --> DB\\nAPI --> FS\\nAPI --> Audit\\nAPI --> Search\\nAuth --> IdP\\nAPI --> Matcher\\nMatcher --> Jobs\\nJobs --> FS\\nJobs --> EmailSvc\\nWS --> API\\nFE --> WS\\nAPI_GW --> CalSvc\\nAPI --> DocuSignSvc\\nAPI --> CATsvc\\nFS --> Malware\\nEmailSvc --> EU\\nCalSvc --> EU\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Provide responsive SPA and admin UI for users and agencies, enforce client-side accessibility, input validation, and session handling.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN/WAF\"\n      ],\n      \"data_handled\": [\n        \"Authentication tokens/session metadata\",\n        \"Form data for bookings and tasks\",\n        \"File preview streams (sanitized)\"\n      ]\n    },\n    {\n      \"name\": \"Edge & API Gateway\",\n      \"responsibility\": \"Receive and protect incoming traffic, provide TLS termination, WAF protection, rate limiting, API routing, and enforce edge authentication checks.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"CDN\",\n        \"WAF\"\n      ],\n      \"data_handled\": [\n        \"Incoming HTTP requests\",\n        \"Authentication handshake data\",\n        \"Rate/usage telemetry\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic for user management, RBAC, task and booking workflows, automated assignment, notification orchestration, real-time updates, background processing and job scheduling.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Agency IdPs (SAML/OIDC)\",\n        \"Email/SMS Provider\",\n        \"Calendar APIs\",\n        \"DocuSign\",\n        \"CAT Tools\",\n        \"Malware Scanning Service\"\n      ],\n      \"data_handled\": [\n        \"User profiles and roles\",\n        \"Task/booking metadata\",\n        \"Assignment decisions and workflows\",\n        \"Notification events\",\n        \"Real-time messages\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Store transactional data, multi-tenant metadata, files and version history, immutable audit logs, and analytics/ reporting aggregates; enforce encryption, retention and access policies.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"KMS/Key Management Service\"\n      ],\n      \"data_handled\": [\n        \"User PII and vetting/certification metadata\",\n        \"Bookings and task histories\",\n        \"Uploaded documents and file versions\",\n        \"Audit logs and immutable records\",\n        \"Aggregated reporting data\"\n      ]\n    },\n    {\n      \"name\": \"Background & Queue Services\",\n      \"responsibility\": \"Process asynchronous tasks: assignment matching, file scanning, document conversion, scheduled notifications, daily summaries, report exports and integration retries.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Message Queue/Job Scheduler\",\n        \"Malware Scanning Service\"\n      ],\n      \"data_handled\": [\n        \"Queued job payloads referencing tasks/files\",\n        \"Temporary processing artifacts\",\n        \"Notification payloads\"\n      ]\n    },\n    {\n      \"name\": \"Integrations & External Services\",\n      \"responsibility\": \"Connect securely to third-party providers for identity, email/SMS, calendar synchronization, e-signatures, CAT tools and malware scanning; manage credentials and delegated access.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Agency IdP SAML/OIDC\",\n        \"Email/SMS Provider\",\n        \"Outlook/Teams API\",\n        \"DocuSign\",\n        \"CAT Tool Vendors\",\n        \"Malware Scanning Service\"\n      ],\n      \"data_handled\": [\n        \"Calendar events\",\n        \"E-signature documents and metadata\",\n        \"Transactional emails and SMS metadata\",\n        \"CAT tool translation assets (optional)\"\n      ]\n    },\n    {\n      \"name\": \"Observability & Audit\",\n      \"responsibility\": \"Collect immutable audit logs, access logs, application telemetry, alerts, and support retention policies and forensic investigations.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Immutable Log Store\",\n        \"SIEM/Monitoring Tools\"\n      ],\n      \"data_handled\": [\n        \"Access/audit records\",\n        \"System logs and alerts\",\n        \"Retention/archival metadata\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users interact via the Web SPA, which communicates through the CDN and API Gateway to backend services. Authentication is performed by the Identity Service (with IdP delegation); upon success the Core API handles CRUD operations for tasks, bookings, profiles and files. File uploads are routed to object storage and scanned by a malware service; metadata and task state are stored in the primary encrypted RDBMS. Background jobs handle assignment matching, scheduled notifications and integrations; audit events are written to an immutable log store and analytics snapshots are stored in the reporting store for dashboards and exports. Integrations push/pull calendar items, send email/SMS, request e-signatures, and optionally call CAT tools. Encryption is applied in transit (TLS) and at rest; RBAC and tenant isolation controls govern access at every step.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Agency & Provider Users\",\n        \"External Integrations (when invoked from remote systems)\"\n      ],\n      \"boundary_type\": \"Untrusted to DMZ\",\n      \"security_controls\": [\n        \"TLS 1.2+ for all connections\",\n        \"DDoS protection\",\n        \"WAF rules to block common attacks\",\n        \"Client-side input validation\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge Layer\",\n      \"components\": [\n        \"CDN & WAF\",\n        \"API Gateway\"\n      ],\n      \"boundary_type\": \"Perimeter / Gateway\",\n      \"security_controls\": [\n        \"TLS termination\",\n        \"Rate limiting and IP allow/block lists\",\n        \"Edge authentication checks\",\n        \"Logging and anomaly detection\"\n      ]\n    },\n    {\n      \"name\": \"Application Layer\",\n      \"components\": [\n        \"Web App SPA\",\n        \"Identity Service\",\n        \"Core API\",\n        \"Real-time WS\",\n        \"Background Jobs\",\n        \"Assignment Engine\"\n      ],\n      \"boundary_type\": \"Internal Trusted Zone\",\n      \"security_controls\": [\n        \"RBAC & tenant isolation\",\n        \"MFA & SSO enforcement\",\n        \"Input validation & output encoding\",\n        \"Service-to-service TLS and mutual auth\",\n        \"Secrets management\"\n      ]\n    },\n    {\n      \"name\": \"Data / Storage Tier\",\n      \"components\": [\n        \"Primary Relational DB\",\n        \"Object Storage (Files)\",\n        \"Immutable Audit Store\",\n        \"Analytics Store\"\n      ],\n      \"boundary_type\": \"Protected Data Zone\",\n      \"security_controls\": [\n        \"At-rest encryption (KMS)\",\n        \"Encryption key rotation\",\n        \"Database network isolation (VPC/Private Subnet)\",\n        \"Access controls and DB auditing\",\n        \"Data retention & secure deletion policies\"\n      ]\n    },\n    {\n      \"name\": \"Third-party Integrations\",\n      \"components\": [\n        \"Agency IdP\",\n        \"Email/SMS Provider\",\n        \"Calendar APIs\",\n        \"DocuSign\",\n        \"CAT Tools\",\n        \"Malware Scanning Service\"\n      ],\n      \"boundary_type\": \"External Trusted Services\",\n      \"security_controls\": [\n        \"OAuth/SAML delegated auth\",\n        \"Least-privilege API credentials\",\n        \"Encrypted transport for APIs\",\n        \"Contractual DPA and security SLA\",\n        \"Outbound firewall rules and allowlists\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary attack surfaces include: (1) Public Web UI and API endpoints \u2014 risk: High (exposed to internet; mitigations: WAF, rate limiting, input validation, strong auth/MFA, RBAC); (2) Authentication/SSO integrations \u2014 risk: High (federated identity complexity; mitigations: strict SAML/OIDC config, MFA, PKI/claims validation); (3) File upload and processing pipeline \u2014 risk: High (malicious files, large volumes; mitigations: malware scanning, content-type validation, sandboxing, DLP, size limits); (4) Real-time WS and notification channels \u2014 risk: Medium (session hijack or unauthorized subscriptions; mitigations: token-based socket auth, strict access checks); (5) Third-party integrations (email/SMS/calendar/DocuSign/CAT) \u2014 risk: Medium (supply-chain/API abuse; mitigations: least-privilege credentials, monitoring, contractual security controls); (6) Background jobs and queues \u2014 risk: Medium (tampering with job payloads); mitigations: signed job payloads, access controls, logging; (7) Admin/management interfaces \u2014 risk: High (privileged operations); mitigations: dedicated admin roles, session timeout, audit trails, IP allowlists. Additional considerations: tenant isolation failures and misconfiguration can expose cross-agency data, so strict tenancy enforcement, CI/CD security checks, and regular penetration testing are required. Monitoring, SIEM alerts, and incident response play critical roles in detecting and containing attacks.\"\n}",
+  "pydantic": {
+    "architecture_summary": "A cloud-hosted, multi-tenant web application providing agency workspaces for managing interpreter and translator bookings, document translation workflows, and collaboration. Users access a responsive Web SPA via a CDN/WAF and API gateway; authentication is handled by an Identity Service supporting SSO and MFA. Core application services (task API, assignment engine, workflow orchestration, real-time notifications, background jobs) run behind the API gateway and interact with encrypted data stores: a primary relational DB for transactional data, object storage for scanned/versioned files, an immutable audit/log store, and an analytics store for reporting. Integrations connect to third-party IdPs, email/SMS providers, calendar APIs (Outlook/Teams), DocuSign, CAT tools, and malware scanning. Security controls (RBAC, tenant isolation, encryption, DLP, malware scanning, logging) and accessibility requirements are applied across layers to protect sensitive government data and meet compliance and audit requirements.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Users & Devices\"\n  EU[Agency & Provider Users]\nend\nsubgraph \"Edge Layer\"\n  CDN[CDN & Web Application Firewall]\n  API_GW[API Gateway & Rate Limiting]\nend\nsubgraph \"Frontend Layer\"\n  FE[Web App SPA & Admin UI]\nend\nsubgraph \"Application Services\"\n  Auth[Identity Service SSO/OIDC/SAML MFA]\n  API[Core API Users/Tasks/RBAC]\n  WS[Real-time WS & Notifications]\n  Matcher[Assignment Engine & Workflow Orchestration]\n  Jobs[Background Jobs & Scheduler]\nend\nsubgraph \"Data Layer\"\n  DB[Primary Relational DB - Encrypted]\n  FS[Object Storage Files Scanned & Versioned]\n  Audit[Immutable Audit & Log Store]\n  Search[Analytics & Reporting Store]\nend\nsubgraph \"External Services\"\n  IdP[Agency IdP SAML/OIDC]\n  EmailSvc[Email & SMS Provider]\n  CalSvc[Outlook/Teams API]\n  DocuSignSvc[DocuSign API]\n  CATsvc[CAT Tool APIs]\n  Malware[Malware Scanning Service]\nend\n\nEU --> CDN\nCDN --> FE\nFE --> API_GW\nAPI_GW --> Auth\nAPI_GW --> API\nAPI --> DB\nAPI --> FS\nAPI --> Audit\nAPI --> Search\nAuth --> IdP\nAPI --> Matcher\nMatcher --> Jobs\nJobs --> FS\nJobs --> EmailSvc\nWS --> API\nFE --> WS\nAPI_GW --> CalSvc\nAPI --> DocuSignSvc\nAPI --> CATsvc\nFS --> Malware\nEmailSvc --> EU\nCalSvc --> EU",
+    "components": [
+      {
+        "name": "Frontend Layer",
+        "responsibility": "Provide responsive SPA and admin UI for users and agencies, enforce client-side accessibility, input validation, and session handling.",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "CDN/WAF"
+        ],
+        "data_handled": [
+          "Authentication tokens/session metadata",
+          "Form data for bookings and tasks",
+          "File preview streams (sanitized)"
+        ]
+      },
+      {
+        "name": "Edge & API Gateway",
+        "responsibility": "Receive and protect incoming traffic, provide TLS termination, WAF protection, rate limiting, API routing, and enforce edge authentication checks.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "CDN",
+          "WAF"
+        ],
+        "data_handled": [
+          "Incoming HTTP requests",
+          "Authentication handshake data",
+          "Rate/usage telemetry"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core business logic for user management, RBAC, task and booking workflows, automated assignment, notification orchestration, real-time updates, background processing and job scheduling.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Agency IdPs (SAML/OIDC)",
+          "Email/SMS Provider",
+          "Calendar APIs",
+          "DocuSign",
+          "CAT Tools",
+          "Malware Scanning Service"
+        ],
+        "data_handled": [
+          "User profiles and roles",
+          "Task/booking metadata",
+          "Assignment decisions and workflows",
+          "Notification events",
+          "Real-time messages"
+        ]
+      },
+      {
+        "name": "Data Storage",
+        "responsibility": "Store transactional data, multi-tenant metadata, files and version history, immutable audit logs, and analytics/ reporting aggregates; enforce encryption, retention and access policies.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "KMS/Key Management Service"
+        ],
+        "data_handled": [
+          "User PII and vetting/certification metadata",
+          "Bookings and task histories",
+          "Uploaded documents and file versions",
+          "Audit logs and immutable records",
+          "Aggregated reporting data"
+        ]
+      },
+      {
+        "name": "Background & Queue Services",
+        "responsibility": "Process asynchronous tasks: assignment matching, file scanning, document conversion, scheduled notifications, daily summaries, report exports and integration retries.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Message Queue/Job Scheduler",
+          "Malware Scanning Service"
+        ],
+        "data_handled": [
+          "Queued job payloads referencing tasks/files",
+          "Temporary processing artifacts",
+          "Notification payloads"
+        ]
+      },
+      {
+        "name": "Integrations & External Services",
+        "responsibility": "Connect securely to third-party providers for identity, email/SMS, calendar synchronization, e-signatures, CAT tools and malware scanning; manage credentials and delegated access.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Agency IdP SAML/OIDC",
+          "Email/SMS Provider",
+          "Outlook/Teams API",
+          "DocuSign",
+          "CAT Tool Vendors",
+          "Malware Scanning Service"
+        ],
+        "data_handled": [
+          "Calendar events",
+          "E-signature documents and metadata",
+          "Transactional emails and SMS metadata",
+          "CAT tool translation assets (optional)"
+        ]
+      },
+      {
+        "name": "Observability & Audit",
+        "responsibility": "Collect immutable audit logs, access logs, application telemetry, alerts, and support retention policies and forensic investigations.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Immutable Log Store",
+          "SIEM/Monitoring Tools"
+        ],
+        "data_handled": [
+          "Access/audit records",
+          "System logs and alerts",
+          "Retention/archival metadata"
+        ]
+      }
+    ],
+    "data_flow_description": "Users interact via the Web SPA, which communicates through the CDN and API Gateway to backend services. Authentication is performed by the Identity Service (with IdP delegation); upon success the Core API handles CRUD operations for tasks, bookings, profiles and files. File uploads are routed to object storage and scanned by a malware service; metadata and task state are stored in the primary encrypted RDBMS. Background jobs handle assignment matching, scheduled notifications and integrations; audit events are written to an immutable log store and analytics snapshots are stored in the reporting store for dashboards and exports. Integrations push/pull calendar items, send email/SMS, request e-signatures, and optionally call CAT tools. Encryption is applied in transit (TLS) and at rest; RBAC and tenant isolation controls govern access at every step.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "Agency & Provider Users",
+          "External Integrations (when invoked from remote systems)"
+        ],
+        "boundary_type": "Untrusted to DMZ",
+        "security_controls": [
+          "TLS 1.2+ for all connections",
+          "DDoS protection",
+          "WAF rules to block common attacks",
+          "Client-side input validation"
+        ]
+      },
+      {
+        "name": "DMZ / Edge Layer",
+        "components": [
+          "CDN & WAF",
+          "API Gateway"
+        ],
+        "boundary_type": "Perimeter / Gateway",
+        "security_controls": [
+          "TLS termination",
+          "Rate limiting and IP allow/block lists",
+          "Edge authentication checks",
+          "Logging and anomaly detection"
+        ]
+      },
+      {
+        "name": "Application Layer",
+        "components": [
+          "Web App SPA",
+          "Identity Service",
+          "Core API",
+          "Real-time WS",
+          "Background Jobs",
+          "Assignment Engine"
+        ],
+        "boundary_type": "Internal Trusted Zone",
+        "security_controls": [
+          "RBAC & tenant isolation",
+          "MFA & SSO enforcement",
+          "Input validation & output encoding",
+          "Service-to-service TLS and mutual auth",
+          "Secrets management"
+        ]
+      },
+      {
+        "name": "Data / Storage Tier",
+        "components": [
+          "Primary Relational DB",
+          "Object Storage (Files)",
+          "Immutable Audit Store",
+          "Analytics Store"
+        ],
+        "boundary_type": "Protected Data Zone",
+        "security_controls": [
+          "At-rest encryption (KMS)",
+          "Encryption key rotation",
+          "Database network isolation (VPC/Private Subnet)",
+          "Access controls and DB auditing",
+          "Data retention & secure deletion policies"
+        ]
+      },
+      {
+        "name": "Third-party Integrations",
+        "components": [
+          "Agency IdP",
+          "Email/SMS Provider",
+          "Calendar APIs",
+          "DocuSign",
+          "CAT Tools",
+          "Malware Scanning Service"
+        ],
+        "boundary_type": "External Trusted Services",
+        "security_controls": [
+          "OAuth/SAML delegated auth",
+          "Least-privilege API credentials",
+          "Encrypted transport for APIs",
+          "Contractual DPA and security SLA",
+          "Outbound firewall rules and allowlists"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Primary attack surfaces include: (1) Public Web UI and API endpoints \u2014 risk: High (exposed to internet; mitigations: WAF, rate limiting, input validation, strong auth/MFA, RBAC); (2) Authentication/SSO integrations \u2014 risk: High (federated identity complexity; mitigations: strict SAML/OIDC config, MFA, PKI/claims validation); (3) File upload and processing pipeline \u2014 risk: High (malicious files, large volumes; mitigations: malware scanning, content-type validation, sandboxing, DLP, size limits); (4) Real-time WS and notification channels \u2014 risk: Medium (session hijack or unauthorized subscriptions; mitigations: token-based socket auth, strict access checks); (5) Third-party integrations (email/SMS/calendar/DocuSign/CAT) \u2014 risk: Medium (supply-chain/API abuse; mitigations: least-privilege credentials, monitoring, contractual security controls); (6) Background jobs and queues \u2014 risk: Medium (tampering with job payloads); mitigations: signed job payloads, access controls, logging; (7) Admin/management interfaces \u2014 risk: High (privileged operations); mitigations: dedicated admin roles, session timeout, audit trails, IP allowlists. Additional considerations: tenant isolation failures and misconfiguration can expose cross-agency data, so strict tenancy enforcement, CI/CD security checks, and regular penetration testing are required. Monitoring, SIEM alerts, and incident response play critical roles in detecting and containing attacks."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A secure, multi-tenant web application for government agencies to manage interpreter and translator bookings, document translation workflows, and collaboration with service providers; it handles scheduling, document uploads and versioning, role-based access for agency and provider workspaces, notifications and reporting, and integrates with calendars, email, e-signature and translation tools while maintaining auditability, accessibility, and compliance with government data protection requirements.\",\n  \"high_level_requirements\": [\n    \"User registration and login with email, SSO, and multi-factor authentication\",\n    \"Role-based access control (Admin, Coordinator, Interpreter, Translator, Reviewer, Agency User)\",\n    \"User profiles capturing language pairs, certifications, availability, and vetting status\",\n    \"Agency-specific workspaces and tenant/authorization separation\",\n    \"Create, edit, and delete interpreting bookings with scheduling and location details\",\n    \"Create translation jobs with document upload, assignment, review, and versioned deliverables\",\n    \"Automated assignment engine to match interpreters/translators by language, availability, certifications, and location\",\n    \"Task lifecycle management with configurable stages and progress tracking\",\n    \"Attachments, comments, mentions (@mentions), and per-task activity logs\",\n    \"Real-time updates (notifications/WS) and an activity feed showing recent team actions\",\n    \"File management: upload, preview, download, scanning, and file version history\",\n    \"Role- and workspace-based file and task access controls\",\n    \"Email, in-app, and optional SMS notifications (assignments, status updates, mentions, approvals, daily summaries)\",\n    \"Dashboards and reporting: task statistics, productivity, exports (CSV/PDF)\",\n    \"Agency financial and performance reporting (spend, SLA metrics)\",\n    \"Integrations: Outlook/Teams calendar synchronization for bookings\",\n    \"Integrations: transactional email service, DocuSign (e-signatures), optional CAT tool integrations\",\n    \"Accessibility, responsive UI, and multi-language user interface\",\n    \"Audit logging, immutable activity records, and configurable data retention\",\n    \"Security, encryption, malware scanning, data loss prevention, and incident response controls\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"User registration and login with email, SSO, and multi-factor authentication\",\n      \"business_category\": \"Authentication & Identity\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Secure onboarding and authentication are required to protect access to sensitive government and personal data and to support federated identity with agency IdPs for streamlined user management and auditing. MFA reduces account compromise risk.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Role-based access control (Admin, Coordinator, Interpreter, Translator, Reviewer, Agency User)\",\n      \"business_category\": \"Authorization & Access Control\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Different user types require least-privilege access so sensitive actions and data are restricted to authorized roles; RBAC enables separation of duties and compliance with policy requirements.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"User profiles capturing language pairs, certifications, availability, and vetting status\",\n      \"business_category\": \"User Management / HR Data\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Profiles are needed to match assignments and show qualifications. Certification and vetting status are sensitive personnel attributes that inform assignment eligibility and must be protected.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Agency-specific workspaces and tenant/authorization separation\",\n      \"business_category\": \"Multi-Tenancy / Data Segregation\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Agencies must manage their own requests and data independently. Strong tenant isolation reduces risk of data leakage between agencies and supports contractual/regulatory boundaries.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"Create, edit, and delete interpreting bookings with scheduling and location details\",\n      \"business_category\": \"Task & Scheduling Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Core operational capability for booking interpreters; includes potentially sensitive location and scheduling information that must be accurate and auditable.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"Create translation jobs with document upload, assignment, review, and versioned deliverables\",\n      \"business_category\": \"Document & Workflow Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Translation jobs will process sensitive government documents; versioned deliverables and review steps ensure traceability and quality control while protecting document confidentiality.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Automated assignment engine to match interpreters/translators by language, availability, certifications, and location\",\n      \"business_category\": \"Matching & Scheduling Automation\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Automation improves efficiency and fairness of assignments but must respect privacy and only expose required data; rules-based matching must be transparent and auditable.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Task lifecycle management with configurable stages and progress tracking\",\n      \"business_category\": \"Workflow Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Tracking tasks through stages (e.g., requested, assigned, in-progress, completed, reviewed) supports SLAs, visibility, and reporting, and requires auditability to support compliance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Attachments, comments, mentions (@mentions), and per-task activity logs\",\n      \"business_category\": \"Collaboration & Audit\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Collaboration records often contain case-sensitive information; activity logs and comments must be secured and auditable to preserve integrity and support investigations or FOIA/record requests.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Real-time updates (notifications/WS) and an activity feed showing recent team actions\",\n      \"business_category\": \"Collaboration / Real-time Communication\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Real-time visibility improves coordination and responsiveness; however live updates must be authenticated and authorized to prevent data exposure.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"File management: upload, preview, download, scanning, and file version history\",\n      \"business_category\": \"File & Content Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Files may contain sensitive government content; secure upload, virus/malware scanning, preview without unnecessary downloads, and version history are required to protect data integrity and confidentiality.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"Role- and workspace-based file and task access controls\",\n      \"business_category\": \"Access Control & Data Governance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Fine-grained access control prevents unauthorized access to sensitive documents and task data and enforces agency-level boundaries and policies.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"Email, in-app, and optional SMS notifications (assignments, status updates, mentions, approvals, daily summaries)\",\n      \"business_category\": \"Notifications & Communications\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Timely notifications are essential for operations; notifications must avoid exposing sensitive details in unencrypted channels (e.g., SMS) and support opt-in/opt-out and preference controls.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Dashboards and reporting: task statistics, productivity, exports (CSV/PDF)\",\n      \"business_category\": \"Reporting & Analytics\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Operational dashboards enable managers to monitor performance; exports and summaries must respect data classification and access controls and be safe to distribute according to policy.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"Agency financial and performance reporting (spend, SLA metrics)\",\n      \"business_category\": \"Finance & Performance Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Spending and contractual performance data are sensitive from a procurement and budgetary perspective and must be protected and auditable for compliance and oversight.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"Integrations: Outlook/Teams calendar synchronization for bookings\",\n      \"business_category\": \"Integration & Scheduling\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Calendar sync reduces double-booking and improves coordination; integrations must use secure delegated APIs (OAuth/SAML) and respect privacy and consent directives.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"Integrations: transactional email service, DocuSign (e-signatures), optional CAT tool integrations\",\n      \"business_category\": \"Integration & Third-Party Services\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Third-party services enable e-signatures and toolchain efficiencies; integration introduces supply-chain risk and requires secure API usage, contractual security assurances, and data processing agreements.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"Accessibility, responsive UI, and multi-language user interface\",\n      \"business_category\": \"Usability & Accessibility\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Users across agencies and public-facing stakeholders require accessible, mobile-friendly, and multilingual interfaces to comply with legal accessibility requirements and improve adoption.\"\n    },\n    {\n      \"requirement_id\": \"REQ-019\",\n      \"requirement_text\": \"Audit logging, immutable activity records, and configurable data retention\",\n      \"business_category\": \"Logging & Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Immutable audit logs support investigations, compliance (record retention laws), and non-repudiation; retention must be configurable to meet legal and agency policies.\"\n    },\n    {\n      \"requirement_id\": \"REQ-020\",\n      \"requirement_text\": \"Security controls including encryption in transit and at rest, malware scanning, data loss prevention, vulnerability management, and incident response processes\",\n      \"business_category\": \"Security & Risk Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Handling sensitive government information mandates strong technical and operational security measures to protect confidentiality, integrity, and availability and to meet agency and legal security obligations.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulations and standards include national and regional data protection laws (e.g., GDPR for EU-resident personal data or equivalent local government data protection legislation), government information security frameworks (e.g., NIST SP 800-53 / NIST SP 800-171 for US government and contractors, or nationally adopted equivalents), ISO/IEC 27001 for information security management, and e-signature regulations (e.g., eIDAS in EU) where DocuSign is used. Accessibility obligations include WCAG and jurisdictional laws (e.g., Section 508 in the US). Additional obligations may include records retention and disclosure laws (e.g., FOIA), procurement/financial audit requirements for agency spend reporting, and supply-chain security and data processing agreements for third-party integrations. If any health or criminal justice information is handled, HIPAA or CJIS/National Criminal Information Center rules apply respectively. The exact regulatory controls depend on the agencies' jurisdictions and must be validated with legal/compliance owners.\",\n  \"assumptions\": [\n    \"System will be cloud-hosted (public or government cloud) and reachable via the public internet with secure controls.\",\n    \"Agencies will either provide SSO/IdP integration (SAML/OIDC) or accept a managed identity solution.\",\n    \"Users have modern browsers and network connectivity; mobile users will access via responsive web UI.\",\n    \"Third-party services (Outlook/Teams, email providers, DocuSign, CAT tools, SMS provider) provide stable APIs and support OAuth or equivalent secure integration.\",\n    \"No payment card processing is required within the application (no PCI-DSS scope) unless later added.\",\n    \"Interpreters/translators maintain and submit valid certifications and any required background checks externally; system stores evidence metadata and uploaded certifications.\",\n    \"Data residency and retention policies will be provided by agencies and may require region-specific hosting.\",\n    \"SMS delivery is via third-party provider and may expose limited metadata (phone numbers) to that provider.\",\n    \"Agencies require audit trails and will provide SLAs and retention/records management guidance.\"\n  ],\n  \"constraints\": [\n    \"Must meet WCAG 2.1 AA (or agency-specified) accessibility standards and support multi-language UIs.\",\n    \"Must support modern web browsers and be responsive for tablet and mobile; no native mobile app in initial scope unless specified.\",\n    \"Tenant data isolation is required; architecture must support strong multi-tenancy or separate tenant instances per agency depending on data residency requirements.\",\n    \"Third-party integrations rely on vendor APIs and their SLAs; limited or degraded functionality is possible if APIs change or are unavailable.\",\n    \"Data residency and sovereign hosting constraints may mandate region-specific deployments and limit cross-region backups or processing.\",\n    \"Retention and immutable logging requirements may increase storage costs and require retention policy automation.\",\n    \"Uploads must be scanned for malware and stored securely; large file sizes and high throughput will impact storage and processing costs.\",\n    \"Legacy agency systems may not provide modern APIs; adapters or manual processes may be required for integration with legacy calendars or HR systems.\",\n    \"Operational constraints include providing incident response, patch management, regular security assessments, and possibly achieving agency-required certifications (e.g., FedRAMP, ISO 27001).\",\n    \"Optional SMS notifications are subject to telecom regulations and carrier deliverability constraints and may not be suitable for high-sensitivity content.\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A secure, multi-tenant web application for government agencies to manage interpreter and translator bookings, document translation workflows, and collaboration with service providers; it handles scheduling, document uploads and versioning, role-based access for agency and provider workspaces, notifications and reporting, and integrates with calendars, email, e-signature and translation tools while maintaining auditability, accessibility, and compliance with government data protection requirements.",
+        "high_level_requirements": [
+          "User registration and login with email, SSO, and multi-factor authentication",
+          "Role-based access control (Admin, Coordinator, Interpreter, Translator, Reviewer, Agency User)",
+          "User profiles capturing language pairs, certifications, availability, and vetting status",
+          "Agency-specific workspaces and tenant/authorization separation",
+          "Create, edit, and delete interpreting bookings with scheduling and location details",
+          "Create translation jobs with document upload, assignment, review, and versioned deliverables",
+          "Automated assignment engine to match interpreters/translators by language, availability, certifications, and location",
+          "Task lifecycle management with configurable stages and progress tracking",
+          "Attachments, comments, mentions (@mentions), and per-task activity logs",
+          "Real-time updates (notifications/WS) and an activity feed showing recent team actions",
+          "File management: upload, preview, download, scanning, and file version history",
+          "Role- and workspace-based file and task access controls",
+          "Email, in-app, and optional SMS notifications (assignments, status updates, mentions, approvals, daily summaries)",
+          "Dashboards and reporting: task statistics, productivity, exports (CSV/PDF)",
+          "Agency financial and performance reporting (spend, SLA metrics)",
+          "Integrations: Outlook/Teams calendar synchronization for bookings",
+          "Integrations: transactional email service, DocuSign (e-signatures), optional CAT tool integrations",
+          "Accessibility, responsive UI, and multi-language user interface",
+          "Audit logging, immutable activity records, and configurable data retention",
+          "Security, encryption, malware scanning, data loss prevention, and incident response controls"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "User registration and login with email, SSO, and multi-factor authentication",
+            "business_category": "Authentication & Identity",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Secure onboarding and authentication are required to protect access to sensitive government and personal data and to support federated identity with agency IdPs for streamlined user management and auditing. MFA reduces account compromise risk."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Role-based access control (Admin, Coordinator, Interpreter, Translator, Reviewer, Agency User)",
+            "business_category": "Authorization & Access Control",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Different user types require least-privilege access so sensitive actions and data are restricted to authorized roles; RBAC enables separation of duties and compliance with policy requirements."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "User profiles capturing language pairs, certifications, availability, and vetting status",
+            "business_category": "User Management / HR Data",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Profiles are needed to match assignments and show qualifications. Certification and vetting status are sensitive personnel attributes that inform assignment eligibility and must be protected."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Agency-specific workspaces and tenant/authorization separation",
+            "business_category": "Multi-Tenancy / Data Segregation",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Agencies must manage their own requests and data independently. Strong tenant isolation reduces risk of data leakage between agencies and supports contractual/regulatory boundaries."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "Create, edit, and delete interpreting bookings with scheduling and location details",
+            "business_category": "Task & Scheduling Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Core operational capability for booking interpreters; includes potentially sensitive location and scheduling information that must be accurate and auditable."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "Create translation jobs with document upload, assignment, review, and versioned deliverables",
+            "business_category": "Document & Workflow Management",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Translation jobs will process sensitive government documents; versioned deliverables and review steps ensure traceability and quality control while protecting document confidentiality."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Automated assignment engine to match interpreters/translators by language, availability, certifications, and location",
+            "business_category": "Matching & Scheduling Automation",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Automation improves efficiency and fairness of assignments but must respect privacy and only expose required data; rules-based matching must be transparent and auditable."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Task lifecycle management with configurable stages and progress tracking",
+            "business_category": "Workflow Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Tracking tasks through stages (e.g., requested, assigned, in-progress, completed, reviewed) supports SLAs, visibility, and reporting, and requires auditability to support compliance."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Attachments, comments, mentions (@mentions), and per-task activity logs",
+            "business_category": "Collaboration & Audit",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Collaboration records often contain case-sensitive information; activity logs and comments must be secured and auditable to preserve integrity and support investigations or FOIA/record requests."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Real-time updates (notifications/WS) and an activity feed showing recent team actions",
+            "business_category": "Collaboration / Real-time Communication",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Real-time visibility improves coordination and responsiveness; however live updates must be authenticated and authorized to prevent data exposure."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "File management: upload, preview, download, scanning, and file version history",
+            "business_category": "File & Content Management",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Files may contain sensitive government content; secure upload, virus/malware scanning, preview without unnecessary downloads, and version history are required to protect data integrity and confidentiality."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "Role- and workspace-based file and task access controls",
+            "business_category": "Access Control & Data Governance",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Fine-grained access control prevents unauthorized access to sensitive documents and task data and enforces agency-level boundaries and policies."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "Email, in-app, and optional SMS notifications (assignments, status updates, mentions, approvals, daily summaries)",
+            "business_category": "Notifications & Communications",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Timely notifications are essential for operations; notifications must avoid exposing sensitive details in unencrypted channels (e.g., SMS) and support opt-in/opt-out and preference controls."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Dashboards and reporting: task statistics, productivity, exports (CSV/PDF)",
+            "business_category": "Reporting & Analytics",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Operational dashboards enable managers to monitor performance; exports and summaries must respect data classification and access controls and be safe to distribute according to policy."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "Agency financial and performance reporting (spend, SLA metrics)",
+            "business_category": "Finance & Performance Management",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Spending and contractual performance data are sensitive from a procurement and budgetary perspective and must be protected and auditable for compliance and oversight."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "Integrations: Outlook/Teams calendar synchronization for bookings",
+            "business_category": "Integration & Scheduling",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Calendar sync reduces double-booking and improves coordination; integrations must use secure delegated APIs (OAuth/SAML) and respect privacy and consent directives."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "Integrations: transactional email service, DocuSign (e-signatures), optional CAT tool integrations",
+            "business_category": "Integration & Third-Party Services",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Third-party services enable e-signatures and toolchain efficiencies; integration introduces supply-chain risk and requires secure API usage, contractual security assurances, and data processing agreements."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "Accessibility, responsive UI, and multi-language user interface",
+            "business_category": "Usability & Accessibility",
+            "security_sensitivity": "Low",
+            "data_classification": "Public",
+            "rationale": "Users across agencies and public-facing stakeholders require accessible, mobile-friendly, and multilingual interfaces to comply with legal accessibility requirements and improve adoption."
+          },
+          {
+            "requirement_id": "REQ-019",
+            "requirement_text": "Audit logging, immutable activity records, and configurable data retention",
+            "business_category": "Logging & Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Immutable audit logs support investigations, compliance (record retention laws), and non-repudiation; retention must be configurable to meet legal and agency policies."
+          },
+          {
+            "requirement_id": "REQ-020",
+            "requirement_text": "Security controls including encryption in transit and at rest, malware scanning, data loss prevention, vulnerability management, and incident response processes",
+            "business_category": "Security & Risk Management",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Handling sensitive government information mandates strong technical and operational security measures to protect confidentiality, integrity, and availability and to meet agency and legal security obligations."
+          }
+        ],
+        "security_context": "Applicable regulations and standards include national and regional data protection laws (e.g., GDPR for EU-resident personal data or equivalent local government data protection legislation), government information security frameworks (e.g., NIST SP 800-53 / NIST SP 800-171 for US government and contractors, or nationally adopted equivalents), ISO/IEC 27001 for information security management, and e-signature regulations (e.g., eIDAS in EU) where DocuSign is used. Accessibility obligations include WCAG and jurisdictional laws (e.g., Section 508 in the US). Additional obligations may include records retention and disclosure laws (e.g., FOIA), procurement/financial audit requirements for agency spend reporting, and supply-chain security and data processing agreements for third-party integrations. If any health or criminal justice information is handled, HIPAA or CJIS/National Criminal Information Center rules apply respectively. The exact regulatory controls depend on the agencies' jurisdictions and must be validated with legal/compliance owners.",
+        "assumptions": [
+          "System will be cloud-hosted (public or government cloud) and reachable via the public internet with secure controls.",
+          "Agencies will either provide SSO/IdP integration (SAML/OIDC) or accept a managed identity solution.",
+          "Users have modern browsers and network connectivity; mobile users will access via responsive web UI.",
+          "Third-party services (Outlook/Teams, email providers, DocuSign, CAT tools, SMS provider) provide stable APIs and support OAuth or equivalent secure integration.",
+          "No payment card processing is required within the application (no PCI-DSS scope) unless later added.",
+          "Interpreters/translators maintain and submit valid certifications and any required background checks externally; system stores evidence metadata and uploaded certifications.",
+          "Data residency and retention policies will be provided by agencies and may require region-specific hosting.",
+          "SMS delivery is via third-party provider and may expose limited metadata (phone numbers) to that provider.",
+          "Agencies require audit trails and will provide SLAs and retention/records management guidance."
+        ],
+        "constraints": [
+          "Must meet WCAG 2.1 AA (or agency-specified) accessibility standards and support multi-language UIs.",
+          "Must support modern web browsers and be responsive for tablet and mobile; no native mobile app in initial scope unless specified.",
+          "Tenant data isolation is required; architecture must support strong multi-tenancy or separate tenant instances per agency depending on data residency requirements.",
+          "Third-party integrations rely on vendor APIs and their SLAs; limited or degraded functionality is possible if APIs change or are unavailable.",
+          "Data residency and sovereign hosting constraints may mandate region-specific deployments and limit cross-region backups or processing.",
+          "Retention and immutable logging requirements may increase storage costs and require retention policy automation.",
+          "Uploads must be scanned for malware and stored securely; large file sizes and high throughput will impact storage and processing costs.",
+          "Legacy agency systems may not provide modern APIs; adapters or manual processes may be required for integration with legacy calendars or HR systems.",
+          "Operational constraints include providing incident response, patch management, regular security assessments, and possibly achieving agency-required certifications (e.g., FedRAMP, ISO 27001).",
+          "Optional SMS notifications are subject to telecom regulations and carrier deliverability constraints and may not be suitable for high-sensitivity content."
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"A cloud-hosted, multi-tenant web application providing agency workspaces for managing interpreter and translator bookings, document translation workflows, and collaboration. Users access a responsive Web SPA via a CDN/WAF and API gateway; authentication is handled by an Identity Service supporting SSO and MFA. Core application services (task API, assignment engine, workflow orchestration, real-time notifications, background jobs) run behind the API gateway and interact with encrypted data stores: a primary relational DB for transactional data, object storage for scanned/versioned files, an immutable audit/log store, and an analytics store for reporting. Integrations connect to third-party IdPs, email/SMS providers, calendar APIs (Outlook/Teams), DocuSign, CAT tools, and malware scanning. Security controls (RBAC, tenant isolation, encryption, DLP, malware scanning, logging) and accessibility requirements are applied across layers to protect sensitive government data and meet compliance and audit requirements.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Users & Devices\\\"\\n  EU[Agency & Provider Users]\\nend\\nsubgraph \\\"Edge Layer\\\"\\n  CDN[CDN & Web Application Firewall]\\n  API_GW[API Gateway & Rate Limiting]\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web App SPA & Admin UI]\\nend\\nsubgraph \\\"Application Services\\\"\\n  Auth[Identity Service SSO/OIDC/SAML MFA]\\n  API[Core API Users/Tasks/RBAC]\\n  WS[Real-time WS & Notifications]\\n  Matcher[Assignment Engine & Workflow Orchestration]\\n  Jobs[Background Jobs & Scheduler]\\nend\\nsubgraph \\\"Data Layer\\\"\\n  DB[Primary Relational DB - Encrypted]\\n  FS[Object Storage Files Scanned & Versioned]\\n  Audit[Immutable Audit & Log Store]\\n  Search[Analytics & Reporting Store]\\nend\\nsubgraph \\\"External Services\\\"\\n  IdP[Agency IdP SAML/OIDC]\\n  EmailSvc[Email & SMS Provider]\\n  CalSvc[Outlook/Teams API]\\n  DocuSignSvc[DocuSign API]\\n  CATsvc[CAT Tool APIs]\\n  Malware[Malware Scanning Service]\\nend\\n\\nEU --> CDN\\nCDN --> FE\\nFE --> API_GW\\nAPI_GW --> Auth\\nAPI_GW --> API\\nAPI --> DB\\nAPI --> FS\\nAPI --> Audit\\nAPI --> Search\\nAuth --> IdP\\nAPI --> Matcher\\nMatcher --> Jobs\\nJobs --> FS\\nJobs --> EmailSvc\\nWS --> API\\nFE --> WS\\nAPI_GW --> CalSvc\\nAPI --> DocuSignSvc\\nAPI --> CATsvc\\nFS --> Malware\\nEmailSvc --> EU\\nCalSvc --> EU\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Provide responsive SPA and admin UI for users and agencies, enforce client-side accessibility, input validation, and session handling.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN/WAF\"\n      ],\n      \"data_handled\": [\n        \"Authentication tokens/session metadata\",\n        \"Form data for bookings and tasks\",\n        \"File preview streams (sanitized)\"\n      ]\n    },\n    {\n      \"name\": \"Edge & API Gateway\",\n      \"responsibility\": \"Receive and protect incoming traffic, provide TLS termination, WAF protection, rate limiting, API routing, and enforce edge authentication checks.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"CDN\",\n        \"WAF\"\n      ],\n      \"data_handled\": [\n        \"Incoming HTTP requests\",\n        \"Authentication handshake data\",\n        \"Rate/usage telemetry\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic for user management, RBAC, task and booking workflows, automated assignment, notification orchestration, real-time updates, background processing and job scheduling.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Agency IdPs (SAML/OIDC)\",\n        \"Email/SMS Provider\",\n        \"Calendar APIs\",\n        \"DocuSign\",\n        \"CAT Tools\",\n        \"Malware Scanning Service\"\n      ],\n      \"data_handled\": [\n        \"User profiles and roles\",\n        \"Task/booking metadata\",\n        \"Assignment decisions and workflows\",\n        \"Notification events\",\n        \"Real-time messages\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Store transactional data, multi-tenant metadata, files and version history, immutable audit logs, and analytics/ reporting aggregates; enforce encryption, retention and access policies.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"KMS/Key Management Service\"\n      ],\n      \"data_handled\": [\n        \"User PII and vetting/certification metadata\",\n        \"Bookings and task histories\",\n        \"Uploaded documents and file versions\",\n        \"Audit logs and immutable records\",\n        \"Aggregated reporting data\"\n      ]\n    },\n    {\n      \"name\": \"Background & Queue Services\",\n      \"responsibility\": \"Process asynchronous tasks: assignment matching, file scanning, document conversion, scheduled notifications, daily summaries, report exports and integration retries.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Message Queue/Job Scheduler\",\n        \"Malware Scanning Service\"\n      ],\n      \"data_handled\": [\n        \"Queued job payloads referencing tasks/files\",\n        \"Temporary processing artifacts\",\n        \"Notification payloads\"\n      ]\n    },\n    {\n      \"name\": \"Integrations & External Services\",\n      \"responsibility\": \"Connect securely to third-party providers for identity, email/SMS, calendar synchronization, e-signatures, CAT tools and malware scanning; manage credentials and delegated access.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Agency IdP SAML/OIDC\",\n        \"Email/SMS Provider\",\n        \"Outlook/Teams API\",\n        \"DocuSign\",\n        \"CAT Tool Vendors\",\n        \"Malware Scanning Service\"\n      ],\n      \"data_handled\": [\n        \"Calendar events\",\n        \"E-signature documents and metadata\",\n        \"Transactional emails and SMS metadata\",\n        \"CAT tool translation assets (optional)\"\n      ]\n    },\n    {\n      \"name\": \"Observability & Audit\",\n      \"responsibility\": \"Collect immutable audit logs, access logs, application telemetry, alerts, and support retention policies and forensic investigations.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Immutable Log Store\",\n        \"SIEM/Monitoring Tools\"\n      ],\n      \"data_handled\": [\n        \"Access/audit records\",\n        \"System logs and alerts\",\n        \"Retention/archival metadata\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users interact via the Web SPA, which communicates through the CDN and API Gateway to backend services. Authentication is performed by the Identity Service (with IdP delegation); upon success the Core API handles CRUD operations for tasks, bookings, profiles and files. File uploads are routed to object storage and scanned by a malware service; metadata and task state are stored in the primary encrypted RDBMS. Background jobs handle assignment matching, scheduled notifications and integrations; audit events are written to an immutable log store and analytics snapshots are stored in the reporting store for dashboards and exports. Integrations push/pull calendar items, send email/SMS, request e-signatures, and optionally call CAT tools. Encryption is applied in transit (TLS) and at rest; RBAC and tenant isolation controls govern access at every step.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Agency & Provider Users\",\n        \"External Integrations (when invoked from remote systems)\"\n      ],\n      \"boundary_type\": \"Untrusted to DMZ\",\n      \"security_controls\": [\n        \"TLS 1.2+ for all connections\",\n        \"DDoS protection\",\n        \"WAF rules to block common attacks\",\n        \"Client-side input validation\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge Layer\",\n      \"components\": [\n        \"CDN & WAF\",\n        \"API Gateway\"\n      ],\n      \"boundary_type\": \"Perimeter / Gateway\",\n      \"security_controls\": [\n        \"TLS termination\",\n        \"Rate limiting and IP allow/block lists\",\n        \"Edge authentication checks\",\n        \"Logging and anomaly detection\"\n      ]\n    },\n    {\n      \"name\": \"Application Layer\",\n      \"components\": [\n        \"Web App SPA\",\n        \"Identity Service\",\n        \"Core API\",\n        \"Real-time WS\",\n        \"Background Jobs\",\n        \"Assignment Engine\"\n      ],\n      \"boundary_type\": \"Internal Trusted Zone\",\n      \"security_controls\": [\n        \"RBAC & tenant isolation\",\n        \"MFA & SSO enforcement\",\n        \"Input validation & output encoding\",\n        \"Service-to-service TLS and mutual auth\",\n        \"Secrets management\"\n      ]\n    },\n    {\n      \"name\": \"Data / Storage Tier\",\n      \"components\": [\n        \"Primary Relational DB\",\n        \"Object Storage (Files)\",\n        \"Immutable Audit Store\",\n        \"Analytics Store\"\n      ],\n      \"boundary_type\": \"Protected Data Zone\",\n      \"security_controls\": [\n        \"At-rest encryption (KMS)\",\n        \"Encryption key rotation\",\n        \"Database network isolation (VPC/Private Subnet)\",\n        \"Access controls and DB auditing\",\n        \"Data retention & secure deletion policies\"\n      ]\n    },\n    {\n      \"name\": \"Third-party Integrations\",\n      \"components\": [\n        \"Agency IdP\",\n        \"Email/SMS Provider\",\n        \"Calendar APIs\",\n        \"DocuSign\",\n        \"CAT Tools\",\n        \"Malware Scanning Service\"\n      ],\n      \"boundary_type\": \"External Trusted Services\",\n      \"security_controls\": [\n        \"OAuth/SAML delegated auth\",\n        \"Least-privilege API credentials\",\n        \"Encrypted transport for APIs\",\n        \"Contractual DPA and security SLA\",\n        \"Outbound firewall rules and allowlists\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary attack surfaces include: (1) Public Web UI and API endpoints \u2014 risk: High (exposed to internet; mitigations: WAF, rate limiting, input validation, strong auth/MFA, RBAC); (2) Authentication/SSO integrations \u2014 risk: High (federated identity complexity; mitigations: strict SAML/OIDC config, MFA, PKI/claims validation); (3) File upload and processing pipeline \u2014 risk: High (malicious files, large volumes; mitigations: malware scanning, content-type validation, sandboxing, DLP, size limits); (4) Real-time WS and notification channels \u2014 risk: Medium (session hijack or unauthorized subscriptions; mitigations: token-based socket auth, strict access checks); (5) Third-party integrations (email/SMS/calendar/DocuSign/CAT) \u2014 risk: Medium (supply-chain/API abuse; mitigations: least-privilege credentials, monitoring, contractual security controls); (6) Background jobs and queues \u2014 risk: Medium (tampering with job payloads); mitigations: signed job payloads, access controls, logging; (7) Admin/management interfaces \u2014 risk: High (privileged operations); mitigations: dedicated admin roles, session timeout, audit trails, IP allowlists. Additional considerations: tenant isolation failures and misconfiguration can expose cross-agency data, so strict tenancy enforcement, CI/CD security checks, and regular penetration testing are required. Monitoring, SIEM alerts, and incident response play critical roles in detecting and containing attacks.\"\n}",
+      "pydantic": {
+        "architecture_summary": "A cloud-hosted, multi-tenant web application providing agency workspaces for managing interpreter and translator bookings, document translation workflows, and collaboration. Users access a responsive Web SPA via a CDN/WAF and API gateway; authentication is handled by an Identity Service supporting SSO and MFA. Core application services (task API, assignment engine, workflow orchestration, real-time notifications, background jobs) run behind the API gateway and interact with encrypted data stores: a primary relational DB for transactional data, object storage for scanned/versioned files, an immutable audit/log store, and an analytics store for reporting. Integrations connect to third-party IdPs, email/SMS providers, calendar APIs (Outlook/Teams), DocuSign, CAT tools, and malware scanning. Security controls (RBAC, tenant isolation, encryption, DLP, malware scanning, logging) and accessibility requirements are applied across layers to protect sensitive government data and meet compliance and audit requirements.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Users & Devices\"\n  EU[Agency & Provider Users]\nend\nsubgraph \"Edge Layer\"\n  CDN[CDN & Web Application Firewall]\n  API_GW[API Gateway & Rate Limiting]\nend\nsubgraph \"Frontend Layer\"\n  FE[Web App SPA & Admin UI]\nend\nsubgraph \"Application Services\"\n  Auth[Identity Service SSO/OIDC/SAML MFA]\n  API[Core API Users/Tasks/RBAC]\n  WS[Real-time WS & Notifications]\n  Matcher[Assignment Engine & Workflow Orchestration]\n  Jobs[Background Jobs & Scheduler]\nend\nsubgraph \"Data Layer\"\n  DB[Primary Relational DB - Encrypted]\n  FS[Object Storage Files Scanned & Versioned]\n  Audit[Immutable Audit & Log Store]\n  Search[Analytics & Reporting Store]\nend\nsubgraph \"External Services\"\n  IdP[Agency IdP SAML/OIDC]\n  EmailSvc[Email & SMS Provider]\n  CalSvc[Outlook/Teams API]\n  DocuSignSvc[DocuSign API]\n  CATsvc[CAT Tool APIs]\n  Malware[Malware Scanning Service]\nend\n\nEU --> CDN\nCDN --> FE\nFE --> API_GW\nAPI_GW --> Auth\nAPI_GW --> API\nAPI --> DB\nAPI --> FS\nAPI --> Audit\nAPI --> Search\nAuth --> IdP\nAPI --> Matcher\nMatcher --> Jobs\nJobs --> FS\nJobs --> EmailSvc\nWS --> API\nFE --> WS\nAPI_GW --> CalSvc\nAPI --> DocuSignSvc\nAPI --> CATsvc\nFS --> Malware\nEmailSvc --> EU\nCalSvc --> EU",
+        "components": [
+          {
+            "name": "Frontend Layer",
+            "responsibility": "Provide responsive SPA and admin UI for users and agencies, enforce client-side accessibility, input validation, and session handling.",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "CDN/WAF"
+            ],
+            "data_handled": [
+              "Authentication tokens/session metadata",
+              "Form data for bookings and tasks",
+              "File preview streams (sanitized)"
+            ]
+          },
+          {
+            "name": "Edge & API Gateway",
+            "responsibility": "Receive and protect incoming traffic, provide TLS termination, WAF protection, rate limiting, API routing, and enforce edge authentication checks.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "CDN",
+              "WAF"
+            ],
+            "data_handled": [
+              "Incoming HTTP requests",
+              "Authentication handshake data",
+              "Rate/usage telemetry"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core business logic for user management, RBAC, task and booking workflows, automated assignment, notification orchestration, real-time updates, background processing and job scheduling.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Agency IdPs (SAML/OIDC)",
+              "Email/SMS Provider",
+              "Calendar APIs",
+              "DocuSign",
+              "CAT Tools",
+              "Malware Scanning Service"
+            ],
+            "data_handled": [
+              "User profiles and roles",
+              "Task/booking metadata",
+              "Assignment decisions and workflows",
+              "Notification events",
+              "Real-time messages"
+            ]
+          },
+          {
+            "name": "Data Storage",
+            "responsibility": "Store transactional data, multi-tenant metadata, files and version history, immutable audit logs, and analytics/ reporting aggregates; enforce encryption, retention and access policies.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "KMS/Key Management Service"
+            ],
+            "data_handled": [
+              "User PII and vetting/certification metadata",
+              "Bookings and task histories",
+              "Uploaded documents and file versions",
+              "Audit logs and immutable records",
+              "Aggregated reporting data"
+            ]
+          },
+          {
+            "name": "Background & Queue Services",
+            "responsibility": "Process asynchronous tasks: assignment matching, file scanning, document conversion, scheduled notifications, daily summaries, report exports and integration retries.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Message Queue/Job Scheduler",
+              "Malware Scanning Service"
+            ],
+            "data_handled": [
+              "Queued job payloads referencing tasks/files",
+              "Temporary processing artifacts",
+              "Notification payloads"
+            ]
+          },
+          {
+            "name": "Integrations & External Services",
+            "responsibility": "Connect securely to third-party providers for identity, email/SMS, calendar synchronization, e-signatures, CAT tools and malware scanning; manage credentials and delegated access.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Agency IdP SAML/OIDC",
+              "Email/SMS Provider",
+              "Outlook/Teams API",
+              "DocuSign",
+              "CAT Tool Vendors",
+              "Malware Scanning Service"
+            ],
+            "data_handled": [
+              "Calendar events",
+              "E-signature documents and metadata",
+              "Transactional emails and SMS metadata",
+              "CAT tool translation assets (optional)"
+            ]
+          },
+          {
+            "name": "Observability & Audit",
+            "responsibility": "Collect immutable audit logs, access logs, application telemetry, alerts, and support retention policies and forensic investigations.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Immutable Log Store",
+              "SIEM/Monitoring Tools"
+            ],
+            "data_handled": [
+              "Access/audit records",
+              "System logs and alerts",
+              "Retention/archival metadata"
+            ]
+          }
+        ],
+        "data_flow_description": "Users interact via the Web SPA, which communicates through the CDN and API Gateway to backend services. Authentication is performed by the Identity Service (with IdP delegation); upon success the Core API handles CRUD operations for tasks, bookings, profiles and files. File uploads are routed to object storage and scanned by a malware service; metadata and task state are stored in the primary encrypted RDBMS. Background jobs handle assignment matching, scheduled notifications and integrations; audit events are written to an immutable log store and analytics snapshots are stored in the reporting store for dashboards and exports. Integrations push/pull calendar items, send email/SMS, request e-signatures, and optionally call CAT tools. Encryption is applied in transit (TLS) and at rest; RBAC and tenant isolation controls govern access at every step.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "Agency & Provider Users",
+              "External Integrations (when invoked from remote systems)"
+            ],
+            "boundary_type": "Untrusted to DMZ",
+            "security_controls": [
+              "TLS 1.2+ for all connections",
+              "DDoS protection",
+              "WAF rules to block common attacks",
+              "Client-side input validation"
+            ]
+          },
+          {
+            "name": "DMZ / Edge Layer",
+            "components": [
+              "CDN & WAF",
+              "API Gateway"
+            ],
+            "boundary_type": "Perimeter / Gateway",
+            "security_controls": [
+              "TLS termination",
+              "Rate limiting and IP allow/block lists",
+              "Edge authentication checks",
+              "Logging and anomaly detection"
+            ]
+          },
+          {
+            "name": "Application Layer",
+            "components": [
+              "Web App SPA",
+              "Identity Service",
+              "Core API",
+              "Real-time WS",
+              "Background Jobs",
+              "Assignment Engine"
+            ],
+            "boundary_type": "Internal Trusted Zone",
+            "security_controls": [
+              "RBAC & tenant isolation",
+              "MFA & SSO enforcement",
+              "Input validation & output encoding",
+              "Service-to-service TLS and mutual auth",
+              "Secrets management"
+            ]
+          },
+          {
+            "name": "Data / Storage Tier",
+            "components": [
+              "Primary Relational DB",
+              "Object Storage (Files)",
+              "Immutable Audit Store",
+              "Analytics Store"
+            ],
+            "boundary_type": "Protected Data Zone",
+            "security_controls": [
+              "At-rest encryption (KMS)",
+              "Encryption key rotation",
+              "Database network isolation (VPC/Private Subnet)",
+              "Access controls and DB auditing",
+              "Data retention & secure deletion policies"
+            ]
+          },
+          {
+            "name": "Third-party Integrations",
+            "components": [
+              "Agency IdP",
+              "Email/SMS Provider",
+              "Calendar APIs",
+              "DocuSign",
+              "CAT Tools",
+              "Malware Scanning Service"
+            ],
+            "boundary_type": "External Trusted Services",
+            "security_controls": [
+              "OAuth/SAML delegated auth",
+              "Least-privilege API credentials",
+              "Encrypted transport for APIs",
+              "Contractual DPA and security SLA",
+              "Outbound firewall rules and allowlists"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Primary attack surfaces include: (1) Public Web UI and API endpoints \u2014 risk: High (exposed to internet; mitigations: WAF, rate limiting, input validation, strong auth/MFA, RBAC); (2) Authentication/SSO integrations \u2014 risk: High (federated identity complexity; mitigations: strict SAML/OIDC config, MFA, PKI/claims validation); (3) File upload and processing pipeline \u2014 risk: High (malicious files, large volumes; mitigations: malware scanning, content-type validation, sandboxing, DLP, size limits); (4) Real-time WS and notification channels \u2014 risk: Medium (session hijack or unauthorized subscriptions; mitigations: token-based socket auth, strict access checks); (5) Third-party integrations (email/SMS/calendar/DocuSign/CAT) \u2014 risk: Medium (supply-chain/API abuse; mitigations: least-privilege credentials, monitoring, contractual security controls); (6) Background jobs and queues \u2014 risk: Medium (tampering with job payloads); mitigations: signed job payloads, access controls, logging; (7) Admin/management interfaces \u2014 risk: High (privileged operations); mitigations: dedicated admin roles, session timeout, audit trails, IP allowlists. Additional considerations: tenant isolation failures and misconfiguration can expose cross-agency data, so strict tenancy enforcement, CI/CD security checks, and regular penetration testing are required. Monitoring, SIEM alerts, and incident response play critical roles in detecting and containing attacks."
+      }
+    }
+  ]
+}

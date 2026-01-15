@@ -1,0 +1,669 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"The system is a cloud-hosted confidential translation platform composed of an edge/API gateway for authentication and malware-safe ingestion, a frontend layer for client integrations, core application services that expose synchronous low-latency and asynchronous ST.90-compliant endpoints, a scalable processing & inference layer that performs sandboxed per-request document preprocessing and GPU-backed translation, and a data layer offering encrypted object storage, metadata/audit stores, and KMS/HSM for BYOK. Monitoring and orchestration components provide non-intrusive telemetry and capacity management while external services (IdP, AV, external storage) are integrated under strict vendor controls. Components communicate over encrypted channels, tasks are durably tracked, outputs stored encrypted with fine-grained access, and strong access controls, audit trails, and retention/deletion flows enforce confidentiality and compliance.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Edge & Auth\\\"\\n  EDGE[API Gateway & AuthN/AuthZ]\\n  SCAN[Malware Scanner & Safe Parser]\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  UI[Web App SPA & Integrations]\\n  CLI[CLI & SDKs]\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[Core API Synchronous/Asynchronous Endpoints OpenAPI3.1]\\n  TASK[TASK Manager ST.90 Status Results]\\n  VALID[Input Validation & BCP-47]\\nend\\nsubgraph \\\"Processing & Inference\\\"\\n  PREP[Document Preprocessor & Formatter]\\n  SANDBOX[Per-Request Sandbox & Execution Isolation]\\n  MODEL[Translation Engine Inference GPU Instances]\\nend\\nsubgraph \\\"Data Layer\\\"\\n  OBJ[Encrypted Object Storage BYOK Option]\\n  META[Metadata DB & Audit Logs WORM]\\n  KM[KMS & HSM Key Management]\\nend\\nsubgraph \\\"Operations & Observability\\\"\\n  MON[Monitoring Metrics & NoContentTelemetry]\\n  ALERT[Alerting & Capacity Manager]\\nend\\nsubgraph \\\"External Services\\\"\\n  IDP[Identity Provider OAuth2/OIDC]\\n  VIRUS[AV/Virus Scan Provider]\\n  STORAGE[Customer Cloud Storage]\\nend\\n\\nUI --> EDGE\\nCLI --> EDGE\\nEDGE --> IDP\\nEDGE --> SCAN\\nSCAN --> API\\nEDGE --> API\\nAPI --> VALID\\nVALID --> TASK\\nAPI --> PREP\\nTASK --> SANDBOX\\nPREP --> SANDBOX\\nSANDBOX --> MODEL\\nMODEL --> OBJ\\nSANDBOX --> OBJ\\nTASK --> OBJ\\nAPI --> META\\nTASK --> META\\nOBJ --> KM\\nAPI --> MON\\nTASK --> MON\\nMODEL --> MON\\nOBJ --> MON\\nEDGE --> STORAGE\\nSCAN --> VIRUS\\nMON --> ALERT\",\n  \"components\": [\n    {\n      \"name\": \"Edge & Auth\",\n      \"responsibility\": \"Ingress control, TLS termination, rate limiting, authentication (OAuth2/OIDC), authorization (RBAC), API key/MFA enforcement, initial malware scanning and safe parsing for uploaded files.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Identity Provider (IdP) - OAuth2/OIDC\",\n        \"WAF / DDoS protection (cloud vendor)\"\n      ],\n      \"data_handled\": [\n        \"Authentication tokens and credentials\",\n        \"Request metadata\",\n        \"Uploaded document binaries (for scanning)\"\n      ]\n    },\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"User-facing clients and integrations (web UI, SDKs, CLI) that call synchronous and asynchronous endpoints and provide upload/download UX.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Customer environments / Integrator SDKs\"\n      ],\n      \"data_handled\": [\n        \"User requests\",\n        \"Language tags (BCP-47)\",\n        \"Status queries and result retrievals (metadata)\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core REST API implementing OpenAPI 3.1, routing between sync/async workflows, task lifecycle manager (ST.90 semantics), input validation, policy enforcement, and orchestration of processing steps.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Service discovery / internal auth\",\n        \"Queueing infrastructure (cloud managed or self-hosted)\"\n      ],\n      \"data_handled\": [\n        \"Translation requests and task descriptors\",\n        \"Task status and metadata\",\n        \"Validation results and policy decisions\"\n      ]\n    },\n    {\n      \"name\": \"Processing & Inference\",\n      \"responsibility\": \"Document preprocessing/conversion, domain-preserving translation inference on GPU-backed models, per-request sandboxing for execution isolation, and post-processing to preserve formatting and enforce no-addition guarantees.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"GPU/Compute provider\",\n        \"Model provider (internal or third-party)\"\n      ],\n      \"data_handled\": [\n        \"Document contents (plaintext, structured formats)\",\n        \"Intermediate parsed representations\",\n        \"Translation outputs\"\n      ]\n    },\n    {\n      \"name\": \"Orchestration & Task Queue\",\n      \"responsibility\": \"Scalable queueing, batching, worker autoscaling, deterministic scheduling for low-latency sync paths and durable async task processing with retries and isolation policies.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Message queue service (e.g., Kafka, SQS)\",\n        \"Autoscaling controller (cloud)\"\n      ],\n      \"data_handled\": [\n        \"Task descriptors and schedules\",\n        \"Worker telemetry\",\n        \"Resource allocation metadata\"\n      ]\n    },\n    {\n      \"name\": \"Data Layer\",\n      \"responsibility\": \"Encrypted object storage for originals and outputs (with BYOK option), metadata DB and tamper-evident audit logs (WORM), and KMS/HSM for key lifecycle and crypto operations.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud object storage\",\n        \"KMS / HSM vendor\"\n      ],\n      \"data_handled\": [\n        \"Encrypted document binaries\",\n        \"Translation outputs\",\n        \"Audit logs and metadata\",\n        \"Encryption keys and key material\"\n      ]\n    },\n    {\n      \"name\": \"Operations & Observability\",\n      \"responsibility\": \"Non-intrusive monitoring, aggregated metrics (throughput, latency, GPU utilization), alerting, capacity planning, and logs that avoid storing document content; incident response integrations.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Metrics/Alerting provider (Prometheus/Grafana/Cloud Monitoring)\",\n        \"Logging S3 or secure logging service\"\n      ],\n      \"data_handled\": [\n        \"Aggregated telemetry\",\n        \"Error and event rates\",\n        \"Resource usage metrics\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Third-party integrations used for identity, malware scanning, optional customer storage, and vendor-supplied models or telemetry, maintained under supply-chain controls.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Identity Provider\",\n        \"AV/Virus Scan Provider\",\n        \"Third-party Model Providers\",\n        \"Customer Cloud Storage\"\n      ],\n      \"data_handled\": [\n        \"Authentication/authorization tokens\",\n        \"Scanned document metadata\",\n        \"Model inference requests (if proxied)\",\n        \"Optional externally-stored outputs\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Clients (UI/SDK/CLI) authenticate via the Edge/Auth layer and submit synchronous short-text requests or asynchronous document tasks. Edge performs malware scanning and forwards validated requests to Application Services. Synchronous requests are routed to pre-warmed inference paths in Processing & Inference with deterministic scheduling to meet \u22641s latency. Asynchronous tasks are enqueued by the Task Manager (ST.90 semantics), then scheduled to isolated sandboxes where the Preprocessor converts documents, the Model runs on GPU instances, and Postprocessor enforces terminology preservation and no-addition rules. Originals and encrypted outputs are stored in Encrypted Object Storage with keys managed by KMS/HSM; metadata and tamper-evident audit logs are stored separately. Monitoring receives only aggregated telemetry (no content), and alerting/operations handle scaling and incidents. Customers may optionally integrate their own storage or request dedicated tenancy or BYOK for keys.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users (UI/SDK/CLI)\",\n        \"External Integrations\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS 1.2+ encryption\",\n        \"Rate limiting and WAF\",\n        \"API throttling and request validation\",\n        \"MFA for interactive access\"\n      ]\n    },\n    {\n      \"name\": \"DMZ (Edge & Auth)\",\n      \"components\": [\n        \"API Gateway & AuthN/AuthZ\",\n        \"Malware Scanner & Safe Parser\"\n      ],\n      \"boundary_type\": \"Semi-Trusted\",\n      \"security_controls\": [\n        \"Strict ingress filtering\",\n        \"Isolated subnetting\",\n        \"Request-level scanning and safe parsing\",\n        \"OAuth2/OIDC enforcement and token validation\"\n      ]\n    },\n    {\n      \"name\": \"Internal Network (App Services & Orchestration)\",\n      \"components\": [\n        \"Core API\",\n        \"Task Manager\",\n        \"Input Validation\",\n        \"Orchestration/Queue\"\n      ],\n      \"boundary_type\": \"Trusted Internal\",\n      \"security_controls\": [\n        \"Mutual TLS between services\",\n        \"Network segmentation and ACLs\",\n        \"RBAC and service identities\",\n        \"Immutable deployment images and supply-chain checks\"\n      ]\n    },\n    {\n      \"name\": \"Isolated Processing Sandbox\",\n      \"components\": [\n        \"Per-Request Sandbox\",\n        \"Model Inference Workers\"\n      ],\n      \"boundary_type\": \"High-Assurance Isolated Zone\",\n      \"security_controls\": [\n        \"Strong VM/container sandboxing\",\n        \"Per-request ephemeral storage and purge-on-complete\",\n        \"No external network egress unless authorized\",\n        \"Strict resource and syscall whitelisting\"\n      ]\n    },\n    {\n      \"name\": \"Storage Tier\",\n      \"components\": [\n        \"Encrypted Object Storage\",\n        \"Metadata DB & Audit Logs\",\n        \"KMS/HSM\"\n      ],\n      \"boundary_type\": \"Highly Trusted / Sensitive\",\n      \"security_controls\": [\n        \"At-rest encryption with BYOK option\",\n        \"Access audits and tamper-evident logs (WORM)\",\n        \"Separation of duties for key access\",\n        \"Strict retention and deletion workflows\"\n      ]\n    },\n    {\n      \"name\": \"External Vendor Services\",\n      \"components\": [\n        \"IdP\",\n        \"AV Provider\",\n        \"Third-party Model Provider\",\n        \"Customer Storage\"\n      ],\n      \"boundary_type\": \"Third-Party\",\n      \"security_controls\": [\n        \"Contractual NDAs and SLAs\",\n        \"Vetting and supply-chain security assessments\",\n        \"Minimal-scope integrations and encrypted channels\",\n        \"Data flow controls and explicit consent for content sharing\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Major entry points: public REST API endpoints (synchronous and asynchronous), file upload interfaces (document ingestion), authentication endpoints (token exchange, admin IAM), client SDKs/CLI, and integrations (webhooks, external storage connectors). Risk levels: Public API (High) \u2014 risks include credential theft, injection, and abuse; mitigations include OAuth2/OIDC, MFA, rate limiting, WAF, strict OpenAPI validation, and RBAC. File uploads (High) \u2014 risks include malware and parser exploits; mitigations include sandboxed parsing, AV scanning, safe libraries, and per-request sandboxing. Admin/Operator interfaces (High) \u2014 risk of privileged misuse; mitigations include MFA, least privilege, session recording, and strong audit trails. Inter-service communications (Medium) \u2014 risk of lateral movement; mitigations include mTLS, network segmentation, and service identity. Third-party integrations (High) \u2014 supply-chain and exfiltration risk; mitigations include contractual controls, encryption in transit, minimal data sharing, and vendor audits. KMS/HSM integration (Critical) \u2014 risk if keys are compromised; mitigations include hardware-backed keys, split access, audit logs, and BYOK for customer control. Observability endpoints (Low-Medium) \u2014 risk of telemetry leaking metadata; mitigate by excluding content, aggregating metrics, and securing telemetry pipelines. Overall, defenses rely on strong authentication, per-request isolation, encrypted storage, tamper-evident audit logs, safe parsing, and rigorous vendor controls.\"\n}",
+  "pydantic": {
+    "architecture_summary": "The system is a cloud-hosted confidential translation platform composed of an edge/API gateway for authentication and malware-safe ingestion, a frontend layer for client integrations, core application services that expose synchronous low-latency and asynchronous ST.90-compliant endpoints, a scalable processing & inference layer that performs sandboxed per-request document preprocessing and GPU-backed translation, and a data layer offering encrypted object storage, metadata/audit stores, and KMS/HSM for BYOK. Monitoring and orchestration components provide non-intrusive telemetry and capacity management while external services (IdP, AV, external storage) are integrated under strict vendor controls. Components communicate over encrypted channels, tasks are durably tracked, outputs stored encrypted with fine-grained access, and strong access controls, audit trails, and retention/deletion flows enforce confidentiality and compliance.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Edge & Auth\"\n  EDGE[API Gateway & AuthN/AuthZ]\n  SCAN[Malware Scanner & Safe Parser]\nend\nsubgraph \"Frontend Layer\"\n  UI[Web App SPA & Integrations]\n  CLI[CLI & SDKs]\nend\nsubgraph \"Application Services\"\n  API[Core API Synchronous/Asynchronous Endpoints OpenAPI3.1]\n  TASK[TASK Manager ST.90 Status Results]\n  VALID[Input Validation & BCP-47]\nend\nsubgraph \"Processing & Inference\"\n  PREP[Document Preprocessor & Formatter]\n  SANDBOX[Per-Request Sandbox & Execution Isolation]\n  MODEL[Translation Engine Inference GPU Instances]\nend\nsubgraph \"Data Layer\"\n  OBJ[Encrypted Object Storage BYOK Option]\n  META[Metadata DB & Audit Logs WORM]\n  KM[KMS & HSM Key Management]\nend\nsubgraph \"Operations & Observability\"\n  MON[Monitoring Metrics & NoContentTelemetry]\n  ALERT[Alerting & Capacity Manager]\nend\nsubgraph \"External Services\"\n  IDP[Identity Provider OAuth2/OIDC]\n  VIRUS[AV/Virus Scan Provider]\n  STORAGE[Customer Cloud Storage]\nend\n\nUI --> EDGE\nCLI --> EDGE\nEDGE --> IDP\nEDGE --> SCAN\nSCAN --> API\nEDGE --> API\nAPI --> VALID\nVALID --> TASK\nAPI --> PREP\nTASK --> SANDBOX\nPREP --> SANDBOX\nSANDBOX --> MODEL\nMODEL --> OBJ\nSANDBOX --> OBJ\nTASK --> OBJ\nAPI --> META\nTASK --> META\nOBJ --> KM\nAPI --> MON\nTASK --> MON\nMODEL --> MON\nOBJ --> MON\nEDGE --> STORAGE\nSCAN --> VIRUS\nMON --> ALERT",
+    "components": [
+      {
+        "name": "Edge & Auth",
+        "responsibility": "Ingress control, TLS termination, rate limiting, authentication (OAuth2/OIDC), authorization (RBAC), API key/MFA enforcement, initial malware scanning and safe parsing for uploaded files.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Identity Provider (IdP) - OAuth2/OIDC",
+          "WAF / DDoS protection (cloud vendor)"
+        ],
+        "data_handled": [
+          "Authentication tokens and credentials",
+          "Request metadata",
+          "Uploaded document binaries (for scanning)"
+        ]
+      },
+      {
+        "name": "Frontend Layer",
+        "responsibility": "User-facing clients and integrations (web UI, SDKs, CLI) that call synchronous and asynchronous endpoints and provide upload/download UX.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Customer environments / Integrator SDKs"
+        ],
+        "data_handled": [
+          "User requests",
+          "Language tags (BCP-47)",
+          "Status queries and result retrievals (metadata)"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core REST API implementing OpenAPI 3.1, routing between sync/async workflows, task lifecycle manager (ST.90 semantics), input validation, policy enforcement, and orchestration of processing steps.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Service discovery / internal auth",
+          "Queueing infrastructure (cloud managed or self-hosted)"
+        ],
+        "data_handled": [
+          "Translation requests and task descriptors",
+          "Task status and metadata",
+          "Validation results and policy decisions"
+        ]
+      },
+      {
+        "name": "Processing & Inference",
+        "responsibility": "Document preprocessing/conversion, domain-preserving translation inference on GPU-backed models, per-request sandboxing for execution isolation, and post-processing to preserve formatting and enforce no-addition guarantees.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "GPU/Compute provider",
+          "Model provider (internal or third-party)"
+        ],
+        "data_handled": [
+          "Document contents (plaintext, structured formats)",
+          "Intermediate parsed representations",
+          "Translation outputs"
+        ]
+      },
+      {
+        "name": "Orchestration & Task Queue",
+        "responsibility": "Scalable queueing, batching, worker autoscaling, deterministic scheduling for low-latency sync paths and durable async task processing with retries and isolation policies.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Message queue service (e.g., Kafka, SQS)",
+          "Autoscaling controller (cloud)"
+        ],
+        "data_handled": [
+          "Task descriptors and schedules",
+          "Worker telemetry",
+          "Resource allocation metadata"
+        ]
+      },
+      {
+        "name": "Data Layer",
+        "responsibility": "Encrypted object storage for originals and outputs (with BYOK option), metadata DB and tamper-evident audit logs (WORM), and KMS/HSM for key lifecycle and crypto operations.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Cloud object storage",
+          "KMS / HSM vendor"
+        ],
+        "data_handled": [
+          "Encrypted document binaries",
+          "Translation outputs",
+          "Audit logs and metadata",
+          "Encryption keys and key material"
+        ]
+      },
+      {
+        "name": "Operations & Observability",
+        "responsibility": "Non-intrusive monitoring, aggregated metrics (throughput, latency, GPU utilization), alerting, capacity planning, and logs that avoid storing document content; incident response integrations.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Metrics/Alerting provider (Prometheus/Grafana/Cloud Monitoring)",
+          "Logging S3 or secure logging service"
+        ],
+        "data_handled": [
+          "Aggregated telemetry",
+          "Error and event rates",
+          "Resource usage metrics"
+        ]
+      },
+      {
+        "name": "External Services",
+        "responsibility": "Third-party integrations used for identity, malware scanning, optional customer storage, and vendor-supplied models or telemetry, maintained under supply-chain controls.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Identity Provider",
+          "AV/Virus Scan Provider",
+          "Third-party Model Providers",
+          "Customer Cloud Storage"
+        ],
+        "data_handled": [
+          "Authentication/authorization tokens",
+          "Scanned document metadata",
+          "Model inference requests (if proxied)",
+          "Optional externally-stored outputs"
+        ]
+      }
+    ],
+    "data_flow_description": "Clients (UI/SDK/CLI) authenticate via the Edge/Auth layer and submit synchronous short-text requests or asynchronous document tasks. Edge performs malware scanning and forwards validated requests to Application Services. Synchronous requests are routed to pre-warmed inference paths in Processing & Inference with deterministic scheduling to meet \u22641s latency. Asynchronous tasks are enqueued by the Task Manager (ST.90 semantics), then scheduled to isolated sandboxes where the Preprocessor converts documents, the Model runs on GPU instances, and Postprocessor enforces terminology preservation and no-addition rules. Originals and encrypted outputs are stored in Encrypted Object Storage with keys managed by KMS/HSM; metadata and tamper-evident audit logs are stored separately. Monitoring receives only aggregated telemetry (no content), and alerting/operations handle scaling and incidents. Customers may optionally integrate their own storage or request dedicated tenancy or BYOK for keys.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "Users (UI/SDK/CLI)",
+          "External Integrations"
+        ],
+        "boundary_type": "Untrusted",
+        "security_controls": [
+          "TLS 1.2+ encryption",
+          "Rate limiting and WAF",
+          "API throttling and request validation",
+          "MFA for interactive access"
+        ]
+      },
+      {
+        "name": "DMZ (Edge & Auth)",
+        "components": [
+          "API Gateway & AuthN/AuthZ",
+          "Malware Scanner & Safe Parser"
+        ],
+        "boundary_type": "Semi-Trusted",
+        "security_controls": [
+          "Strict ingress filtering",
+          "Isolated subnetting",
+          "Request-level scanning and safe parsing",
+          "OAuth2/OIDC enforcement and token validation"
+        ]
+      },
+      {
+        "name": "Internal Network (App Services & Orchestration)",
+        "components": [
+          "Core API",
+          "Task Manager",
+          "Input Validation",
+          "Orchestration/Queue"
+        ],
+        "boundary_type": "Trusted Internal",
+        "security_controls": [
+          "Mutual TLS between services",
+          "Network segmentation and ACLs",
+          "RBAC and service identities",
+          "Immutable deployment images and supply-chain checks"
+        ]
+      },
+      {
+        "name": "Isolated Processing Sandbox",
+        "components": [
+          "Per-Request Sandbox",
+          "Model Inference Workers"
+        ],
+        "boundary_type": "High-Assurance Isolated Zone",
+        "security_controls": [
+          "Strong VM/container sandboxing",
+          "Per-request ephemeral storage and purge-on-complete",
+          "No external network egress unless authorized",
+          "Strict resource and syscall whitelisting"
+        ]
+      },
+      {
+        "name": "Storage Tier",
+        "components": [
+          "Encrypted Object Storage",
+          "Metadata DB & Audit Logs",
+          "KMS/HSM"
+        ],
+        "boundary_type": "Highly Trusted / Sensitive",
+        "security_controls": [
+          "At-rest encryption with BYOK option",
+          "Access audits and tamper-evident logs (WORM)",
+          "Separation of duties for key access",
+          "Strict retention and deletion workflows"
+        ]
+      },
+      {
+        "name": "External Vendor Services",
+        "components": [
+          "IdP",
+          "AV Provider",
+          "Third-party Model Provider",
+          "Customer Storage"
+        ],
+        "boundary_type": "Third-Party",
+        "security_controls": [
+          "Contractual NDAs and SLAs",
+          "Vetting and supply-chain security assessments",
+          "Minimal-scope integrations and encrypted channels",
+          "Data flow controls and explicit consent for content sharing"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Major entry points: public REST API endpoints (synchronous and asynchronous), file upload interfaces (document ingestion), authentication endpoints (token exchange, admin IAM), client SDKs/CLI, and integrations (webhooks, external storage connectors). Risk levels: Public API (High) \u2014 risks include credential theft, injection, and abuse; mitigations include OAuth2/OIDC, MFA, rate limiting, WAF, strict OpenAPI validation, and RBAC. File uploads (High) \u2014 risks include malware and parser exploits; mitigations include sandboxed parsing, AV scanning, safe libraries, and per-request sandboxing. Admin/Operator interfaces (High) \u2014 risk of privileged misuse; mitigations include MFA, least privilege, session recording, and strong audit trails. Inter-service communications (Medium) \u2014 risk of lateral movement; mitigations include mTLS, network segmentation, and service identity. Third-party integrations (High) \u2014 supply-chain and exfiltration risk; mitigations include contractual controls, encryption in transit, minimal data sharing, and vendor audits. KMS/HSM integration (Critical) \u2014 risk if keys are compromised; mitigations include hardware-backed keys, split access, audit logs, and BYOK for customer control. Observability endpoints (Low-Medium) \u2014 risk of telemetry leaking metadata; mitigate by excluding content, aggregating metrics, and securing telemetry pipelines. Overall, defenses rely on strong authentication, per-request isolation, encrypted storage, tamper-evident audit logs, safe parsing, and rigorous vendor controls."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A confidential translation engine that provides real-time synchronous translation for short UI text and messages, and asynchronous, scalable, isolated processing for large, sensitive documents (e.g., multi-page patents and legal correspondence), preserving technical terminology, claim structure and formatting while guaranteeing no added commentary; exposes OpenAPI 3.1 REST endpoints with strict input validation, monitoring without content inspection, and strong confidentiality, access control, audit, and data lifecycle controls to meet regulatory and contractual obligations.\",\n  \"high_level_requirements\": [\n    \"Synchronous translation endpoint for short texts with sub-second (\u22641s) latency\",\n    \"Asynchronous translation workflow for large documents with task creation and tracking\",\n    \"Per-request execution isolation and sandboxing for asynchronous tasks\",\n    \"Support for multi-format document ingestion and output preservation (PDF, DOCX, XML, etc.)\",\n    \"Preserve domain-specific terminology, claim/legal phrasing, and formatting fidelity\",\n    \"No-addition guarantee: outputs must not include commentary or reasoning\",\n    \"Full support for specified European languages and extensible support for Asian languages with strict BCP-47 validation\",\n    \"REST API exposing synchronous and asynchronous endpoints, OpenAPI 3.1 compliant\",\n    \"Distinct status and result endpoints for task lifecycle tracking (ST.90 workflow compliance)\",\n    \"Scalable task queueing, batching, and parallelization with deterministic performance targets\",\n    \"Efficient handling of high throughput with GPU utilization metrics and resource management\",\n    \"Non-intrusive monitoring and observability (throughput, latency, error rates, resource usage) without content inspection\",\n    \"Strong authentication and authorization for API access (token-based, MFA, RBAC)\",\n    \"Fine-grained access control and multi-tenant isolation (per-customer isolation options)\",\n    \"End-to-end encryption for data in transit and at rest, with customer-controlled keys where required\",\n    \"Secure key management, secrets handling, and cryptographic lifecycle controls\",\n    \"Comprehensive audit logging and immutable tamper-evident trails for requests, tasks, and outputs\",\n    \"Data retention, deletion, and data subject rights (GDPR) support including deletion/export of originals and outputs\",\n    \"Input validation, content sanitization, and protection against malicious files (malware scanning, safe parsing)\",\n    \"Deterministic model behavior controls and testing for terminology fidelity and non-addition properties\",\n    \"Vendor/third-party integration controls and supply chain security (model providers, storage, telemetry)\",\n    \"Incident response, backup & recovery, and disaster recovery plans for confidentiality and availability\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"Synchronous translation endpoint for short texts with sub-second (\u22641s) latency\",\n      \"business_category\": \"Translation Services / Performance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Real-time UI and short-message translations require low-latency responses while operating on potentially sensitive content; performance guarantees must be balanced with secure processing and minimal exposure windows.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Asynchronous translation workflow for large documents with task creation and tracking\",\n      \"business_category\": \"Translation Services / Task Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Large documents need long-running processing with durable state and tracking; tasks must be managed securely to protect sensitive content across lifecycle and retries.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"Per-request execution isolation and sandboxing for asynchronous tasks\",\n      \"business_category\": \"Security / Execution Isolation\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Isolation prevents cross-tenant or cross-request data leaks, untrusted code execution, and containment of compromised workloads when processing confidential documents.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Support for multi-format document ingestion and output preservation (PDF, DOCX, XML, etc.)\",\n      \"business_category\": \"Document Processing / Data Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Customers require translations to preserve layout, claims, and legal formatting across common office and patent document formats while ensuring secure parsing and rendering.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"Preserve domain-specific terminology, claim/legal phrasing, and formatting fidelity\",\n      \"business_category\": \"Translation Quality / Domain Fidelity\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Patent and legal workflows depend on exact terminology and structure; mistranslation or loss of structure has legal and business impact, so fidelity controls and validation are required.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"No-addition guarantee: outputs must not include commentary or reasoning\",\n      \"business_category\": \"Translation Quality / Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"To avoid introducing extraneous content that could alter legal meaning or create spurious intellectual property claims, translations must not add commentary or model reasoning.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Full support for specified European languages and extensible support for Asian languages with strict BCP-47 validation\",\n      \"business_category\": \"Language Support / Input Validation\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Accurate language identification is necessary for routing to appropriate models and workflows; strict BCP-47 validation reduces misclassification and processing errors.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"REST API exposing synchronous and asynchronous endpoints, OpenAPI 3.1 compliant\",\n      \"business_category\": \"API & Integration\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"A standards-compliant API enables integration, client generation, documentation, and predictable behavior for integrators; security of API surface must be enforced separately.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Distinct status and result endpoints for task lifecycle tracking (ST.90 workflow compliance)\",\n      \"business_category\": \"Task Management / Integration\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Asynchronous tasks require queryable status and retrieval endpoints for automation and auditing; ST.90 workflow compliance ensures interoperability and standard tracking semantics.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Scalable task queueing, batching, and parallelization with deterministic performance targets\",\n      \"business_category\": \"Performance / Scalability\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"High throughput demands efficient batching and parallel execution while maintaining predictable latency and resource fairness across tenants, which also mitigates denial-of-service risk.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Efficient handling of high throughput with GPU utilization metrics and resource management\",\n      \"business_category\": \"Infrastructure / Monitoring\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"GPU-backed translators require telemetry for capacity planning and anomaly detection to ensure SLAs and identify inefficiencies without inspecting content.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"Non-intrusive monitoring and observability (throughput, latency, error rates, resource usage) without content inspection\",\n      \"business_category\": \"Monitoring & Observability\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Observability is required for reliability and performance troubleshooting but must not expose or log document content; only metadata and telemetry should be collected.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"Strong authentication and authorization for API access (token-based, MFA, RBAC)\",\n      \"business_category\": \"Authentication & Access Control\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Sensitive translations require strict identity verification, least-privilege access, and protection against credential compromise; MFA and RBAC reduce risk of unauthorized access.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Fine-grained access control and multi-tenant isolation (per-customer isolation options)\",\n      \"business_category\": \"Access Control / Multi-Tenancy\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Customers handling confidential IP will require isolated processing and storage boundaries to meet contractual and legal confidentiality requirements.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"End-to-end encryption for data in transit and at rest, with customer-controlled keys where required (BYOK)\",\n      \"business_category\": \"Cryptography / Data Protection\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Encryption minimizes risk of leakage from storage or network compromise; BYOK enables customers to maintain key control for regulatory or contractual reasons.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"Secure key management, secrets handling, and cryptographic lifecycle controls\",\n      \"business_category\": \"Cryptography / Key Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Proper key and secret lifecycle management prevents key leakage, ensures forward security, and supports auditability of cryptographic operations for confidential workloads.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"Comprehensive audit logging and immutable tamper-evident trails for requests, tasks, and outputs\",\n      \"business_category\": \"Audit & Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Audit trails are necessary for compliance, incident investigation, and non-repudiation; logs must be tamper-evident and protect sensitive content by recording metadata only or storing content securely.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"Data retention, deletion, and data subject rights (GDPR) support including deletion/ export of originals and outputs\",\n      \"business_category\": \"Data Lifecycle / Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Legal and regulatory obligations require mechanisms for retention limits, right-to-be-forgotten requests, and export of user data while maintaining security guarantees.\"\n    },\n    {\n      \"requirement_id\": \"REQ-019\",\n      \"requirement_text\": \"Input validation, content sanitization, and protection against malicious files (malware scanning, safe parsing)\",\n      \"business_category\": \"Input Handling / Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Uploaded documents can contain exploits or malformed content; robust validation and safe parsing prevent backend compromise and protect confidentiality of other tenants.\"\n    },\n    {\n      \"requirement_id\": \"REQ-020\",\n      \"requirement_text\": \"Deterministic model behavior controls and testing for terminology fidelity and non-addition properties\",\n      \"business_category\": \"Quality Assurance / Model Governance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"To meet legal fidelity and no-addition guarantees, models and post-processing must be tested and validated under controlled datasets with regression testing and metrics to detect drift.\"\n    },\n    {\n      \"requirement_id\": \"REQ-021\",\n      \"requirement_text\": \"Vendor/third-party integration controls and supply chain security (model providers, storage, telemetry)\",\n      \"business_category\": \"Vendor Management / Supply Chain Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Third-party services involved in processing or storing sensitive data must be vetted and contractually bound to confidentiality and security standards to prevent supply chain exposure.\"\n    },\n    {\n      \"requirement_id\": \"REQ-022\",\n      \"requirement_text\": \"Incident response, backup & recovery, and disaster recovery plans for confidentiality and availability\",\n      \"business_category\": \"Operations / Incident Response\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Operational readiness reduces impact of breaches, data loss, or outages. Playbooks must prioritize data confidentiality during containment, forensic preservation, and recovery.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulations and obligations include: GDPR (data subject rights, lawful processing, data protection by design and default) for EU personal data; trade secret and intellectual property protection obligations for patent documents; contractual NDAs and confidentiality agreements; export control restrictions where certain content or models may be subject to jurisdictional controls; ISO 27001/27701 as organizational security/privacy frameworks; NIST CSF and SP 800-53 guidance for security controls and incident response; local privacy laws (e.g., UK Data Protection Act) and sector-specific regulations where applicable. If processing healthcare or personal health data, HIPAA considerations would apply. Additionally, supply chain security requirements (e.g., using vetted cloud provider security baselines), and standards for API security (OAuth 2.0/OIDC, TLS 1.2+), and OpenAPI 3.1 compliance for interoperability must be observed. ST.90 workflow compliance is required for asynchronous task semantics.\",\n  \"assumptions\": [\n    \"The system will be cloud-hosted with options for dedicated tenancy or customer-managed deployment (private cloud / on-premises) for customers with strict confidentiality needs.\",\n    \"Users and integrators will access the service over HTTPS with authenticated API keys or OAuth tokens and have reliable internet connectivity.\",\n    \"Customers will classify documents prior to ingestion and request appropriate isolation level (shared tenant, dedicated enclave, or on-prem deployment) based on sensitivity.\",\n    \"Model weights and translation engines may be run on provider-managed GPUs unless customer requires BYOK and dedicated hardware or on-prem compute.\",\n    \"Monitoring telemetry will be limited to metadata and aggregated metrics; raw document content will not be used for telemetry or logged unless explicitly permitted by the customer.\",\n    \"Customers requiring the highest assurance will provide their own keys (BYOK) and may require contractual SLAs, audits, and penetration testing.\",\n    \"Language tags will conform to BCP-47; fallback behavior will be defined for missing or ambiguous tags.\",\n    \"Third-party components (parsers, converters, antivirus engines) will be kept up-to-date and vetted for security posture.\"\n  ],\n  \"constraints\": [\n    \"Must implement OpenAPI 3.1 for public API surface; API design must separate sync and async endpoints as per requirements.\",\n    \"Real-time synchronous latency target \u22641 second may constrain model size, deployment topology (nearest inference endpoints), and require pre-warmed instances or distilled models.\",\n    \"Large document processing must comply with ST.90 workflow semantics and maintain task durability across restarts.\",\n    \"Non-intrusive monitoring disallows logging or inspection of document content in telemetry pipelines; only metadata may be collected.\",\n    \"BYOK and customer-managed key support may require HSM integration and additional compliance controls, increasing implementation complexity.\",\n    \"Per-request isolation and sandboxing may limit horizontal density of workloads and increase cost for dedicated isolation modes.\",\n    \"Strict BCP-47 validation may reject ambiguous or regionally-customized tags; a policy to handle extensions and private-use subtags must be defined.\",\n    \"Preservation of exact formatting and legal phrasing imposes constraints on translation post-processing and may require domain-specific post-editing pipelines.\",\n    \"Supply chain and vendor restrictions may limit use of certain third-party models or services in specific jurisdictions due to export control or data residency requirements.\",\n    \"Audit and immutable logging of metadata must balance privacy (avoid storing content) with forensic requirements; secure, tamper-evident storage (WORM or equivalent) will be required.\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A confidential translation engine that provides real-time synchronous translation for short UI text and messages, and asynchronous, scalable, isolated processing for large, sensitive documents (e.g., multi-page patents and legal correspondence), preserving technical terminology, claim structure and formatting while guaranteeing no added commentary; exposes OpenAPI 3.1 REST endpoints with strict input validation, monitoring without content inspection, and strong confidentiality, access control, audit, and data lifecycle controls to meet regulatory and contractual obligations.",
+        "high_level_requirements": [
+          "Synchronous translation endpoint for short texts with sub-second (\u22641s) latency",
+          "Asynchronous translation workflow for large documents with task creation and tracking",
+          "Per-request execution isolation and sandboxing for asynchronous tasks",
+          "Support for multi-format document ingestion and output preservation (PDF, DOCX, XML, etc.)",
+          "Preserve domain-specific terminology, claim/legal phrasing, and formatting fidelity",
+          "No-addition guarantee: outputs must not include commentary or reasoning",
+          "Full support for specified European languages and extensible support for Asian languages with strict BCP-47 validation",
+          "REST API exposing synchronous and asynchronous endpoints, OpenAPI 3.1 compliant",
+          "Distinct status and result endpoints for task lifecycle tracking (ST.90 workflow compliance)",
+          "Scalable task queueing, batching, and parallelization with deterministic performance targets",
+          "Efficient handling of high throughput with GPU utilization metrics and resource management",
+          "Non-intrusive monitoring and observability (throughput, latency, error rates, resource usage) without content inspection",
+          "Strong authentication and authorization for API access (token-based, MFA, RBAC)",
+          "Fine-grained access control and multi-tenant isolation (per-customer isolation options)",
+          "End-to-end encryption for data in transit and at rest, with customer-controlled keys where required",
+          "Secure key management, secrets handling, and cryptographic lifecycle controls",
+          "Comprehensive audit logging and immutable tamper-evident trails for requests, tasks, and outputs",
+          "Data retention, deletion, and data subject rights (GDPR) support including deletion/export of originals and outputs",
+          "Input validation, content sanitization, and protection against malicious files (malware scanning, safe parsing)",
+          "Deterministic model behavior controls and testing for terminology fidelity and non-addition properties",
+          "Vendor/third-party integration controls and supply chain security (model providers, storage, telemetry)",
+          "Incident response, backup & recovery, and disaster recovery plans for confidentiality and availability"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "Synchronous translation endpoint for short texts with sub-second (\u22641s) latency",
+            "business_category": "Translation Services / Performance",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Real-time UI and short-message translations require low-latency responses while operating on potentially sensitive content; performance guarantees must be balanced with secure processing and minimal exposure windows."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Asynchronous translation workflow for large documents with task creation and tracking",
+            "business_category": "Translation Services / Task Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Large documents need long-running processing with durable state and tracking; tasks must be managed securely to protect sensitive content across lifecycle and retries."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "Per-request execution isolation and sandboxing for asynchronous tasks",
+            "business_category": "Security / Execution Isolation",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Isolation prevents cross-tenant or cross-request data leaks, untrusted code execution, and containment of compromised workloads when processing confidential documents."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Support for multi-format document ingestion and output preservation (PDF, DOCX, XML, etc.)",
+            "business_category": "Document Processing / Data Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Customers require translations to preserve layout, claims, and legal formatting across common office and patent document formats while ensuring secure parsing and rendering."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "Preserve domain-specific terminology, claim/legal phrasing, and formatting fidelity",
+            "business_category": "Translation Quality / Domain Fidelity",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Patent and legal workflows depend on exact terminology and structure; mistranslation or loss of structure has legal and business impact, so fidelity controls and validation are required."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "No-addition guarantee: outputs must not include commentary or reasoning",
+            "business_category": "Translation Quality / Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "To avoid introducing extraneous content that could alter legal meaning or create spurious intellectual property claims, translations must not add commentary or model reasoning."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Full support for specified European languages and extensible support for Asian languages with strict BCP-47 validation",
+            "business_category": "Language Support / Input Validation",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Accurate language identification is necessary for routing to appropriate models and workflows; strict BCP-47 validation reduces misclassification and processing errors."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "REST API exposing synchronous and asynchronous endpoints, OpenAPI 3.1 compliant",
+            "business_category": "API & Integration",
+            "security_sensitivity": "Medium",
+            "data_classification": "Public",
+            "rationale": "A standards-compliant API enables integration, client generation, documentation, and predictable behavior for integrators; security of API surface must be enforced separately."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Distinct status and result endpoints for task lifecycle tracking (ST.90 workflow compliance)",
+            "business_category": "Task Management / Integration",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Asynchronous tasks require queryable status and retrieval endpoints for automation and auditing; ST.90 workflow compliance ensures interoperability and standard tracking semantics."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Scalable task queueing, batching, and parallelization with deterministic performance targets",
+            "business_category": "Performance / Scalability",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "High throughput demands efficient batching and parallel execution while maintaining predictable latency and resource fairness across tenants, which also mitigates denial-of-service risk."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Efficient handling of high throughput with GPU utilization metrics and resource management",
+            "business_category": "Infrastructure / Monitoring",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "GPU-backed translators require telemetry for capacity planning and anomaly detection to ensure SLAs and identify inefficiencies without inspecting content."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "Non-intrusive monitoring and observability (throughput, latency, error rates, resource usage) without content inspection",
+            "business_category": "Monitoring & Observability",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Observability is required for reliability and performance troubleshooting but must not expose or log document content; only metadata and telemetry should be collected."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "Strong authentication and authorization for API access (token-based, MFA, RBAC)",
+            "business_category": "Authentication & Access Control",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Sensitive translations require strict identity verification, least-privilege access, and protection against credential compromise; MFA and RBAC reduce risk of unauthorized access."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Fine-grained access control and multi-tenant isolation (per-customer isolation options)",
+            "business_category": "Access Control / Multi-Tenancy",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Customers handling confidential IP will require isolated processing and storage boundaries to meet contractual and legal confidentiality requirements."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "End-to-end encryption for data in transit and at rest, with customer-controlled keys where required (BYOK)",
+            "business_category": "Cryptography / Data Protection",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Encryption minimizes risk of leakage from storage or network compromise; BYOK enables customers to maintain key control for regulatory or contractual reasons."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "Secure key management, secrets handling, and cryptographic lifecycle controls",
+            "business_category": "Cryptography / Key Management",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Proper key and secret lifecycle management prevents key leakage, ensures forward security, and supports auditability of cryptographic operations for confidential workloads."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "Comprehensive audit logging and immutable tamper-evident trails for requests, tasks, and outputs",
+            "business_category": "Audit & Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Audit trails are necessary for compliance, incident investigation, and non-repudiation; logs must be tamper-evident and protect sensitive content by recording metadata only or storing content securely."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "Data retention, deletion, and data subject rights (GDPR) support including deletion/ export of originals and outputs",
+            "business_category": "Data Lifecycle / Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Legal and regulatory obligations require mechanisms for retention limits, right-to-be-forgotten requests, and export of user data while maintaining security guarantees."
+          },
+          {
+            "requirement_id": "REQ-019",
+            "requirement_text": "Input validation, content sanitization, and protection against malicious files (malware scanning, safe parsing)",
+            "business_category": "Input Handling / Security",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Uploaded documents can contain exploits or malformed content; robust validation and safe parsing prevent backend compromise and protect confidentiality of other tenants."
+          },
+          {
+            "requirement_id": "REQ-020",
+            "requirement_text": "Deterministic model behavior controls and testing for terminology fidelity and non-addition properties",
+            "business_category": "Quality Assurance / Model Governance",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "To meet legal fidelity and no-addition guarantees, models and post-processing must be tested and validated under controlled datasets with regression testing and metrics to detect drift."
+          },
+          {
+            "requirement_id": "REQ-021",
+            "requirement_text": "Vendor/third-party integration controls and supply chain security (model providers, storage, telemetry)",
+            "business_category": "Vendor Management / Supply Chain Security",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Third-party services involved in processing or storing sensitive data must be vetted and contractually bound to confidentiality and security standards to prevent supply chain exposure."
+          },
+          {
+            "requirement_id": "REQ-022",
+            "requirement_text": "Incident response, backup & recovery, and disaster recovery plans for confidentiality and availability",
+            "business_category": "Operations / Incident Response",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Operational readiness reduces impact of breaches, data loss, or outages. Playbooks must prioritize data confidentiality during containment, forensic preservation, and recovery."
+          }
+        ],
+        "security_context": "Applicable regulations and obligations include: GDPR (data subject rights, lawful processing, data protection by design and default) for EU personal data; trade secret and intellectual property protection obligations for patent documents; contractual NDAs and confidentiality agreements; export control restrictions where certain content or models may be subject to jurisdictional controls; ISO 27001/27701 as organizational security/privacy frameworks; NIST CSF and SP 800-53 guidance for security controls and incident response; local privacy laws (e.g., UK Data Protection Act) and sector-specific regulations where applicable. If processing healthcare or personal health data, HIPAA considerations would apply. Additionally, supply chain security requirements (e.g., using vetted cloud provider security baselines), and standards for API security (OAuth 2.0/OIDC, TLS 1.2+), and OpenAPI 3.1 compliance for interoperability must be observed. ST.90 workflow compliance is required for asynchronous task semantics.",
+        "assumptions": [
+          "The system will be cloud-hosted with options for dedicated tenancy or customer-managed deployment (private cloud / on-premises) for customers with strict confidentiality needs.",
+          "Users and integrators will access the service over HTTPS with authenticated API keys or OAuth tokens and have reliable internet connectivity.",
+          "Customers will classify documents prior to ingestion and request appropriate isolation level (shared tenant, dedicated enclave, or on-prem deployment) based on sensitivity.",
+          "Model weights and translation engines may be run on provider-managed GPUs unless customer requires BYOK and dedicated hardware or on-prem compute.",
+          "Monitoring telemetry will be limited to metadata and aggregated metrics; raw document content will not be used for telemetry or logged unless explicitly permitted by the customer.",
+          "Customers requiring the highest assurance will provide their own keys (BYOK) and may require contractual SLAs, audits, and penetration testing.",
+          "Language tags will conform to BCP-47; fallback behavior will be defined for missing or ambiguous tags.",
+          "Third-party components (parsers, converters, antivirus engines) will be kept up-to-date and vetted for security posture."
+        ],
+        "constraints": [
+          "Must implement OpenAPI 3.1 for public API surface; API design must separate sync and async endpoints as per requirements.",
+          "Real-time synchronous latency target \u22641 second may constrain model size, deployment topology (nearest inference endpoints), and require pre-warmed instances or distilled models.",
+          "Large document processing must comply with ST.90 workflow semantics and maintain task durability across restarts.",
+          "Non-intrusive monitoring disallows logging or inspection of document content in telemetry pipelines; only metadata may be collected.",
+          "BYOK and customer-managed key support may require HSM integration and additional compliance controls, increasing implementation complexity.",
+          "Per-request isolation and sandboxing may limit horizontal density of workloads and increase cost for dedicated isolation modes.",
+          "Strict BCP-47 validation may reject ambiguous or regionally-customized tags; a policy to handle extensions and private-use subtags must be defined.",
+          "Preservation of exact formatting and legal phrasing imposes constraints on translation post-processing and may require domain-specific post-editing pipelines.",
+          "Supply chain and vendor restrictions may limit use of certain third-party models or services in specific jurisdictions due to export control or data residency requirements.",
+          "Audit and immutable logging of metadata must balance privacy (avoid storing content) with forensic requirements; secure, tamper-evident storage (WORM or equivalent) will be required."
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"The system is a cloud-hosted confidential translation platform composed of an edge/API gateway for authentication and malware-safe ingestion, a frontend layer for client integrations, core application services that expose synchronous low-latency and asynchronous ST.90-compliant endpoints, a scalable processing & inference layer that performs sandboxed per-request document preprocessing and GPU-backed translation, and a data layer offering encrypted object storage, metadata/audit stores, and KMS/HSM for BYOK. Monitoring and orchestration components provide non-intrusive telemetry and capacity management while external services (IdP, AV, external storage) are integrated under strict vendor controls. Components communicate over encrypted channels, tasks are durably tracked, outputs stored encrypted with fine-grained access, and strong access controls, audit trails, and retention/deletion flows enforce confidentiality and compliance.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Edge & Auth\\\"\\n  EDGE[API Gateway & AuthN/AuthZ]\\n  SCAN[Malware Scanner & Safe Parser]\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  UI[Web App SPA & Integrations]\\n  CLI[CLI & SDKs]\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[Core API Synchronous/Asynchronous Endpoints OpenAPI3.1]\\n  TASK[TASK Manager ST.90 Status Results]\\n  VALID[Input Validation & BCP-47]\\nend\\nsubgraph \\\"Processing & Inference\\\"\\n  PREP[Document Preprocessor & Formatter]\\n  SANDBOX[Per-Request Sandbox & Execution Isolation]\\n  MODEL[Translation Engine Inference GPU Instances]\\nend\\nsubgraph \\\"Data Layer\\\"\\n  OBJ[Encrypted Object Storage BYOK Option]\\n  META[Metadata DB & Audit Logs WORM]\\n  KM[KMS & HSM Key Management]\\nend\\nsubgraph \\\"Operations & Observability\\\"\\n  MON[Monitoring Metrics & NoContentTelemetry]\\n  ALERT[Alerting & Capacity Manager]\\nend\\nsubgraph \\\"External Services\\\"\\n  IDP[Identity Provider OAuth2/OIDC]\\n  VIRUS[AV/Virus Scan Provider]\\n  STORAGE[Customer Cloud Storage]\\nend\\n\\nUI --> EDGE\\nCLI --> EDGE\\nEDGE --> IDP\\nEDGE --> SCAN\\nSCAN --> API\\nEDGE --> API\\nAPI --> VALID\\nVALID --> TASK\\nAPI --> PREP\\nTASK --> SANDBOX\\nPREP --> SANDBOX\\nSANDBOX --> MODEL\\nMODEL --> OBJ\\nSANDBOX --> OBJ\\nTASK --> OBJ\\nAPI --> META\\nTASK --> META\\nOBJ --> KM\\nAPI --> MON\\nTASK --> MON\\nMODEL --> MON\\nOBJ --> MON\\nEDGE --> STORAGE\\nSCAN --> VIRUS\\nMON --> ALERT\",\n  \"components\": [\n    {\n      \"name\": \"Edge & Auth\",\n      \"responsibility\": \"Ingress control, TLS termination, rate limiting, authentication (OAuth2/OIDC), authorization (RBAC), API key/MFA enforcement, initial malware scanning and safe parsing for uploaded files.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Identity Provider (IdP) - OAuth2/OIDC\",\n        \"WAF / DDoS protection (cloud vendor)\"\n      ],\n      \"data_handled\": [\n        \"Authentication tokens and credentials\",\n        \"Request metadata\",\n        \"Uploaded document binaries (for scanning)\"\n      ]\n    },\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"User-facing clients and integrations (web UI, SDKs, CLI) that call synchronous and asynchronous endpoints and provide upload/download UX.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Customer environments / Integrator SDKs\"\n      ],\n      \"data_handled\": [\n        \"User requests\",\n        \"Language tags (BCP-47)\",\n        \"Status queries and result retrievals (metadata)\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core REST API implementing OpenAPI 3.1, routing between sync/async workflows, task lifecycle manager (ST.90 semantics), input validation, policy enforcement, and orchestration of processing steps.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Service discovery / internal auth\",\n        \"Queueing infrastructure (cloud managed or self-hosted)\"\n      ],\n      \"data_handled\": [\n        \"Translation requests and task descriptors\",\n        \"Task status and metadata\",\n        \"Validation results and policy decisions\"\n      ]\n    },\n    {\n      \"name\": \"Processing & Inference\",\n      \"responsibility\": \"Document preprocessing/conversion, domain-preserving translation inference on GPU-backed models, per-request sandboxing for execution isolation, and post-processing to preserve formatting and enforce no-addition guarantees.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"GPU/Compute provider\",\n        \"Model provider (internal or third-party)\"\n      ],\n      \"data_handled\": [\n        \"Document contents (plaintext, structured formats)\",\n        \"Intermediate parsed representations\",\n        \"Translation outputs\"\n      ]\n    },\n    {\n      \"name\": \"Orchestration & Task Queue\",\n      \"responsibility\": \"Scalable queueing, batching, worker autoscaling, deterministic scheduling for low-latency sync paths and durable async task processing with retries and isolation policies.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Message queue service (e.g., Kafka, SQS)\",\n        \"Autoscaling controller (cloud)\"\n      ],\n      \"data_handled\": [\n        \"Task descriptors and schedules\",\n        \"Worker telemetry\",\n        \"Resource allocation metadata\"\n      ]\n    },\n    {\n      \"name\": \"Data Layer\",\n      \"responsibility\": \"Encrypted object storage for originals and outputs (with BYOK option), metadata DB and tamper-evident audit logs (WORM), and KMS/HSM for key lifecycle and crypto operations.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud object storage\",\n        \"KMS / HSM vendor\"\n      ],\n      \"data_handled\": [\n        \"Encrypted document binaries\",\n        \"Translation outputs\",\n        \"Audit logs and metadata\",\n        \"Encryption keys and key material\"\n      ]\n    },\n    {\n      \"name\": \"Operations & Observability\",\n      \"responsibility\": \"Non-intrusive monitoring, aggregated metrics (throughput, latency, GPU utilization), alerting, capacity planning, and logs that avoid storing document content; incident response integrations.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Metrics/Alerting provider (Prometheus/Grafana/Cloud Monitoring)\",\n        \"Logging S3 or secure logging service\"\n      ],\n      \"data_handled\": [\n        \"Aggregated telemetry\",\n        \"Error and event rates\",\n        \"Resource usage metrics\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Third-party integrations used for identity, malware scanning, optional customer storage, and vendor-supplied models or telemetry, maintained under supply-chain controls.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Identity Provider\",\n        \"AV/Virus Scan Provider\",\n        \"Third-party Model Providers\",\n        \"Customer Cloud Storage\"\n      ],\n      \"data_handled\": [\n        \"Authentication/authorization tokens\",\n        \"Scanned document metadata\",\n        \"Model inference requests (if proxied)\",\n        \"Optional externally-stored outputs\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Clients (UI/SDK/CLI) authenticate via the Edge/Auth layer and submit synchronous short-text requests or asynchronous document tasks. Edge performs malware scanning and forwards validated requests to Application Services. Synchronous requests are routed to pre-warmed inference paths in Processing & Inference with deterministic scheduling to meet \u22641s latency. Asynchronous tasks are enqueued by the Task Manager (ST.90 semantics), then scheduled to isolated sandboxes where the Preprocessor converts documents, the Model runs on GPU instances, and Postprocessor enforces terminology preservation and no-addition rules. Originals and encrypted outputs are stored in Encrypted Object Storage with keys managed by KMS/HSM; metadata and tamper-evident audit logs are stored separately. Monitoring receives only aggregated telemetry (no content), and alerting/operations handle scaling and incidents. Customers may optionally integrate their own storage or request dedicated tenancy or BYOK for keys.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users (UI/SDK/CLI)\",\n        \"External Integrations\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS 1.2+ encryption\",\n        \"Rate limiting and WAF\",\n        \"API throttling and request validation\",\n        \"MFA for interactive access\"\n      ]\n    },\n    {\n      \"name\": \"DMZ (Edge & Auth)\",\n      \"components\": [\n        \"API Gateway & AuthN/AuthZ\",\n        \"Malware Scanner & Safe Parser\"\n      ],\n      \"boundary_type\": \"Semi-Trusted\",\n      \"security_controls\": [\n        \"Strict ingress filtering\",\n        \"Isolated subnetting\",\n        \"Request-level scanning and safe parsing\",\n        \"OAuth2/OIDC enforcement and token validation\"\n      ]\n    },\n    {\n      \"name\": \"Internal Network (App Services & Orchestration)\",\n      \"components\": [\n        \"Core API\",\n        \"Task Manager\",\n        \"Input Validation\",\n        \"Orchestration/Queue\"\n      ],\n      \"boundary_type\": \"Trusted Internal\",\n      \"security_controls\": [\n        \"Mutual TLS between services\",\n        \"Network segmentation and ACLs\",\n        \"RBAC and service identities\",\n        \"Immutable deployment images and supply-chain checks\"\n      ]\n    },\n    {\n      \"name\": \"Isolated Processing Sandbox\",\n      \"components\": [\n        \"Per-Request Sandbox\",\n        \"Model Inference Workers\"\n      ],\n      \"boundary_type\": \"High-Assurance Isolated Zone\",\n      \"security_controls\": [\n        \"Strong VM/container sandboxing\",\n        \"Per-request ephemeral storage and purge-on-complete\",\n        \"No external network egress unless authorized\",\n        \"Strict resource and syscall whitelisting\"\n      ]\n    },\n    {\n      \"name\": \"Storage Tier\",\n      \"components\": [\n        \"Encrypted Object Storage\",\n        \"Metadata DB & Audit Logs\",\n        \"KMS/HSM\"\n      ],\n      \"boundary_type\": \"Highly Trusted / Sensitive\",\n      \"security_controls\": [\n        \"At-rest encryption with BYOK option\",\n        \"Access audits and tamper-evident logs (WORM)\",\n        \"Separation of duties for key access\",\n        \"Strict retention and deletion workflows\"\n      ]\n    },\n    {\n      \"name\": \"External Vendor Services\",\n      \"components\": [\n        \"IdP\",\n        \"AV Provider\",\n        \"Third-party Model Provider\",\n        \"Customer Storage\"\n      ],\n      \"boundary_type\": \"Third-Party\",\n      \"security_controls\": [\n        \"Contractual NDAs and SLAs\",\n        \"Vetting and supply-chain security assessments\",\n        \"Minimal-scope integrations and encrypted channels\",\n        \"Data flow controls and explicit consent for content sharing\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Major entry points: public REST API endpoints (synchronous and asynchronous), file upload interfaces (document ingestion), authentication endpoints (token exchange, admin IAM), client SDKs/CLI, and integrations (webhooks, external storage connectors). Risk levels: Public API (High) \u2014 risks include credential theft, injection, and abuse; mitigations include OAuth2/OIDC, MFA, rate limiting, WAF, strict OpenAPI validation, and RBAC. File uploads (High) \u2014 risks include malware and parser exploits; mitigations include sandboxed parsing, AV scanning, safe libraries, and per-request sandboxing. Admin/Operator interfaces (High) \u2014 risk of privileged misuse; mitigations include MFA, least privilege, session recording, and strong audit trails. Inter-service communications (Medium) \u2014 risk of lateral movement; mitigations include mTLS, network segmentation, and service identity. Third-party integrations (High) \u2014 supply-chain and exfiltration risk; mitigations include contractual controls, encryption in transit, minimal data sharing, and vendor audits. KMS/HSM integration (Critical) \u2014 risk if keys are compromised; mitigations include hardware-backed keys, split access, audit logs, and BYOK for customer control. Observability endpoints (Low-Medium) \u2014 risk of telemetry leaking metadata; mitigate by excluding content, aggregating metrics, and securing telemetry pipelines. Overall, defenses rely on strong authentication, per-request isolation, encrypted storage, tamper-evident audit logs, safe parsing, and rigorous vendor controls.\"\n}",
+      "pydantic": {
+        "architecture_summary": "The system is a cloud-hosted confidential translation platform composed of an edge/API gateway for authentication and malware-safe ingestion, a frontend layer for client integrations, core application services that expose synchronous low-latency and asynchronous ST.90-compliant endpoints, a scalable processing & inference layer that performs sandboxed per-request document preprocessing and GPU-backed translation, and a data layer offering encrypted object storage, metadata/audit stores, and KMS/HSM for BYOK. Monitoring and orchestration components provide non-intrusive telemetry and capacity management while external services (IdP, AV, external storage) are integrated under strict vendor controls. Components communicate over encrypted channels, tasks are durably tracked, outputs stored encrypted with fine-grained access, and strong access controls, audit trails, and retention/deletion flows enforce confidentiality and compliance.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Edge & Auth\"\n  EDGE[API Gateway & AuthN/AuthZ]\n  SCAN[Malware Scanner & Safe Parser]\nend\nsubgraph \"Frontend Layer\"\n  UI[Web App SPA & Integrations]\n  CLI[CLI & SDKs]\nend\nsubgraph \"Application Services\"\n  API[Core API Synchronous/Asynchronous Endpoints OpenAPI3.1]\n  TASK[TASK Manager ST.90 Status Results]\n  VALID[Input Validation & BCP-47]\nend\nsubgraph \"Processing & Inference\"\n  PREP[Document Preprocessor & Formatter]\n  SANDBOX[Per-Request Sandbox & Execution Isolation]\n  MODEL[Translation Engine Inference GPU Instances]\nend\nsubgraph \"Data Layer\"\n  OBJ[Encrypted Object Storage BYOK Option]\n  META[Metadata DB & Audit Logs WORM]\n  KM[KMS & HSM Key Management]\nend\nsubgraph \"Operations & Observability\"\n  MON[Monitoring Metrics & NoContentTelemetry]\n  ALERT[Alerting & Capacity Manager]\nend\nsubgraph \"External Services\"\n  IDP[Identity Provider OAuth2/OIDC]\n  VIRUS[AV/Virus Scan Provider]\n  STORAGE[Customer Cloud Storage]\nend\n\nUI --> EDGE\nCLI --> EDGE\nEDGE --> IDP\nEDGE --> SCAN\nSCAN --> API\nEDGE --> API\nAPI --> VALID\nVALID --> TASK\nAPI --> PREP\nTASK --> SANDBOX\nPREP --> SANDBOX\nSANDBOX --> MODEL\nMODEL --> OBJ\nSANDBOX --> OBJ\nTASK --> OBJ\nAPI --> META\nTASK --> META\nOBJ --> KM\nAPI --> MON\nTASK --> MON\nMODEL --> MON\nOBJ --> MON\nEDGE --> STORAGE\nSCAN --> VIRUS\nMON --> ALERT",
+        "components": [
+          {
+            "name": "Edge & Auth",
+            "responsibility": "Ingress control, TLS termination, rate limiting, authentication (OAuth2/OIDC), authorization (RBAC), API key/MFA enforcement, initial malware scanning and safe parsing for uploaded files.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Identity Provider (IdP) - OAuth2/OIDC",
+              "WAF / DDoS protection (cloud vendor)"
+            ],
+            "data_handled": [
+              "Authentication tokens and credentials",
+              "Request metadata",
+              "Uploaded document binaries (for scanning)"
+            ]
+          },
+          {
+            "name": "Frontend Layer",
+            "responsibility": "User-facing clients and integrations (web UI, SDKs, CLI) that call synchronous and asynchronous endpoints and provide upload/download UX.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Customer environments / Integrator SDKs"
+            ],
+            "data_handled": [
+              "User requests",
+              "Language tags (BCP-47)",
+              "Status queries and result retrievals (metadata)"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core REST API implementing OpenAPI 3.1, routing between sync/async workflows, task lifecycle manager (ST.90 semantics), input validation, policy enforcement, and orchestration of processing steps.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Service discovery / internal auth",
+              "Queueing infrastructure (cloud managed or self-hosted)"
+            ],
+            "data_handled": [
+              "Translation requests and task descriptors",
+              "Task status and metadata",
+              "Validation results and policy decisions"
+            ]
+          },
+          {
+            "name": "Processing & Inference",
+            "responsibility": "Document preprocessing/conversion, domain-preserving translation inference on GPU-backed models, per-request sandboxing for execution isolation, and post-processing to preserve formatting and enforce no-addition guarantees.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "GPU/Compute provider",
+              "Model provider (internal or third-party)"
+            ],
+            "data_handled": [
+              "Document contents (plaintext, structured formats)",
+              "Intermediate parsed representations",
+              "Translation outputs"
+            ]
+          },
+          {
+            "name": "Orchestration & Task Queue",
+            "responsibility": "Scalable queueing, batching, worker autoscaling, deterministic scheduling for low-latency sync paths and durable async task processing with retries and isolation policies.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Message queue service (e.g., Kafka, SQS)",
+              "Autoscaling controller (cloud)"
+            ],
+            "data_handled": [
+              "Task descriptors and schedules",
+              "Worker telemetry",
+              "Resource allocation metadata"
+            ]
+          },
+          {
+            "name": "Data Layer",
+            "responsibility": "Encrypted object storage for originals and outputs (with BYOK option), metadata DB and tamper-evident audit logs (WORM), and KMS/HSM for key lifecycle and crypto operations.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Cloud object storage",
+              "KMS / HSM vendor"
+            ],
+            "data_handled": [
+              "Encrypted document binaries",
+              "Translation outputs",
+              "Audit logs and metadata",
+              "Encryption keys and key material"
+            ]
+          },
+          {
+            "name": "Operations & Observability",
+            "responsibility": "Non-intrusive monitoring, aggregated metrics (throughput, latency, GPU utilization), alerting, capacity planning, and logs that avoid storing document content; incident response integrations.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Metrics/Alerting provider (Prometheus/Grafana/Cloud Monitoring)",
+              "Logging S3 or secure logging service"
+            ],
+            "data_handled": [
+              "Aggregated telemetry",
+              "Error and event rates",
+              "Resource usage metrics"
+            ]
+          },
+          {
+            "name": "External Services",
+            "responsibility": "Third-party integrations used for identity, malware scanning, optional customer storage, and vendor-supplied models or telemetry, maintained under supply-chain controls.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Identity Provider",
+              "AV/Virus Scan Provider",
+              "Third-party Model Providers",
+              "Customer Cloud Storage"
+            ],
+            "data_handled": [
+              "Authentication/authorization tokens",
+              "Scanned document metadata",
+              "Model inference requests (if proxied)",
+              "Optional externally-stored outputs"
+            ]
+          }
+        ],
+        "data_flow_description": "Clients (UI/SDK/CLI) authenticate via the Edge/Auth layer and submit synchronous short-text requests or asynchronous document tasks. Edge performs malware scanning and forwards validated requests to Application Services. Synchronous requests are routed to pre-warmed inference paths in Processing & Inference with deterministic scheduling to meet \u22641s latency. Asynchronous tasks are enqueued by the Task Manager (ST.90 semantics), then scheduled to isolated sandboxes where the Preprocessor converts documents, the Model runs on GPU instances, and Postprocessor enforces terminology preservation and no-addition rules. Originals and encrypted outputs are stored in Encrypted Object Storage with keys managed by KMS/HSM; metadata and tamper-evident audit logs are stored separately. Monitoring receives only aggregated telemetry (no content), and alerting/operations handle scaling and incidents. Customers may optionally integrate their own storage or request dedicated tenancy or BYOK for keys.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "Users (UI/SDK/CLI)",
+              "External Integrations"
+            ],
+            "boundary_type": "Untrusted",
+            "security_controls": [
+              "TLS 1.2+ encryption",
+              "Rate limiting and WAF",
+              "API throttling and request validation",
+              "MFA for interactive access"
+            ]
+          },
+          {
+            "name": "DMZ (Edge & Auth)",
+            "components": [
+              "API Gateway & AuthN/AuthZ",
+              "Malware Scanner & Safe Parser"
+            ],
+            "boundary_type": "Semi-Trusted",
+            "security_controls": [
+              "Strict ingress filtering",
+              "Isolated subnetting",
+              "Request-level scanning and safe parsing",
+              "OAuth2/OIDC enforcement and token validation"
+            ]
+          },
+          {
+            "name": "Internal Network (App Services & Orchestration)",
+            "components": [
+              "Core API",
+              "Task Manager",
+              "Input Validation",
+              "Orchestration/Queue"
+            ],
+            "boundary_type": "Trusted Internal",
+            "security_controls": [
+              "Mutual TLS between services",
+              "Network segmentation and ACLs",
+              "RBAC and service identities",
+              "Immutable deployment images and supply-chain checks"
+            ]
+          },
+          {
+            "name": "Isolated Processing Sandbox",
+            "components": [
+              "Per-Request Sandbox",
+              "Model Inference Workers"
+            ],
+            "boundary_type": "High-Assurance Isolated Zone",
+            "security_controls": [
+              "Strong VM/container sandboxing",
+              "Per-request ephemeral storage and purge-on-complete",
+              "No external network egress unless authorized",
+              "Strict resource and syscall whitelisting"
+            ]
+          },
+          {
+            "name": "Storage Tier",
+            "components": [
+              "Encrypted Object Storage",
+              "Metadata DB & Audit Logs",
+              "KMS/HSM"
+            ],
+            "boundary_type": "Highly Trusted / Sensitive",
+            "security_controls": [
+              "At-rest encryption with BYOK option",
+              "Access audits and tamper-evident logs (WORM)",
+              "Separation of duties for key access",
+              "Strict retention and deletion workflows"
+            ]
+          },
+          {
+            "name": "External Vendor Services",
+            "components": [
+              "IdP",
+              "AV Provider",
+              "Third-party Model Provider",
+              "Customer Storage"
+            ],
+            "boundary_type": "Third-Party",
+            "security_controls": [
+              "Contractual NDAs and SLAs",
+              "Vetting and supply-chain security assessments",
+              "Minimal-scope integrations and encrypted channels",
+              "Data flow controls and explicit consent for content sharing"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Major entry points: public REST API endpoints (synchronous and asynchronous), file upload interfaces (document ingestion), authentication endpoints (token exchange, admin IAM), client SDKs/CLI, and integrations (webhooks, external storage connectors). Risk levels: Public API (High) \u2014 risks include credential theft, injection, and abuse; mitigations include OAuth2/OIDC, MFA, rate limiting, WAF, strict OpenAPI validation, and RBAC. File uploads (High) \u2014 risks include malware and parser exploits; mitigations include sandboxed parsing, AV scanning, safe libraries, and per-request sandboxing. Admin/Operator interfaces (High) \u2014 risk of privileged misuse; mitigations include MFA, least privilege, session recording, and strong audit trails. Inter-service communications (Medium) \u2014 risk of lateral movement; mitigations include mTLS, network segmentation, and service identity. Third-party integrations (High) \u2014 supply-chain and exfiltration risk; mitigations include contractual controls, encryption in transit, minimal data sharing, and vendor audits. KMS/HSM integration (Critical) \u2014 risk if keys are compromised; mitigations include hardware-backed keys, split access, audit logs, and BYOK for customer control. Observability endpoints (Low-Medium) \u2014 risk of telemetry leaking metadata; mitigate by excluding content, aggregating metrics, and securing telemetry pipelines. Overall, defenses rely on strong authentication, per-request isolation, encrypted storage, tamper-evident audit logs, safe parsing, and rigorous vendor controls."
+      }
+    }
+  ]
+}

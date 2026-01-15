@@ -1,0 +1,603 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"A cloud-hosted, multi-tenant web application with a responsive single-page frontend, an API gateway and backend application services that implement authentication, RBAC, scheduling logic, and optimization orchestration, a data tier for multi-tenant relational storage plus caches and object storage for exports/artifacts, and integrations to external services (email, Google OAuth, Timefold solver, monitoring). Users access the SPA via CDN/WAF; the frontend calls the API Gateway which forwards to core API services. The Optimizer component orchestrates asynchronous jobs and communicates with the Timefold solver; results are scored, validated, previewed, and committed to the primary database. Audit, monitoring, and export artifacts are retained in object storage and logs.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Users & Clients\\\"\\n  Users[Users Browsers Mobile] --> CDN\\nend\\nsubgraph \\\"Edge Layer\\\"\\n  CDN[CDN & WAF] --> FE\\n  API_GW[API Gateway & Rate Limiter]\\n  FE --> API_GW\\n  API_GW --> API\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web App SPA & Admin UI]\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[Core API Users/Shifts/RBAC/Exports]\\n  Auth[Auth Service OAuth JWT]\\n  Scheduler[Scheduling Service & Validation]\\n  Optimizer[Optimization Orchestrator & Job Queue]\\n  Notif[Notifications & Email Worker]\\n  API --> Auth\\n  API --> Scheduler\\n  API --> Optimizer\\n  API --> Notif\\nend\\nsubgraph \\\"Data Layer\\\"\\n  DB[Primary RDBMS Multi-Tenant]\\n  Cache[Redis Cache & Sessions]\\n  Object[Object Storage Exports/Artifacts]\\n  Audit[Audit Logs & Metrics]\\n  API --> DB\\n  API --> Cache\\n  API --> Object\\n  API --> Audit\\nend\\nsubgraph \\\"External Services\\\"\\n  EmailSvc[Email Provider SMTP API]\\n  GoogleOAuth[Google OAuth Provider]\\n  Timefold[Timefold Optimization Solver]\\n  Monitoring[Monitoring Logging & APM]\\n  Auth --> GoogleOAuth\\n  Notif --> EmailSvc\\n  Optimizer --> Timefold\\n  Audit --> Monitoring\\nend\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Serve SPA and admin UI, render calendars and tables, handle client-side validation, localization, and real-time polling for optimization jobs.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN/WAF\",\n        \"Google OAuth\"\n      ],\n      \"data_handled\": [\n        \"Session tokens (short-lived)\",\n        \"User profile UI data\",\n        \"Shift previews and calendar data (scoped)\",\n        \"Localization preferences\"\n      ]\n    },\n    {\n      \"name\": \"Edge Layer (CDN & API Gateway)\",\n      \"responsibility\": \"Provide DDoS protection, TLS termination, WAF rules, caching of static assets, rate limiting, and routing to backend APIs.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Managed CDN/WAF provider\",\n        \"API Gateway service\"\n      ],\n      \"data_handled\": [\n        \"Inbound HTTP requests\",\n        \"TLS termination metadata\",\n        \"Rate-limit counters and access logs\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic: authentication/authorization, user and tenant management, shift scheduling and validation, optimizer orchestration, export handling, notifications, and audit events.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Google OAuth\",\n        \"Timefold solver\",\n        \"Email Provider\",\n        \"Queueing/Background job system (e.g., SQS/RabbitMQ)\"\n      ],\n      \"data_handled\": [\n        \"User identities and roles\",\n        \"Shift assignments and statuses\",\n        \"Preferences and unavailable dates\",\n        \"Optimization payloads and solutions\",\n        \"Audit events and export requests\"\n      ]\n    },\n    {\n      \"name\": \"Data Layer\",\n      \"responsibility\": \"Persist multi-tenant relational data, cache session and query results, store exports and optimizer artifacts, and retain audit logs/metrics.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Managed RDBMS\",\n        \"Managed Redis\",\n        \"Object Storage (S3-compatible)\",\n        \"Managed Logging/Monitoring\"\n      ],\n      \"data_handled\": [\n        \"Tenant, user, company records\",\n        \"Shifts, shift types, skills\",\n        \"Preferences and leave records\",\n        \"Export files and optimization artifacts\",\n        \"Audit logs\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Third-party integrations for identity, email delivery, optimization solving, and observability; these provide specialized capabilities outside core platform.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Google OAuth Provider\",\n        \"Email Delivery Provider\",\n        \"Timefold Optimization Solver\",\n        \"Monitoring & Logging (Datadog/CloudWatch)\"\n      ],\n      \"data_handled\": [\n        \"OAuth tokens and identity assertions\",\n        \"Transactional emails (verification, notifications)\",\n        \"Optimization payloads/results\",\n        \"Metrics and logs\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users fetch the SPA via CDN and interact with the UI which calls backend APIs through the API Gateway. The API authenticates requests via the Auth service (JWT/OAuth flows), applies RBAC and company scoping, and reads/writes data to the primary RDBMS. Caches (Redis) accelerate reads and sessions. Optimization requests are queued by the Optimizer, a job is created and a payload sent (securely) to Timefold; the external solver returns a solution ID and results which are polled/ingested, scored, validated, and persisted to the DB and object storage as preview artifacts. Notifications and export jobs generate artifacts in object storage and trigger audit log entries. Monitoring and audit logs stream to external observability services.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users Browsers Mobile\",\n        \"Google OAuth Provider\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS 1.2+ for all endpoints\",\n        \"WAF and CDN DDoS protection\",\n        \"Rate limiting at API Gateway\",\n        \"CSP and secure cookies at frontend\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge Layer\",\n      \"components\": [\n        \"CDN & WAF\",\n        \"API Gateway & Rate Limiter\"\n      ],\n      \"boundary_type\": \"Perimeter/Filtered\",\n      \"security_controls\": [\n        \"WAF rulesets and bot management\",\n        \"IP allowlisting for admin consoles\",\n        \"Edge TLS termination with HSTS\",\n        \"Request size and rate thresholds\"\n      ]\n    },\n    {\n      \"name\": \"Internal Network / Application Tier\",\n      \"components\": [\n        \"Core API\",\n        \"Auth Service\",\n        \"Scheduler\",\n        \"Optimizer\",\n        \"Notification Worker\"\n      ],\n      \"boundary_type\": \"Trusted/Internal\",\n      \"security_controls\": [\n        \"Mutual TLS between internal services where supported\",\n        \"Service-to-service auth (mTLS or signed tokens)\",\n        \"Network segmentation and minimal inbound rules\",\n        \"Secrets in KMS/Secrets Manager\"\n      ]\n    },\n    {\n      \"name\": \"Database Tier\",\n      \"components\": [\n        \"Primary RDBMS\",\n        \"Redis Cache\",\n        \"Object Storage\",\n        \"Audit Logs/Monitoring\"\n      ],\n      \"boundary_type\": \"High-Trust/Confidential\",\n      \"security_controls\": [\n        \"Encryption at rest (KMS)\",\n        \"Database network isolation and VPC peering\",\n        \"Field-level encryption for sensitive leave data\",\n        \"Audit logging and access controls with RBAC\"\n      ]\n    },\n    {\n      \"name\": \"Third-Party Services\",\n      \"components\": [\n        \"Timefold Solver\",\n        \"Email Provider\",\n        \"Monitoring/Logging\",\n        \"OAuth Provider\"\n      ],\n      \"boundary_type\": \"External Trusted\",\n      \"security_controls\": [\n        \"TLS with certificate validation\",\n        \"API keys scoped and rotated\",\n        \"Egress filtering and rate limits\",\n        \"Minimize PII in outbound payloads and contractual data processing agreements\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: public SPA and REST/WebSocket APIs via API Gateway, OAuth endpoints, email links for account verification and password resets, file export endpoints, and the async optimizer integration. Risk levels: API endpoints (High) due to sensitive operations and multi-tenant data access \u2014 mitigate with strict RBAC, per-tenant scoping, input validation, rate limits, and WAF; Auth and OAuth flows (High) \u2014 protect with secure token handling, PKCE where applicable, brute-force protections, and short-lived JWTs; Optimization integration (Medium-High) \u2014 external solver communications must use signed, minimized payloads, strict validation of returned solutions, and sandboxed parsing to prevent injection; Export and object storage endpoints (High) \u2014 protect with pre-signed URLs, access logging, role-based export permissions, and streaming/virus scanning for uploads; Email links (Medium) \u2014 use tokenized single-use links, expiration, and rate limiting to prevent account takeover; Admin consoles and tenant management (High) \u2014 require MFA and IP restrictions. Monitoring and alerting should surface anomalous patterns (failed logins, excessive export use, unexpected optimization results). Regular threat modeling, pen testing, and dependency vulnerability scanning are recommended.\"\n}",
+  "pydantic": {
+    "architecture_summary": "A cloud-hosted, multi-tenant web application with a responsive single-page frontend, an API gateway and backend application services that implement authentication, RBAC, scheduling logic, and optimization orchestration, a data tier for multi-tenant relational storage plus caches and object storage for exports/artifacts, and integrations to external services (email, Google OAuth, Timefold solver, monitoring). Users access the SPA via CDN/WAF; the frontend calls the API Gateway which forwards to core API services. The Optimizer component orchestrates asynchronous jobs and communicates with the Timefold solver; results are scored, validated, previewed, and committed to the primary database. Audit, monitoring, and export artifacts are retained in object storage and logs.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Users & Clients\"\n  Users[Users Browsers Mobile] --> CDN\nend\nsubgraph \"Edge Layer\"\n  CDN[CDN & WAF] --> FE\n  API_GW[API Gateway & Rate Limiter]\n  FE --> API_GW\n  API_GW --> API\nend\nsubgraph \"Frontend Layer\"\n  FE[Web App SPA & Admin UI]\nend\nsubgraph \"Application Services\"\n  API[Core API Users/Shifts/RBAC/Exports]\n  Auth[Auth Service OAuth JWT]\n  Scheduler[Scheduling Service & Validation]\n  Optimizer[Optimization Orchestrator & Job Queue]\n  Notif[Notifications & Email Worker]\n  API --> Auth\n  API --> Scheduler\n  API --> Optimizer\n  API --> Notif\nend\nsubgraph \"Data Layer\"\n  DB[Primary RDBMS Multi-Tenant]\n  Cache[Redis Cache & Sessions]\n  Object[Object Storage Exports/Artifacts]\n  Audit[Audit Logs & Metrics]\n  API --> DB\n  API --> Cache\n  API --> Object\n  API --> Audit\nend\nsubgraph \"External Services\"\n  EmailSvc[Email Provider SMTP API]\n  GoogleOAuth[Google OAuth Provider]\n  Timefold[Timefold Optimization Solver]\n  Monitoring[Monitoring Logging & APM]\n  Auth --> GoogleOAuth\n  Notif --> EmailSvc\n  Optimizer --> Timefold\n  Audit --> Monitoring\nend",
+    "components": [
+      {
+        "name": "Frontend Layer",
+        "responsibility": "Serve SPA and admin UI, render calendars and tables, handle client-side validation, localization, and real-time polling for optimization jobs.",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "CDN/WAF",
+          "Google OAuth"
+        ],
+        "data_handled": [
+          "Session tokens (short-lived)",
+          "User profile UI data",
+          "Shift previews and calendar data (scoped)",
+          "Localization preferences"
+        ]
+      },
+      {
+        "name": "Edge Layer (CDN & API Gateway)",
+        "responsibility": "Provide DDoS protection, TLS termination, WAF rules, caching of static assets, rate limiting, and routing to backend APIs.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Managed CDN/WAF provider",
+          "API Gateway service"
+        ],
+        "data_handled": [
+          "Inbound HTTP requests",
+          "TLS termination metadata",
+          "Rate-limit counters and access logs"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core business logic: authentication/authorization, user and tenant management, shift scheduling and validation, optimizer orchestration, export handling, notifications, and audit events.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Google OAuth",
+          "Timefold solver",
+          "Email Provider",
+          "Queueing/Background job system (e.g., SQS/RabbitMQ)"
+        ],
+        "data_handled": [
+          "User identities and roles",
+          "Shift assignments and statuses",
+          "Preferences and unavailable dates",
+          "Optimization payloads and solutions",
+          "Audit events and export requests"
+        ]
+      },
+      {
+        "name": "Data Layer",
+        "responsibility": "Persist multi-tenant relational data, cache session and query results, store exports and optimizer artifacts, and retain audit logs/metrics.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Managed RDBMS",
+          "Managed Redis",
+          "Object Storage (S3-compatible)",
+          "Managed Logging/Monitoring"
+        ],
+        "data_handled": [
+          "Tenant, user, company records",
+          "Shifts, shift types, skills",
+          "Preferences and leave records",
+          "Export files and optimization artifacts",
+          "Audit logs"
+        ]
+      },
+      {
+        "name": "External Services",
+        "responsibility": "Third-party integrations for identity, email delivery, optimization solving, and observability; these provide specialized capabilities outside core platform.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Google OAuth Provider",
+          "Email Delivery Provider",
+          "Timefold Optimization Solver",
+          "Monitoring & Logging (Datadog/CloudWatch)"
+        ],
+        "data_handled": [
+          "OAuth tokens and identity assertions",
+          "Transactional emails (verification, notifications)",
+          "Optimization payloads/results",
+          "Metrics and logs"
+        ]
+      }
+    ],
+    "data_flow_description": "Users fetch the SPA via CDN and interact with the UI which calls backend APIs through the API Gateway. The API authenticates requests via the Auth service (JWT/OAuth flows), applies RBAC and company scoping, and reads/writes data to the primary RDBMS. Caches (Redis) accelerate reads and sessions. Optimization requests are queued by the Optimizer, a job is created and a payload sent (securely) to Timefold; the external solver returns a solution ID and results which are polled/ingested, scored, validated, and persisted to the DB and object storage as preview artifacts. Notifications and export jobs generate artifacts in object storage and trigger audit log entries. Monitoring and audit logs stream to external observability services.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "Users Browsers Mobile",
+          "Google OAuth Provider"
+        ],
+        "boundary_type": "Untrusted",
+        "security_controls": [
+          "TLS 1.2+ for all endpoints",
+          "WAF and CDN DDoS protection",
+          "Rate limiting at API Gateway",
+          "CSP and secure cookies at frontend"
+        ]
+      },
+      {
+        "name": "DMZ / Edge Layer",
+        "components": [
+          "CDN & WAF",
+          "API Gateway & Rate Limiter"
+        ],
+        "boundary_type": "Perimeter/Filtered",
+        "security_controls": [
+          "WAF rulesets and bot management",
+          "IP allowlisting for admin consoles",
+          "Edge TLS termination with HSTS",
+          "Request size and rate thresholds"
+        ]
+      },
+      {
+        "name": "Internal Network / Application Tier",
+        "components": [
+          "Core API",
+          "Auth Service",
+          "Scheduler",
+          "Optimizer",
+          "Notification Worker"
+        ],
+        "boundary_type": "Trusted/Internal",
+        "security_controls": [
+          "Mutual TLS between internal services where supported",
+          "Service-to-service auth (mTLS or signed tokens)",
+          "Network segmentation and minimal inbound rules",
+          "Secrets in KMS/Secrets Manager"
+        ]
+      },
+      {
+        "name": "Database Tier",
+        "components": [
+          "Primary RDBMS",
+          "Redis Cache",
+          "Object Storage",
+          "Audit Logs/Monitoring"
+        ],
+        "boundary_type": "High-Trust/Confidential",
+        "security_controls": [
+          "Encryption at rest (KMS)",
+          "Database network isolation and VPC peering",
+          "Field-level encryption for sensitive leave data",
+          "Audit logging and access controls with RBAC"
+        ]
+      },
+      {
+        "name": "Third-Party Services",
+        "components": [
+          "Timefold Solver",
+          "Email Provider",
+          "Monitoring/Logging",
+          "OAuth Provider"
+        ],
+        "boundary_type": "External Trusted",
+        "security_controls": [
+          "TLS with certificate validation",
+          "API keys scoped and rotated",
+          "Egress filtering and rate limits",
+          "Minimize PII in outbound payloads and contractual data processing agreements"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Primary entry points: public SPA and REST/WebSocket APIs via API Gateway, OAuth endpoints, email links for account verification and password resets, file export endpoints, and the async optimizer integration. Risk levels: API endpoints (High) due to sensitive operations and multi-tenant data access \u2014 mitigate with strict RBAC, per-tenant scoping, input validation, rate limits, and WAF; Auth and OAuth flows (High) \u2014 protect with secure token handling, PKCE where applicable, brute-force protections, and short-lived JWTs; Optimization integration (Medium-High) \u2014 external solver communications must use signed, minimized payloads, strict validation of returned solutions, and sandboxed parsing to prevent injection; Export and object storage endpoints (High) \u2014 protect with pre-signed URLs, access logging, role-based export permissions, and streaming/virus scanning for uploads; Email links (Medium) \u2014 use tokenized single-use links, expiration, and rate limiting to prevent account takeover; Admin consoles and tenant management (High) \u2014 require MFA and IP restrictions. Monitoring and alerting should surface anomalous patterns (failed logins, excessive export use, unexpected optimization results). Regular threat modeling, pen testing, and dependency vulnerability scanning are recommended."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A multi-tenant web application to manage employee shift types, scheduling, assignments, preferences, and leave, with role-based access for Admins, Managers, and Employees and an automated optimization workflow that integrates with an external solver (Timefold) to generate, preview, score, and accept/reject optimized assignments while providing calendar views, export capabilities, and multilingual UI.\",\n  \"high_level_requirements\": [\n    \"User registration with email verification and account lifecycle management\",\n    \"Authentication and single sign-on via credentials and Google OAuth\",\n    \"Password reset and account recovery\",\n    \"Role-based access control (ADMIN, MANAGER, EMPLOYEE) and user status management\",\n    \"User profile management and company assignment\",\n    \"Company CRUD and multi-tenant scoping of data\",\n    \"Shift type management with time ranges and required skills\",\n    \"Manual shift creation, update, deletion, and calendar presentation\",\n    \"Shift status tracking and filtering (SCHEDULED, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW)\",\n    \"Automated shift assignment (auto-assignment) via external solver with preview and accept/reject\",\n    \"Real-time asynchronous job processing, polling, and solution status tracking\",\n    \"Solution scoring, constraint violation analysis, and reporting\",\n    \"Shift preferences management (date-specific desired/undesired) and preference tracking\",\n    \"Unavailable dates and leave management (multiple leave types, date ranges, reasons)\",\n    \"Skills management and skill-based matching for assignments\",\n    \"Export of data (shifts, users, companies, skills, shift types, preferences, unavailable dates) in CSV/XLSX\",\n    \"External API integration with Timefold solver including payload generation and solution parsing\",\n    \"Internationalization (multi-language UI and localized date/time formatting)\",\n    \"User interface features: responsive navigation, tables with pagination/sorting/filtering, calendar views, alerts/notifications, breadcrumbs\",\n    \"Audit logging, legal documents availability (Privacy Policy, Terms of Service), and consent tracking\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"User registration with email verification and account lifecycle (UNVERIFIED -> ACTIVE/INACTIVE)\",\n      \"business_category\": \"Authentication / Identity Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Ensure valid user identities, prevent automated account creation, and provide a mechanism to verify contact points before granting access to tenant data.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Authentication supporting credentials-based login and Google OAuth (SSO)\",\n      \"business_category\": \"Authentication / Integration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Provide flexible secure authentication options; OAuth reduces password risk but requires secure token handling and provider configuration per tenant.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"Password reset and account recovery flows with secure tokenized links and rate-limiting\",\n      \"business_category\": \"Authentication / Account Recovery\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Allow legitimate users to regain access while preventing account takeover via token abuse and brute force.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Role-based access control (ADMIN, MANAGER, EMPLOYEE) with per-company scoping and user status flags (ACTIVE, INACTIVE, UNVERIFIED)\",\n      \"business_category\": \"Authorization / Multi-tenancy\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Enforce least privilege, ensure managers can operate only within their company boundaries, and prevent access from inactive or unverified accounts.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"User profile management, including personal details, company assignment, and manager associations\",\n      \"business_category\": \"Data Management / User Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Users and managers need accurate profile data for scheduling and contact; must be stored and editable with access controls to protect personal data.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"Admin-only company CRUD and multi-tenant data isolation (users, shift types, skills scoped per company)\",\n      \"business_category\": \"Multi-tenant Administration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Provide tenant management by global admins while ensuring strong logical separation so tenant data is not visible to other companies.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Create, read, update, delete shift types with start/end times and association to required skills, scoped to company\",\n      \"business_category\": \"Scheduling / Configuration\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Shift types standardize scheduling rules and qualifications needed; they must be managed per company to reflect operational differences.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Manual shift assignment: create, update, delete shifts, with validation to prevent duplicate shifts and conflicts\",\n      \"business_category\": \"Scheduling / Operations\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Operational core: scheduling employees without conflicts and avoiding duplicate assignments; schedule data is sensitive employee data that impacts payroll and privacy.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Shift status lifecycle and tracking (SCHEDULED, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW) with audit trail\",\n      \"business_category\": \"Scheduling / Audit & Reporting\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Track the lifecycle for operational reporting, payroll reconciliation, and dispute resolution; audit logs enable non-repudiation and compliance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Calendar view with shift preview, search, filtering (by user, shift type, status, date), pagination and sorting\",\n      \"business_category\": \"User Interface / Scheduling\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Provide UI to consume schedule data efficiently; requires careful access control so displayed data is scoped to viewer permissions.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Automated shift assignment via external solver API with date range selection, preview of generated assignments, and accept/reject workflow\",\n      \"business_category\": \"Optimization / Integration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Automates scheduling to reduce manual effort; integration with external solver requires careful data sharing, validation of results, and user control before committing changes.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"Asynchronous job processing for optimization requests, with real-time polling, solution status updates, and cancellation support\",\n      \"business_category\": \"Integration / System Operations\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Optimization may take time and should run asynchronously; clients need status updates and ability to cancel or manage long-running jobs.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"Solution scoring (hard/soft constraint metrics), constraint violation analysis, and reporting of solver output in human-readable format\",\n      \"business_category\": \"Optimization / Reporting\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Allow decision-makers to evaluate solution quality, understand trade-offs, and diagnose why certain assignments violate constraints.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Validation to prevent duplicate shifts across the date range both for manual and auto-assignment workflows\",\n      \"business_category\": \"Scheduling / Data Integrity\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Prevent double-booking and payroll errors; validation must run at creation and before accepting automated solutions.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"Employee shift preferences management with date-specific preference types (DESIRED/UNDESIRED) persisted and used by optimizer\",\n      \"business_category\": \"Scheduling / Preferences\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Respect employee availability and satisfaction; preferences are personal data used by optimization logic.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"Unavailable dates and leave management (SICK_LEAVE, VACATION, PERSONAL_LEAVE, UNPAID_LEAVE, OTHER) with date ranges and reason tracking, accessible to employees and managers\",\n      \"business_category\": \"Scheduling / HR Data\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Leave data may include health-related or sensitive personal information; must be protected and only visible to authorized roles (manager, employee, HR) and considered by the optimizer to avoid assignments.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"Skill management: CRUD for skills, skills associated with users and shift types, and skill-based matching for assignments\",\n      \"business_category\": \"Scheduling / Workforce Management\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Support qualification-based assignments to ensure appropriate staffing; skills are non-sensitive but must be scoped per company.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"Data export in CSV and XLSX for entities: shifts, users, companies, skills, shift types, preferences, and unavailable dates with role-based export permissions and export auditing\",\n      \"business_category\": \"Data Management / Reporting\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Exports are required for reporting and payroll; must be controlled to prevent data exfiltration and tracked for compliance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-019\",\n      \"requirement_text\": \"External API integration with Timefold solver: secure payload generation, transport (TLS+auth), solution parsing and validation, constraint analysis via API\",\n      \"business_category\": \"Integration / Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Connect to external optimization service securely, ensure input minimizes PII where possible, and validate outputs to prevent corrupt or malicious assignments.\"\n    },\n    {\n      \"requirement_id\": \"REQ-020\",\n      \"requirement_text\": \"Internationalization: multi-language support for UI elements and localized date/time formatting per tenant or user preference\",\n      \"business_category\": \"User Experience / Localization\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Provide usability across regions and locales, improving adoption and reducing user error in scheduling.\"\n    },\n    {\n      \"requirement_id\": \"REQ-021\",\n      \"requirement_text\": \"User interface capabilities: responsive sidebar navigation, tables with pagination/sorting/filtering, calendar views, shift preview, alerts/notifications, and breadcrumb navigation\",\n      \"business_category\": \"User Interface / Usability\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Deliver a responsive and usable UI for managing schedules at scale; UI must enforce access control when rendering data.\"\n    },\n    {\n      \"requirement_id\": \"REQ-022\",\n      \"requirement_text\": \"Audit logging and notifications: record critical operations (login, role changes, shift create/update/delete, optimization accept/reject, exports) and notify relevant users\",\n      \"business_category\": \"Security / Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Support incident investigation, compliance audits, and accountability by providing tamper-evident logs and configurable alerts.\"\n    },\n    {\n      \"requirement_id\": \"REQ-023\",\n      \"requirement_text\": \"Legal and privacy: present Privacy Policy, Terms of Service and capture GDPR/CCPA consent and support data subject requests (access, rectification, erasure)\",\n      \"business_category\": \"Compliance / Legal\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Ensure legal compliance with data protection laws and provide mechanisms for user rights and consent management.\"\n    },\n    {\n      \"requirement_id\": \"REQ-024\",\n      \"requirement_text\": \"Operational controls: per-tenant configuration, rate-limits for external API calls, background job queuing, retry semantics, and monitoring/alerting\",\n      \"business_category\": \"Operations / Reliability\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Ensure reliability and predictable operation under load and protect third-party integrations from abuse and overload.\"\n    },\n    {\n      \"requirement_id\": \"REQ-025\",\n      \"requirement_text\": \"Data protection controls: encryption at rest and in transit, tenant data isolation, field-level protection for sensitive leave/health indicators, and key management\",\n      \"business_category\": \"Security / Data Protection\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Protect personal and sensitive data from unauthorized access, comply with regulations, and reduce impact of breaches via strong cryptographic controls.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulations and standards likely include GDPR (EU personal data processing, data subject rights, data transfers), CCPA/CPRA (California consumer privacy), regional data protection laws (vary by tenant), SOC 2/ISO 27001 for operational security and controls, and data minimization principles. OAuth best practices (RFCs), secure API communication (TLS), and proper handling of PII are required. If handling health-related leave data, consider additional jurisdictional protections for health data (e.g., extra safeguards though HIPAA applies only to covered entities). Accessibility (WCAG) and local labor laws for scheduling/worker rights may impose functional constraints. Logging and retention policies must meet legal and audit requirements.\",\n  \"assumptions\": [\n    \"System will be cloud-hosted (managed cloud provider) with support for multi-region deployment as needed for data residency requirements\",\n    \"Users have reliable internet access and modern browsers; mobile/responsive web is required\",\n    \"External solver (Timefold) provides authenticated HTTPS API endpoints and supports async job model and secure callbacks or polling\",\n    \"Email delivery service (transactional email) is available for verification and notifications\",\n    \"Each company tenant has at least one Admin account to manage tenant-level configuration\",\n    \"Tenants may have different locale/timezone requirements and will be configurable\",\n    \"Data export consumers are authorized by role-based permissions; exports are subject to auditing\",\n    \"No out-of-band HR/Payroll system integration is mandated in the initial scope (can be added later)\",\n    \"System will maintain audit logs for a configurable retention period\",\n    \"Encryption keys and secrets will be centrally managed (e.g., KMS/Secrets Manager)\"\n  ],\n  \"constraints\": [\n    \"Must integrate with external Timefold solver API; optimization workflows constrained by solver API capabilities, rate limits, and availability\",\n    \"Asynchronous processing and polling required for long-running optimization tasks; UI must handle partial/ongoing states\",\n    \"Multi-tenant logical separation required; single code-base must enforce per-tenant scoping for data and operations\",\n    \"Support for CSV and XLSX export formats; exports may be large and must be streamed and rate-limited\",\n    \"Compliance constraints (GDPR/CCPA) may impose data residency, deletion, and consent functionality\",\n    \"Third-party auth (Google OAuth) requires configuration per tenant or global consent; fallback credential auth must exist\",\n    \"Performance: schedule optimization and large tenant datasets demand efficient pagination, indexing, and caching strategies\",\n    \"UI responsiveness and calendar rendering must scale to large numbers of shifts and users\",\n    \"Operational monitoring and alerting required for background jobs, external API failures, and integration errors\",\n    \"Retention and archival policies for audit logs, exports, and optimization artifacts must be defined to meet legal/audit needs\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A multi-tenant web application to manage employee shift types, scheduling, assignments, preferences, and leave, with role-based access for Admins, Managers, and Employees and an automated optimization workflow that integrates with an external solver (Timefold) to generate, preview, score, and accept/reject optimized assignments while providing calendar views, export capabilities, and multilingual UI.",
+        "high_level_requirements": [
+          "User registration with email verification and account lifecycle management",
+          "Authentication and single sign-on via credentials and Google OAuth",
+          "Password reset and account recovery",
+          "Role-based access control (ADMIN, MANAGER, EMPLOYEE) and user status management",
+          "User profile management and company assignment",
+          "Company CRUD and multi-tenant scoping of data",
+          "Shift type management with time ranges and required skills",
+          "Manual shift creation, update, deletion, and calendar presentation",
+          "Shift status tracking and filtering (SCHEDULED, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW)",
+          "Automated shift assignment (auto-assignment) via external solver with preview and accept/reject",
+          "Real-time asynchronous job processing, polling, and solution status tracking",
+          "Solution scoring, constraint violation analysis, and reporting",
+          "Shift preferences management (date-specific desired/undesired) and preference tracking",
+          "Unavailable dates and leave management (multiple leave types, date ranges, reasons)",
+          "Skills management and skill-based matching for assignments",
+          "Export of data (shifts, users, companies, skills, shift types, preferences, unavailable dates) in CSV/XLSX",
+          "External API integration with Timefold solver including payload generation and solution parsing",
+          "Internationalization (multi-language UI and localized date/time formatting)",
+          "User interface features: responsive navigation, tables with pagination/sorting/filtering, calendar views, alerts/notifications, breadcrumbs",
+          "Audit logging, legal documents availability (Privacy Policy, Terms of Service), and consent tracking"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "User registration with email verification and account lifecycle (UNVERIFIED -> ACTIVE/INACTIVE)",
+            "business_category": "Authentication / Identity Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Ensure valid user identities, prevent automated account creation, and provide a mechanism to verify contact points before granting access to tenant data."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Authentication supporting credentials-based login and Google OAuth (SSO)",
+            "business_category": "Authentication / Integration",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Provide flexible secure authentication options; OAuth reduces password risk but requires secure token handling and provider configuration per tenant."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "Password reset and account recovery flows with secure tokenized links and rate-limiting",
+            "business_category": "Authentication / Account Recovery",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Allow legitimate users to regain access while preventing account takeover via token abuse and brute force."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Role-based access control (ADMIN, MANAGER, EMPLOYEE) with per-company scoping and user status flags (ACTIVE, INACTIVE, UNVERIFIED)",
+            "business_category": "Authorization / Multi-tenancy",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Enforce least privilege, ensure managers can operate only within their company boundaries, and prevent access from inactive or unverified accounts."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "User profile management, including personal details, company assignment, and manager associations",
+            "business_category": "Data Management / User Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Users and managers need accurate profile data for scheduling and contact; must be stored and editable with access controls to protect personal data."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "Admin-only company CRUD and multi-tenant data isolation (users, shift types, skills scoped per company)",
+            "business_category": "Multi-tenant Administration",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Provide tenant management by global admins while ensuring strong logical separation so tenant data is not visible to other companies."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Create, read, update, delete shift types with start/end times and association to required skills, scoped to company",
+            "business_category": "Scheduling / Configuration",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Shift types standardize scheduling rules and qualifications needed; they must be managed per company to reflect operational differences."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Manual shift assignment: create, update, delete shifts, with validation to prevent duplicate shifts and conflicts",
+            "business_category": "Scheduling / Operations",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Operational core: scheduling employees without conflicts and avoiding duplicate assignments; schedule data is sensitive employee data that impacts payroll and privacy."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Shift status lifecycle and tracking (SCHEDULED, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW) with audit trail",
+            "business_category": "Scheduling / Audit & Reporting",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Track the lifecycle for operational reporting, payroll reconciliation, and dispute resolution; audit logs enable non-repudiation and compliance."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Calendar view with shift preview, search, filtering (by user, shift type, status, date), pagination and sorting",
+            "business_category": "User Interface / Scheduling",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Provide UI to consume schedule data efficiently; requires careful access control so displayed data is scoped to viewer permissions."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Automated shift assignment via external solver API with date range selection, preview of generated assignments, and accept/reject workflow",
+            "business_category": "Optimization / Integration",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Automates scheduling to reduce manual effort; integration with external solver requires careful data sharing, validation of results, and user control before committing changes."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "Asynchronous job processing for optimization requests, with real-time polling, solution status updates, and cancellation support",
+            "business_category": "Integration / System Operations",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Optimization may take time and should run asynchronously; clients need status updates and ability to cancel or manage long-running jobs."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "Solution scoring (hard/soft constraint metrics), constraint violation analysis, and reporting of solver output in human-readable format",
+            "business_category": "Optimization / Reporting",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Allow decision-makers to evaluate solution quality, understand trade-offs, and diagnose why certain assignments violate constraints."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Validation to prevent duplicate shifts across the date range both for manual and auto-assignment workflows",
+            "business_category": "Scheduling / Data Integrity",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Prevent double-booking and payroll errors; validation must run at creation and before accepting automated solutions."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "Employee shift preferences management with date-specific preference types (DESIRED/UNDESIRED) persisted and used by optimizer",
+            "business_category": "Scheduling / Preferences",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Respect employee availability and satisfaction; preferences are personal data used by optimization logic."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "Unavailable dates and leave management (SICK_LEAVE, VACATION, PERSONAL_LEAVE, UNPAID_LEAVE, OTHER) with date ranges and reason tracking, accessible to employees and managers",
+            "business_category": "Scheduling / HR Data",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Leave data may include health-related or sensitive personal information; must be protected and only visible to authorized roles (manager, employee, HR) and considered by the optimizer to avoid assignments."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "Skill management: CRUD for skills, skills associated with users and shift types, and skill-based matching for assignments",
+            "business_category": "Scheduling / Workforce Management",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Support qualification-based assignments to ensure appropriate staffing; skills are non-sensitive but must be scoped per company."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "Data export in CSV and XLSX for entities: shifts, users, companies, skills, shift types, preferences, and unavailable dates with role-based export permissions and export auditing",
+            "business_category": "Data Management / Reporting",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Exports are required for reporting and payroll; must be controlled to prevent data exfiltration and tracked for compliance."
+          },
+          {
+            "requirement_id": "REQ-019",
+            "requirement_text": "External API integration with Timefold solver: secure payload generation, transport (TLS+auth), solution parsing and validation, constraint analysis via API",
+            "business_category": "Integration / Security",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Connect to external optimization service securely, ensure input minimizes PII where possible, and validate outputs to prevent corrupt or malicious assignments."
+          },
+          {
+            "requirement_id": "REQ-020",
+            "requirement_text": "Internationalization: multi-language support for UI elements and localized date/time formatting per tenant or user preference",
+            "business_category": "User Experience / Localization",
+            "security_sensitivity": "Low",
+            "data_classification": "Public",
+            "rationale": "Provide usability across regions and locales, improving adoption and reducing user error in scheduling."
+          },
+          {
+            "requirement_id": "REQ-021",
+            "requirement_text": "User interface capabilities: responsive sidebar navigation, tables with pagination/sorting/filtering, calendar views, shift preview, alerts/notifications, and breadcrumb navigation",
+            "business_category": "User Interface / Usability",
+            "security_sensitivity": "Low",
+            "data_classification": "Public",
+            "rationale": "Deliver a responsive and usable UI for managing schedules at scale; UI must enforce access control when rendering data."
+          },
+          {
+            "requirement_id": "REQ-022",
+            "requirement_text": "Audit logging and notifications: record critical operations (login, role changes, shift create/update/delete, optimization accept/reject, exports) and notify relevant users",
+            "business_category": "Security / Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Support incident investigation, compliance audits, and accountability by providing tamper-evident logs and configurable alerts."
+          },
+          {
+            "requirement_id": "REQ-023",
+            "requirement_text": "Legal and privacy: present Privacy Policy, Terms of Service and capture GDPR/CCPA consent and support data subject requests (access, rectification, erasure)",
+            "business_category": "Compliance / Legal",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Ensure legal compliance with data protection laws and provide mechanisms for user rights and consent management."
+          },
+          {
+            "requirement_id": "REQ-024",
+            "requirement_text": "Operational controls: per-tenant configuration, rate-limits for external API calls, background job queuing, retry semantics, and monitoring/alerting",
+            "business_category": "Operations / Reliability",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Ensure reliability and predictable operation under load and protect third-party integrations from abuse and overload."
+          },
+          {
+            "requirement_id": "REQ-025",
+            "requirement_text": "Data protection controls: encryption at rest and in transit, tenant data isolation, field-level protection for sensitive leave/health indicators, and key management",
+            "business_category": "Security / Data Protection",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Protect personal and sensitive data from unauthorized access, comply with regulations, and reduce impact of breaches via strong cryptographic controls."
+          }
+        ],
+        "security_context": "Applicable regulations and standards likely include GDPR (EU personal data processing, data subject rights, data transfers), CCPA/CPRA (California consumer privacy), regional data protection laws (vary by tenant), SOC 2/ISO 27001 for operational security and controls, and data minimization principles. OAuth best practices (RFCs), secure API communication (TLS), and proper handling of PII are required. If handling health-related leave data, consider additional jurisdictional protections for health data (e.g., extra safeguards though HIPAA applies only to covered entities). Accessibility (WCAG) and local labor laws for scheduling/worker rights may impose functional constraints. Logging and retention policies must meet legal and audit requirements.",
+        "assumptions": [
+          "System will be cloud-hosted (managed cloud provider) with support for multi-region deployment as needed for data residency requirements",
+          "Users have reliable internet access and modern browsers; mobile/responsive web is required",
+          "External solver (Timefold) provides authenticated HTTPS API endpoints and supports async job model and secure callbacks or polling",
+          "Email delivery service (transactional email) is available for verification and notifications",
+          "Each company tenant has at least one Admin account to manage tenant-level configuration",
+          "Tenants may have different locale/timezone requirements and will be configurable",
+          "Data export consumers are authorized by role-based permissions; exports are subject to auditing",
+          "No out-of-band HR/Payroll system integration is mandated in the initial scope (can be added later)",
+          "System will maintain audit logs for a configurable retention period",
+          "Encryption keys and secrets will be centrally managed (e.g., KMS/Secrets Manager)"
+        ],
+        "constraints": [
+          "Must integrate with external Timefold solver API; optimization workflows constrained by solver API capabilities, rate limits, and availability",
+          "Asynchronous processing and polling required for long-running optimization tasks; UI must handle partial/ongoing states",
+          "Multi-tenant logical separation required; single code-base must enforce per-tenant scoping for data and operations",
+          "Support for CSV and XLSX export formats; exports may be large and must be streamed and rate-limited",
+          "Compliance constraints (GDPR/CCPA) may impose data residency, deletion, and consent functionality",
+          "Third-party auth (Google OAuth) requires configuration per tenant or global consent; fallback credential auth must exist",
+          "Performance: schedule optimization and large tenant datasets demand efficient pagination, indexing, and caching strategies",
+          "UI responsiveness and calendar rendering must scale to large numbers of shifts and users",
+          "Operational monitoring and alerting required for background jobs, external API failures, and integration errors",
+          "Retention and archival policies for audit logs, exports, and optimization artifacts must be defined to meet legal/audit needs"
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"A cloud-hosted, multi-tenant web application with a responsive single-page frontend, an API gateway and backend application services that implement authentication, RBAC, scheduling logic, and optimization orchestration, a data tier for multi-tenant relational storage plus caches and object storage for exports/artifacts, and integrations to external services (email, Google OAuth, Timefold solver, monitoring). Users access the SPA via CDN/WAF; the frontend calls the API Gateway which forwards to core API services. The Optimizer component orchestrates asynchronous jobs and communicates with the Timefold solver; results are scored, validated, previewed, and committed to the primary database. Audit, monitoring, and export artifacts are retained in object storage and logs.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Users & Clients\\\"\\n  Users[Users Browsers Mobile] --> CDN\\nend\\nsubgraph \\\"Edge Layer\\\"\\n  CDN[CDN & WAF] --> FE\\n  API_GW[API Gateway & Rate Limiter]\\n  FE --> API_GW\\n  API_GW --> API\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web App SPA & Admin UI]\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[Core API Users/Shifts/RBAC/Exports]\\n  Auth[Auth Service OAuth JWT]\\n  Scheduler[Scheduling Service & Validation]\\n  Optimizer[Optimization Orchestrator & Job Queue]\\n  Notif[Notifications & Email Worker]\\n  API --> Auth\\n  API --> Scheduler\\n  API --> Optimizer\\n  API --> Notif\\nend\\nsubgraph \\\"Data Layer\\\"\\n  DB[Primary RDBMS Multi-Tenant]\\n  Cache[Redis Cache & Sessions]\\n  Object[Object Storage Exports/Artifacts]\\n  Audit[Audit Logs & Metrics]\\n  API --> DB\\n  API --> Cache\\n  API --> Object\\n  API --> Audit\\nend\\nsubgraph \\\"External Services\\\"\\n  EmailSvc[Email Provider SMTP API]\\n  GoogleOAuth[Google OAuth Provider]\\n  Timefold[Timefold Optimization Solver]\\n  Monitoring[Monitoring Logging & APM]\\n  Auth --> GoogleOAuth\\n  Notif --> EmailSvc\\n  Optimizer --> Timefold\\n  Audit --> Monitoring\\nend\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Serve SPA and admin UI, render calendars and tables, handle client-side validation, localization, and real-time polling for optimization jobs.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN/WAF\",\n        \"Google OAuth\"\n      ],\n      \"data_handled\": [\n        \"Session tokens (short-lived)\",\n        \"User profile UI data\",\n        \"Shift previews and calendar data (scoped)\",\n        \"Localization preferences\"\n      ]\n    },\n    {\n      \"name\": \"Edge Layer (CDN & API Gateway)\",\n      \"responsibility\": \"Provide DDoS protection, TLS termination, WAF rules, caching of static assets, rate limiting, and routing to backend APIs.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Managed CDN/WAF provider\",\n        \"API Gateway service\"\n      ],\n      \"data_handled\": [\n        \"Inbound HTTP requests\",\n        \"TLS termination metadata\",\n        \"Rate-limit counters and access logs\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic: authentication/authorization, user and tenant management, shift scheduling and validation, optimizer orchestration, export handling, notifications, and audit events.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Google OAuth\",\n        \"Timefold solver\",\n        \"Email Provider\",\n        \"Queueing/Background job system (e.g., SQS/RabbitMQ)\"\n      ],\n      \"data_handled\": [\n        \"User identities and roles\",\n        \"Shift assignments and statuses\",\n        \"Preferences and unavailable dates\",\n        \"Optimization payloads and solutions\",\n        \"Audit events and export requests\"\n      ]\n    },\n    {\n      \"name\": \"Data Layer\",\n      \"responsibility\": \"Persist multi-tenant relational data, cache session and query results, store exports and optimizer artifacts, and retain audit logs/metrics.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Managed RDBMS\",\n        \"Managed Redis\",\n        \"Object Storage (S3-compatible)\",\n        \"Managed Logging/Monitoring\"\n      ],\n      \"data_handled\": [\n        \"Tenant, user, company records\",\n        \"Shifts, shift types, skills\",\n        \"Preferences and leave records\",\n        \"Export files and optimization artifacts\",\n        \"Audit logs\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Third-party integrations for identity, email delivery, optimization solving, and observability; these provide specialized capabilities outside core platform.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Google OAuth Provider\",\n        \"Email Delivery Provider\",\n        \"Timefold Optimization Solver\",\n        \"Monitoring & Logging (Datadog/CloudWatch)\"\n      ],\n      \"data_handled\": [\n        \"OAuth tokens and identity assertions\",\n        \"Transactional emails (verification, notifications)\",\n        \"Optimization payloads/results\",\n        \"Metrics and logs\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users fetch the SPA via CDN and interact with the UI which calls backend APIs through the API Gateway. The API authenticates requests via the Auth service (JWT/OAuth flows), applies RBAC and company scoping, and reads/writes data to the primary RDBMS. Caches (Redis) accelerate reads and sessions. Optimization requests are queued by the Optimizer, a job is created and a payload sent (securely) to Timefold; the external solver returns a solution ID and results which are polled/ingested, scored, validated, and persisted to the DB and object storage as preview artifacts. Notifications and export jobs generate artifacts in object storage and trigger audit log entries. Monitoring and audit logs stream to external observability services.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users Browsers Mobile\",\n        \"Google OAuth Provider\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS 1.2+ for all endpoints\",\n        \"WAF and CDN DDoS protection\",\n        \"Rate limiting at API Gateway\",\n        \"CSP and secure cookies at frontend\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge Layer\",\n      \"components\": [\n        \"CDN & WAF\",\n        \"API Gateway & Rate Limiter\"\n      ],\n      \"boundary_type\": \"Perimeter/Filtered\",\n      \"security_controls\": [\n        \"WAF rulesets and bot management\",\n        \"IP allowlisting for admin consoles\",\n        \"Edge TLS termination with HSTS\",\n        \"Request size and rate thresholds\"\n      ]\n    },\n    {\n      \"name\": \"Internal Network / Application Tier\",\n      \"components\": [\n        \"Core API\",\n        \"Auth Service\",\n        \"Scheduler\",\n        \"Optimizer\",\n        \"Notification Worker\"\n      ],\n      \"boundary_type\": \"Trusted/Internal\",\n      \"security_controls\": [\n        \"Mutual TLS between internal services where supported\",\n        \"Service-to-service auth (mTLS or signed tokens)\",\n        \"Network segmentation and minimal inbound rules\",\n        \"Secrets in KMS/Secrets Manager\"\n      ]\n    },\n    {\n      \"name\": \"Database Tier\",\n      \"components\": [\n        \"Primary RDBMS\",\n        \"Redis Cache\",\n        \"Object Storage\",\n        \"Audit Logs/Monitoring\"\n      ],\n      \"boundary_type\": \"High-Trust/Confidential\",\n      \"security_controls\": [\n        \"Encryption at rest (KMS)\",\n        \"Database network isolation and VPC peering\",\n        \"Field-level encryption for sensitive leave data\",\n        \"Audit logging and access controls with RBAC\"\n      ]\n    },\n    {\n      \"name\": \"Third-Party Services\",\n      \"components\": [\n        \"Timefold Solver\",\n        \"Email Provider\",\n        \"Monitoring/Logging\",\n        \"OAuth Provider\"\n      ],\n      \"boundary_type\": \"External Trusted\",\n      \"security_controls\": [\n        \"TLS with certificate validation\",\n        \"API keys scoped and rotated\",\n        \"Egress filtering and rate limits\",\n        \"Minimize PII in outbound payloads and contractual data processing agreements\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: public SPA and REST/WebSocket APIs via API Gateway, OAuth endpoints, email links for account verification and password resets, file export endpoints, and the async optimizer integration. Risk levels: API endpoints (High) due to sensitive operations and multi-tenant data access \u2014 mitigate with strict RBAC, per-tenant scoping, input validation, rate limits, and WAF; Auth and OAuth flows (High) \u2014 protect with secure token handling, PKCE where applicable, brute-force protections, and short-lived JWTs; Optimization integration (Medium-High) \u2014 external solver communications must use signed, minimized payloads, strict validation of returned solutions, and sandboxed parsing to prevent injection; Export and object storage endpoints (High) \u2014 protect with pre-signed URLs, access logging, role-based export permissions, and streaming/virus scanning for uploads; Email links (Medium) \u2014 use tokenized single-use links, expiration, and rate limiting to prevent account takeover; Admin consoles and tenant management (High) \u2014 require MFA and IP restrictions. Monitoring and alerting should surface anomalous patterns (failed logins, excessive export use, unexpected optimization results). Regular threat modeling, pen testing, and dependency vulnerability scanning are recommended.\"\n}",
+      "pydantic": {
+        "architecture_summary": "A cloud-hosted, multi-tenant web application with a responsive single-page frontend, an API gateway and backend application services that implement authentication, RBAC, scheduling logic, and optimization orchestration, a data tier for multi-tenant relational storage plus caches and object storage for exports/artifacts, and integrations to external services (email, Google OAuth, Timefold solver, monitoring). Users access the SPA via CDN/WAF; the frontend calls the API Gateway which forwards to core API services. The Optimizer component orchestrates asynchronous jobs and communicates with the Timefold solver; results are scored, validated, previewed, and committed to the primary database. Audit, monitoring, and export artifacts are retained in object storage and logs.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Users & Clients\"\n  Users[Users Browsers Mobile] --> CDN\nend\nsubgraph \"Edge Layer\"\n  CDN[CDN & WAF] --> FE\n  API_GW[API Gateway & Rate Limiter]\n  FE --> API_GW\n  API_GW --> API\nend\nsubgraph \"Frontend Layer\"\n  FE[Web App SPA & Admin UI]\nend\nsubgraph \"Application Services\"\n  API[Core API Users/Shifts/RBAC/Exports]\n  Auth[Auth Service OAuth JWT]\n  Scheduler[Scheduling Service & Validation]\n  Optimizer[Optimization Orchestrator & Job Queue]\n  Notif[Notifications & Email Worker]\n  API --> Auth\n  API --> Scheduler\n  API --> Optimizer\n  API --> Notif\nend\nsubgraph \"Data Layer\"\n  DB[Primary RDBMS Multi-Tenant]\n  Cache[Redis Cache & Sessions]\n  Object[Object Storage Exports/Artifacts]\n  Audit[Audit Logs & Metrics]\n  API --> DB\n  API --> Cache\n  API --> Object\n  API --> Audit\nend\nsubgraph \"External Services\"\n  EmailSvc[Email Provider SMTP API]\n  GoogleOAuth[Google OAuth Provider]\n  Timefold[Timefold Optimization Solver]\n  Monitoring[Monitoring Logging & APM]\n  Auth --> GoogleOAuth\n  Notif --> EmailSvc\n  Optimizer --> Timefold\n  Audit --> Monitoring\nend",
+        "components": [
+          {
+            "name": "Frontend Layer",
+            "responsibility": "Serve SPA and admin UI, render calendars and tables, handle client-side validation, localization, and real-time polling for optimization jobs.",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "CDN/WAF",
+              "Google OAuth"
+            ],
+            "data_handled": [
+              "Session tokens (short-lived)",
+              "User profile UI data",
+              "Shift previews and calendar data (scoped)",
+              "Localization preferences"
+            ]
+          },
+          {
+            "name": "Edge Layer (CDN & API Gateway)",
+            "responsibility": "Provide DDoS protection, TLS termination, WAF rules, caching of static assets, rate limiting, and routing to backend APIs.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Managed CDN/WAF provider",
+              "API Gateway service"
+            ],
+            "data_handled": [
+              "Inbound HTTP requests",
+              "TLS termination metadata",
+              "Rate-limit counters and access logs"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core business logic: authentication/authorization, user and tenant management, shift scheduling and validation, optimizer orchestration, export handling, notifications, and audit events.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Google OAuth",
+              "Timefold solver",
+              "Email Provider",
+              "Queueing/Background job system (e.g., SQS/RabbitMQ)"
+            ],
+            "data_handled": [
+              "User identities and roles",
+              "Shift assignments and statuses",
+              "Preferences and unavailable dates",
+              "Optimization payloads and solutions",
+              "Audit events and export requests"
+            ]
+          },
+          {
+            "name": "Data Layer",
+            "responsibility": "Persist multi-tenant relational data, cache session and query results, store exports and optimizer artifacts, and retain audit logs/metrics.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Managed RDBMS",
+              "Managed Redis",
+              "Object Storage (S3-compatible)",
+              "Managed Logging/Monitoring"
+            ],
+            "data_handled": [
+              "Tenant, user, company records",
+              "Shifts, shift types, skills",
+              "Preferences and leave records",
+              "Export files and optimization artifacts",
+              "Audit logs"
+            ]
+          },
+          {
+            "name": "External Services",
+            "responsibility": "Third-party integrations for identity, email delivery, optimization solving, and observability; these provide specialized capabilities outside core platform.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Google OAuth Provider",
+              "Email Delivery Provider",
+              "Timefold Optimization Solver",
+              "Monitoring & Logging (Datadog/CloudWatch)"
+            ],
+            "data_handled": [
+              "OAuth tokens and identity assertions",
+              "Transactional emails (verification, notifications)",
+              "Optimization payloads/results",
+              "Metrics and logs"
+            ]
+          }
+        ],
+        "data_flow_description": "Users fetch the SPA via CDN and interact with the UI which calls backend APIs through the API Gateway. The API authenticates requests via the Auth service (JWT/OAuth flows), applies RBAC and company scoping, and reads/writes data to the primary RDBMS. Caches (Redis) accelerate reads and sessions. Optimization requests are queued by the Optimizer, a job is created and a payload sent (securely) to Timefold; the external solver returns a solution ID and results which are polled/ingested, scored, validated, and persisted to the DB and object storage as preview artifacts. Notifications and export jobs generate artifacts in object storage and trigger audit log entries. Monitoring and audit logs stream to external observability services.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "Users Browsers Mobile",
+              "Google OAuth Provider"
+            ],
+            "boundary_type": "Untrusted",
+            "security_controls": [
+              "TLS 1.2+ for all endpoints",
+              "WAF and CDN DDoS protection",
+              "Rate limiting at API Gateway",
+              "CSP and secure cookies at frontend"
+            ]
+          },
+          {
+            "name": "DMZ / Edge Layer",
+            "components": [
+              "CDN & WAF",
+              "API Gateway & Rate Limiter"
+            ],
+            "boundary_type": "Perimeter/Filtered",
+            "security_controls": [
+              "WAF rulesets and bot management",
+              "IP allowlisting for admin consoles",
+              "Edge TLS termination with HSTS",
+              "Request size and rate thresholds"
+            ]
+          },
+          {
+            "name": "Internal Network / Application Tier",
+            "components": [
+              "Core API",
+              "Auth Service",
+              "Scheduler",
+              "Optimizer",
+              "Notification Worker"
+            ],
+            "boundary_type": "Trusted/Internal",
+            "security_controls": [
+              "Mutual TLS between internal services where supported",
+              "Service-to-service auth (mTLS or signed tokens)",
+              "Network segmentation and minimal inbound rules",
+              "Secrets in KMS/Secrets Manager"
+            ]
+          },
+          {
+            "name": "Database Tier",
+            "components": [
+              "Primary RDBMS",
+              "Redis Cache",
+              "Object Storage",
+              "Audit Logs/Monitoring"
+            ],
+            "boundary_type": "High-Trust/Confidential",
+            "security_controls": [
+              "Encryption at rest (KMS)",
+              "Database network isolation and VPC peering",
+              "Field-level encryption for sensitive leave data",
+              "Audit logging and access controls with RBAC"
+            ]
+          },
+          {
+            "name": "Third-Party Services",
+            "components": [
+              "Timefold Solver",
+              "Email Provider",
+              "Monitoring/Logging",
+              "OAuth Provider"
+            ],
+            "boundary_type": "External Trusted",
+            "security_controls": [
+              "TLS with certificate validation",
+              "API keys scoped and rotated",
+              "Egress filtering and rate limits",
+              "Minimize PII in outbound payloads and contractual data processing agreements"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Primary entry points: public SPA and REST/WebSocket APIs via API Gateway, OAuth endpoints, email links for account verification and password resets, file export endpoints, and the async optimizer integration. Risk levels: API endpoints (High) due to sensitive operations and multi-tenant data access \u2014 mitigate with strict RBAC, per-tenant scoping, input validation, rate limits, and WAF; Auth and OAuth flows (High) \u2014 protect with secure token handling, PKCE where applicable, brute-force protections, and short-lived JWTs; Optimization integration (Medium-High) \u2014 external solver communications must use signed, minimized payloads, strict validation of returned solutions, and sandboxed parsing to prevent injection; Export and object storage endpoints (High) \u2014 protect with pre-signed URLs, access logging, role-based export permissions, and streaming/virus scanning for uploads; Email links (Medium) \u2014 use tokenized single-use links, expiration, and rate limiting to prevent account takeover; Admin consoles and tenant management (High) \u2014 require MFA and IP restrictions. Monitoring and alerting should surface anomalous patterns (failed logins, excessive export use, unexpected optimization results). Regular threat modeling, pen testing, and dependency vulnerability scanning are recommended."
+      }
+    }
+  ]
+}

@@ -1,0 +1,272 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "User Management (Auth/Core API)",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Credential theft or reuse: attackers obtain user credentials (phished, leaked, or brute-forced) and authenticate as legitimate users to access the system. Agent accounts (machine identities) may be ta"
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "DOM tampering or supply-chain compromise of frontend assets (CDN or third-party scripts altered) leading to client-side code injection that modifies content, steals tokens, or manipulates UI to perfor"
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer (CDN & API Gateway)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "API key or token theft via misconfigured edge auth or exposure in logs leading to attackers invoking backend APIs as legitimate services or users (e.g., stolen API Gateway key or insecure JWT handling"
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Application Services (Auth/Core API)",
+    "risk_level": "Critical",
+    "category": "Elevation of Privilege",
+    "description": "Broken RBAC/ACLs allow a low-privileged user (Contributor) to perform admin/editor actions (delete other users' posts, change channel connectors, rotate keys) due to missing or coarse-grained authoriz"
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Application Services (Post CRUD, Workflow Engine)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Unauthorized modification or deletion of post content or metadata via insufficient input validation or insecure APIs (malicious client or internal abuse altering published content or scheduled times)."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage (Relational DB / Object Store)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Sensitive data exposure: PII, drafts, or agent-rule definitions leaked due to misconfigured backups, publicly accessible S3 buckets, or weak DB access controls."
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer / WebSockets",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "CSRF or token leakage in browser: JWTs or session cookies leaked via XSS, or over insecure origin, allowing attackers to hijack sessions and read content or perform actions."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (Prolog Agent Engine)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Attackers modify agent rules or execution context (malicious Prolog rules or malicious data fed to agents) to cause inappropriate publication, data exfiltration, or to bypass moderation logic."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (Prolog Agent Engine)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Agent outputs or intermediate context contains sensitive PII or secrets which get published to channels (e.g., agent enriches content with PII from DB) accidentally exposing data across external chann"
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Integrations (Social APIs / Email)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromised external channel credentials (OAuth tokens) allow attackers to publish to social/email channels as the platform; stolen refresh tokens can be reused to extend access."
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "External Integrations (Inbound Webhooks)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Unverified inbound webhooks or callbacks manipulated by attackers to inject false delivery receipts, trigger workflows, or corrupt system state."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage (Audit Log / Append-only)",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Attacker or rogue admin alters or deletes audit logs to hide malicious actions, undermining forensic investigation and non-repudiation guarantees."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Frontend Layer / Application Services",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Cross-Site Scripting (XSS): malformed user content (posts, comments, attachments metadata) rendered without proper escaping leading to session theft, UI manipulation, or drive-by actions."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend/API (CSRF)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "CSRF attacks cause authenticated users to perform actions (publish, delete, change settings) via forged requests if anti-CSRF protections are missing for state-changing endpoints."
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Message Queue Workers",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Queue flooding or worker exhaustion: attackers submit many heavy tasks (large file uploads, scheduled publish spam) overwhelming workers and delaying legitimate processing (notifications, publishing)."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer / API Gateway",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Layer 7 DDoS targeting the API Gateway or WebSockets, causing service disruption for real-time collaboration and content publishing."
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage (DB / Search / Analytics)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Injection attacks (SQL/NoSQL/Elasticsearch): unsanitized queries or dynamic search DSL allow attackers to run arbitrary queries, exfiltrate data, or corrupt indexes/search results."
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Attachments / Object Store / File Scanning",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Malicious or sensitive attachments stored with public ACLs or insufficient scanning leading to malware distribution or PII leakage from attachments."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Notifications (Email / In-app)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Notification spoofing or information leakage via email digests or notifications where sensitive content is included in email/body, exposing data to third parties or attackers intercepting email."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 2,
+    "impact": 3,
+    "component": "Reporting / Analytics",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Aggregated analytics or productivity metrics reveal user-sensitive behavior or PII if dashboards or exports lack proper access controls or are cached publicly."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Application Services / Channel Connectors",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "API abuse via publishing connectors: attackers craft malformed channel payloads to cause remote code execution on connector adapters or bypass formatting checks causing unintended content being posted"
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Infrastructure & Security Services (KMS/Secrets Manager)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromised cloud credentials or IAM misconfiguration allow attackers to access KMS/Secrets Manager and decrypt secrets or impersonate services to exfiltrate secrets and rotate keys."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services / Workflow Engine",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Lack of reliable action attribution: actions by agents or users cannot be reliably linked to an identity (e.g., agent-run publish without clear audit), enabling denial of responsibility or tampering w"
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 4,
+    "impact": 2,
+    "component": "Frontend / API (Search, Mentions)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Autocomplete/mentions enumeration: attackers enumerate user lists via search/mentions endpoint allowing reconnaissance of registered users, agents or workspace membership."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "External Integrations (Third-party services)",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Third-party rate limits or outages (social APIs, email providers, file scanning vendors) prevent publishing or scanning causing backlog, delayed publishing, or missed moderation."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Workers",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Worker or microservice compromise leads to lateral movement and elevated privileges if service-to-service auth is weak, enabling access to DB or Secrets Manager beyond intended scope."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage (Analytics/Search)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Search or analytics cluster exposure (e.g., Elasticsearch) with default credentials or open network leads to mass data leakage of posts, drafts, PII, and agent logs."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 2,
+    "impact": 3,
+    "component": "Application Services (Scheduling & Multichannel Publication)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Scheduler manipulation: attackers change scheduled publish times or channel-specific formatting to cause undesired posts or duplicate publishing across channels, damaging reputation or causing misinfo"
+  },
+  {
+    "id": "THR-029",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend / Application (Real-time Collaboration)",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Real-time presence or collaboration feature abused to spam presence/state updates (websocket flood) consuming bandwidth and CPU, causing degraded UX and potential disconnection of legitimate users."
+  },
+  {
+    "id": "THR-030",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Infrastructure & Security Services (Backups / DR)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Backup compromise or unauthorized restore (attacker deletes backups or restores malicious snapshots) causing data loss or reintroduction of compromised data into production."
+  }
+]

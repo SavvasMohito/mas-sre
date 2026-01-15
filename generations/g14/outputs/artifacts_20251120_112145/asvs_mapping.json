@@ -1,0 +1,488 @@
+[
+  {
+    "control_id": "AC-02",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "REQ-001",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The information system manages information system accounts, including establishing, activating, modi"
+  },
+  {
+    "control_id": "A.9.1.2",
+    "standard": "ISO27001",
+    "v_category": "Access control",
+    "requirement_id": "REQ-001",
+    "level": null,
+    "priority": "High",
+    "requirement": "Users shall only be provided with access to the network and network services that they have been spe"
+  },
+  {
+    "control_id": "ASVS 2.1",
+    "standard": "OWASP",
+    "v_category": "Authentication Verification Requirements",
+    "requirement_id": "REQ-001",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that role-based access control is implemented and enforced server-side."
+  },
+  {
+    "control_id": "ASVS 2.3",
+    "standard": "OWASP",
+    "v_category": "Authentication Verification Requirements",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify correct implementation of federated authentication (SAML, OAuth2/OIDC) and that the applicati"
+  },
+  {
+    "control_id": "IA-08",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The information system supports organizational users leveraging federated identities and authenticat"
+  },
+  {
+    "control_id": "A.9.4.2",
+    "standard": "ISO27001",
+    "v_category": "Access control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Where required by the business, users shall be provided with a secure log-on procedure which may inc"
+  },
+  {
+    "control_id": "AC-02",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The information system manages information system accounts, including establishing, activating, modi"
+  },
+  {
+    "control_id": "A.9.2.2",
+    "standard": "ISO27001",
+    "v_category": "Access control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The allocation and use of privileges shall be restricted and controlled. A formal user access provis"
+  },
+  {
+    "control_id": "ASVS 2.5",
+    "standard": "OWASP",
+    "v_category": "Authentication and Session Management",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that user account management functions (create, update, disable, delete) are implemented with"
+  },
+  {
+    "control_id": "SI-12",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The information system validates the accuracy and integrity of data inputs and detects input errors "
+  },
+  {
+    "control_id": "ASVS 5.1",
+    "standard": "OWASP",
+    "v_category": "Business Logic Controls",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify business logic functions, including multi-step workflows and data correctness for application"
+  },
+  {
+    "control_id": "AU-12",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The system associates user identities with actions, ensuring timesheet entries can be attributed and"
+  },
+  {
+    "control_id": "ASVS 5.3",
+    "standard": "OWASP",
+    "v_category": "Business Logic Controls",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that input validation and business rule enforcement prevents invalid state transitions (e.g.,"
+  },
+  {
+    "control_id": "SI-10",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The application checks and validates input data for completeness and correctness before processing o"
+  },
+  {
+    "control_id": "A.14.2.5",
+    "standard": "ISO27001",
+    "v_category": "System acquisition, development and maintenance",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Security requirements for applications including validation and error handling shall be addressed du"
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The information system determines which events (such as submission) are to be audited and records su"
+  },
+  {
+    "control_id": "ASVS 5.2",
+    "standard": "OWASP",
+    "v_category": "Business Logic Controls",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that state transitions are enforced server-side and that submitted records become immutable/r"
+  },
+  {
+    "control_id": "A.12.4.1",
+    "standard": "ISO27001",
+    "v_category": "Logging and monitoring",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Event logs recording user activities and timestamps shall be maintained to support later review and "
+  },
+  {
+    "control_id": "AU-6",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization reviews and analyzes audit records for indications of inappropriate activity; appro"
+  },
+  {
+    "control_id": "ASVS 5.2",
+    "standard": "OWASP",
+    "v_category": "Business Logic Controls",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that workflow actions (approve/reject) are properly authorized, logged, and include support f"
+  },
+  {
+    "control_id": "A.12.1.3",
+    "standard": "ISO27001",
+    "v_category": "Operational controls",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Ensure operations are controlled and that changes and approvals are managed and recorded."
+  },
+  {
+    "control_id": "AC-05",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization separates duties of individuals as necessary, and implements delegation controls to"
+  },
+  {
+    "control_id": "ASVS 2.5",
+    "standard": "OWASP",
+    "v_category": "Authentication and Session Management",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Ensure that delegation and temporary role assignments are time-bound and auditable, and support revo"
+  },
+  {
+    "control_id": "A.6.1.2",
+    "standard": "ISO27001",
+    "v_category": "Organisation of information security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Conflicts of interest are reduced by segregating duties and defining responsibilities, including del"
+  },
+  {
+    "control_id": "A.7.2.2",
+    "standard": "ISO27001",
+    "v_category": "Human resource security",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Employees should be made aware of information security responsibilities; HR processes should include"
+  },
+  {
+    "control_id": "AC-02",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The information system manages accounts including attributes; systems supporting leave should manage"
+  },
+  {
+    "control_id": "ASVS 5.1",
+    "standard": "OWASP",
+    "v_category": "Business Logic Controls",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify business processes like leave requests and balance calculations are implemented correctly and"
+  },
+  {
+    "control_id": "A.12.1.1",
+    "standard": "ISO27001",
+    "v_category": "Operational controls",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Operating procedures should be documented; application configuration (like public holidays) must be "
+  },
+  {
+    "control_id": "CM-2",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Establish and maintain baseline configurations for information systems including configurable data s"
+  },
+  {
+    "control_id": "ASVS 5.1",
+    "standard": "OWASP",
+    "v_category": "Business Logic Controls",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify system-provided data and configurable presets (e.g., public holidays) are applied consistentl"
+  },
+  {
+    "control_id": "ASVS 5.3",
+    "standard": "OWASP",
+    "v_category": "Business Logic Controls",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify business rule enforcement (configurable policies like workweek, min/max hours) is applied ser"
+  },
+  {
+    "control_id": "AC-06",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The organization employs the concept of least privilege, ensuring users are granted only the access "
+  },
+  {
+    "control_id": "A.14.2.5",
+    "standard": "ISO27001",
+    "v_category": "System acquisition, development and maintenance",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Security requirements for applications including enforcement of business rules and validation shall "
+  },
+  {
+    "control_id": "SI-4",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Implement mechanisms to monitor system notifications and ensure integrity of messaging."
+  },
+  {
+    "control_id": "ASVS 14.1",
+    "standard": "OWASP",
+    "v_category": "Data Protection",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Ensure sensitive data transmitted via notifications (email) is protected and minimized (avoid includ"
+  },
+  {
+    "control_id": "A.10.1.1",
+    "standard": "ISO27001",
+    "v_category": "Cryptography",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Use cryptographic controls to protect the confidentiality, integrity and availability of information"
+  },
+  {
+    "control_id": "AC-03",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The system enforces approved authorizations for logical access to information and system resources ("
+  },
+  {
+    "control_id": "ASVS 10.1",
+    "standard": "OWASP",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Verify that access control is applied to business functions such as report generation and data expor"
+  },
+  {
+    "control_id": "A.9.4.1",
+    "standard": "ISO27001",
+    "v_category": "Access control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Access to information and application system functions should be restricted in accordance with the a"
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The information system determines which events (such as timesheet lifecycle events) are to be audite"
+  },
+  {
+    "control_id": "A.12.4.1",
+    "standard": "ISO27001",
+    "v_category": "Logging and monitoring",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Event logs recording user activities and changes shall be maintained to support monitoring and inves"
+  },
+  {
+    "control_id": "ASVS 10.5",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify sufficient logging is implemented to support reconstruction of events such as approvals, reje"
+  },
+  {
+    "control_id": "AC-5",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization separates duties of individuals as necessary and implements controls over privilege"
+  },
+  {
+    "control_id": "ASVS 2.5",
+    "standard": "OWASP",
+    "v_category": "Authentication and Session Management",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify administrative functions are protected and that only authorized administrators can change sys"
+  },
+  {
+    "control_id": "A.9.2.3",
+    "standard": "ISO27001",
+    "v_category": "Access control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "The allocation and use of privileged access rights shall be restricted and controlled."
+  },
+  {
+    "control_id": "ASVS 14.2",
+    "standard": "OWASP",
+    "v_category": "Privacy and Integrity",
+    "requirement_id": "",
+    "level": "L1",
+    "priority": "Medium",
+    "requirement": "Verify that privacy and accessibility considerations are addressed in application design to prevent "
+  },
+  {
+    "control_id": "PL-8",
+    "standard": "NIST",
+    "v_category": "Planning",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Low",
+    "requirement": "Consider accessibility and usability as part of secure system architecture and design."
+  },
+  {
+    "control_id": "A.14.2.1",
+    "standard": "ISO27001",
+    "v_category": "System acquisition, development and maintenance",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Security and quality requirements for systems (including usability and accessibility) should be defi"
+  },
+  {
+    "control_id": "AC-06",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "The organization employs the concept of least privilege, ensuring users are granted only the access "
+  },
+  {
+    "control_id": "A.9.4.1",
+    "standard": "ISO27001",
+    "v_category": "Access control",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Access to information and application system functions should be restricted in accordance with the a"
+  },
+  {
+    "control_id": "ASVS 10.1",
+    "standard": "OWASP",
+    "v_category": "Access Control",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify access control is applied to business functions and data based on roles and attributes, suppo"
+  },
+  {
+    "control_id": "MP-6",
+    "standard": "NIST",
+    "v_category": "Media Protection",
+    "requirement_id": "",
+    "level": null,
+    "priority": "High",
+    "requirement": "Protect and sanitize media containing sensitive information prior to disposal; retention policies sh"
+  },
+  {
+    "control_id": "A.8.3.3",
+    "standard": "ISO27001",
+    "v_category": "Asset management",
+    "requirement_id": "",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Information shall be handled in accordance with its classification including retention and protectio"
+  },
+  {
+    "control_id": "ASVS 14.1",
+    "standard": "OWASP",
+    "v_category": "Data Protection",
+    "requirement_id": "",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that sensitive data is protected at rest and in transit using appropriate cryptography, and t"
+  }
+]

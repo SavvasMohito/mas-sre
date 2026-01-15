@@ -1,0 +1,574 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"This e-commerce platform is a cloud-hosted, layered system composed of an edge layer (CDN and WAF) serving a mobile-responsive frontend (public storefront and admin UI), backed by an API gateway that routes to application services (authentication/IAM, commerce/order, inventory/catalog, admin, and AI services). Persistent storage includes relational databases for orders/users/inventory, a search engine for catalog and site search, object storage for media, and a data warehouse for analytics. Application services integrate with third-party providers for payments (Stripe/PayPal/Apple Pay), social login (Google/Facebook), shipping carriers (FedEx/UPS), email providers, and AI/ML platforms. Security, monitoring, consent and privacy controls are embedded throughout (TLS, WAF, tokenization, MFA, logging, SIEM), and the design supports EU/US regulatory constraints (PCI-DSS, PSD2/SCA, GDPR/CCPA) and scalability for peak loads.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\n  subgraph \\\"Edge Layer\\\"\\n    Edge[Edge CDN & WAF]\\n  end\\n  subgraph \\\"Frontend Layer\\\"\\n    Users[Customers & Admins]\\n    FE[Web App SPA & Mobile App]\\n    AdminUI[Admin UI]\\n  end\\n  subgraph \\\"Application Services\\\"\\n    API[API Gateway & Edge Services]\\n    Auth[Auth & IAM Service]\\n    Commerce[Commerce & Order Service]\\n    AI[AI Recommendations & Chatbot]\\n    AdminSvc[Admin Dashboard Service]\\n  end\\n  subgraph \\\"Data Layer\\\"\\n    DB[Relational DB Orders Users Inventory]\\n    Search[Search Engine & Catalog]\\n    Object[Object Storage Media Assets]\\n    Warehouse[Analytics Data Warehouse]\\n  end\\n  subgraph \\\"External Services\\\"\\n    Stripe[Stripe Payments]\\n    PayPal[PayPal]\\n    ApplePay[Apple Pay]\\n    Social[Google & Facebook Auth]\\n    Ship[Shipping Carriers FedEx/UPS]\\n    Email[Transactional Email Provider]\\n    AnalyticsExt[3rd-party Analytics]\\n    ML[AI/ML Cloud Services]\\n  end\\n\\n  Users --> Edge\\n  Edge --> FE\\n  Edge --> AdminUI\\n  FE --> API\\n  AdminUI --> API\\n\\n  API --> Auth\\n  API --> Commerce\\n  API --> AI\\n  API --> AdminSvc\\n\\n  Auth --> Social\\n  Auth --> DB\\n\\n  Commerce --> Stripe\\n  Commerce --> PayPal\\n  Commerce --> ApplePay\\n  Commerce --> Ship\\n  Commerce --> DB\\n  Commerce --> Search\\n\\n  AI --> ML\\n  AI --> Search\\n\\n  AdminSvc --> DB\\n  AdminSvc --> Search\\n\\n  API --> Email\\n  API --> AnalyticsExt\\n\\n  DB --> Warehouse\\n  Search --> Warehouse\\n  Object --> Search\\n  AnalyticsExt --> Warehouse\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Public storefront and admin UI providing product browsing, cart/checkout flows, account management, and admin operations with responsive and accessible UI.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN/WAF (edge)\",\n        \"Third-party Analytics\",\n        \"Social Login SDKs (Google/Facebook)\"\n      ],\n      \"data_handled\": [\n        \"User interactions (events/clicks)\",\n        \"Session tokens\",\n        \"Public product content\",\n        \"User-provided PII in forms\"\n      ]\n    },\n    {\n      \"name\": \"Edge Layer\",\n      \"responsibility\": \"CDN for performance, TLS termination, DDoS mitigation and WAF to filter malicious traffic prior to reaching application endpoints.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Managed CDN/WAF provider (e.g., CloudFront+WAF, Cloudflare)\"\n      ],\n      \"data_handled\": [\n        \"HTTPS requests and responses\",\n        \"Rate limiting and bot signals\",\n        \"Edge logs and metrics\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic: authentication/IAM, cart/checkout, order processing, promotions engine, inventory, admin operations, AI services for recommendations and chatbot.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Stripe (payments)\",\n        \"PayPal/Apple Pay\",\n        \"Shipping APIs (FedEx/UPS)\",\n        \"AI/ML cloud services\"\n      ],\n      \"data_handled\": [\n        \"User accounts and PII\",\n        \"Order and payment metadata (tokenized)\",\n        \"Promotion rules and pricing\",\n        \"Behavioral signals for recommendations\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage Layer\",\n      \"responsibility\": \"Persistent storage for transactional data, catalog/search index, media assets, and analytics/BI datasets supporting reporting and compliance.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Managed RDBMS (e.g., AWS RDS), Search (e.g., Elasticsearch/Opensearch), Object Storage (e.g., S3), Data Warehouse (e.g., Redshift/BigQuery)\"\n      ],\n      \"data_handled\": [\n        \"Orders, payments (tokens), users, inventory\",\n        \"Product catalog and images\",\n        \"Logs and analytics data\",\n        \"Consent and retention metadata\"\n      ]\n    },\n    {\n      \"name\": \"External Integrations\",\n      \"responsibility\": \"Third-party services for payments, social auth, shipping, email, analytics, and AI tooling used for payment flows, identity, notifications and advanced features.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Stripe, PayPal, Apple Pay, Google/Facebook Auth, FedEx, UPS, SendGrid/Mailgun, Analytics providers, AI cloud providers\"\n      ],\n      \"data_handled\": [\n        \"Payment tokens and transaction IDs\",\n        \"Auth tokens from social providers\",\n        \"Shipment details and tracking numbers\",\n        \"Transactional email content and delivery metadata\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users interact via browser/mobile; requests pass through CDN/WAF to the API gateway. Frontend requests (search, catalog, cart actions) are routed to application services which read/write to the relational DB and search index; media served from object storage. Checkout invokes the commerce service which calls payment providers (Stripe/PayPal/Apple Pay) to obtain payment tokens and complete charges; payment tokens (not PAN) and transaction metadata are stored. Once orders are created, shipping integration requests rates/labels from carriers and stores tracking numbers. Transactional emails are sent via an email provider. Behavioral events, logs and anonymized telemetry are streamed to the analytics warehouse and third-party analytics providers (respecting consent). AI/ML services consume anonymized or consented behavioral and product data for recommendations and categorization, and may write inference results back to the catalog or cache.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users\",\n        \"Third-party callbacks (payment/webhook endpoints)\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"HTTPS/TLS 1.2+\",\n        \"Rate limiting\",\n        \"User input validation and client-side protections\",\n        \"Content Security Policy (CSP) and secure cookies\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge Layer\",\n      \"components\": [\n        \"Edge CDN & WAF\",\n        \"TLS termination\",\n        \"Bot management\"\n      ],\n      \"boundary_type\": \"Perimeter\",\n      \"security_controls\": [\n        \"Managed WAF rules and OWASP protections\",\n        \"DDoS mitigation\",\n        \"IP allow/block lists\",\n        \"Edge logging and alerting\"\n      ]\n    },\n    {\n      \"name\": \"Application Layer\",\n      \"components\": [\n        \"API Gateway\",\n        \"Auth Service\",\n        \"Commerce Service\",\n        \"AI Service\",\n        \"Admin Service\"\n      ],\n      \"boundary_type\": \"Internal / Trusted\",\n      \"security_controls\": [\n        \"Mutual TLS between internal services where needed\",\n        \"API authentication and fine-grained authorization (OAuth2/JWT, RBAC)\",\n        \"MFA for admin access\",\n        \"Input validation, rate limiting, and WAF\",\n        \"SIEM and centralized logging\"\n      ]\n    },\n    {\n      \"name\": \"Database Tier\",\n      \"components\": [\n        \"Relational DB\",\n        \"Search Engine\",\n        \"Object Storage\",\n        \"Data Warehouse\"\n      ],\n      \"boundary_type\": \"Restricted\",\n      \"security_controls\": [\n        \"VPC isolation and private subnets\",\n        \"Encryption at rest and in transit\",\n        \"Least-privilege IAM and MFA for DB admins\",\n        \"Backup encryption and retention policies\",\n        \"Data access auditing and monitoring\"\n      ]\n    },\n    {\n      \"name\": \"Third-Party Services\",\n      \"components\": [\n        \"Stripe/PayPal/ApplePay\",\n        \"Google/Facebook\",\n        \"FedEx/UPS\",\n        \"Email Provider\",\n        \"AI/Analytics vendors\"\n      ],\n      \"boundary_type\": \"External Partner\",\n      \"security_controls\": [\n        \"DPAs and SCCs for EU data transfers\",\n        \"Scoped API credentials with rotation\",\n        \"IP-restricted webhooks and signed payloads\",\n        \"Minimized data sharing and tokenization\",\n        \"Vendor risk assessments\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: Public web/mobile UI (High risk) and exposed APIs via API Gateway (High risk) \u2014 mitigations include WAF, TLS, input validation, rate-limiting, CSP, and bot protection. Authentication endpoints and social login flows (High risk) require secure token handling, MFA and strict redirect/CSRF protections. Payment integration endpoints (High risk) interact with Stripe/PayPal/Apple Pay; PCI scope reduction via tokenization and server-side validation is mandatory. Admin UI and internal management APIs (High risk) must be protected by strong RBAC, IP controls, MFA and auditing. Third-party integrations (Medium risk) like shipping, email and analytics present data-exfiltration and webhook risks \u2014 use signed webhooks, scoped credentials, DPAs and data minimization. AI/chatbot interfaces and analytics tracking (Medium risk) can leak PII or training data \u2014 enforce redaction, consent gating and retention controls. Other surfaces: file uploads/media storage (Medium risk) require virus scanning and object ACLs; search and review systems (Low/Medium risk) need moderation and abuse detection. Overall mitigations: strong logging/monitoring, SIEM alerts, incident response runbooks, automated vulnerability scanning, dependency management, and least-privilege access throughout.\"\n}",
+  "pydantic": {
+    "architecture_summary": "This e-commerce platform is a cloud-hosted, layered system composed of an edge layer (CDN and WAF) serving a mobile-responsive frontend (public storefront and admin UI), backed by an API gateway that routes to application services (authentication/IAM, commerce/order, inventory/catalog, admin, and AI services). Persistent storage includes relational databases for orders/users/inventory, a search engine for catalog and site search, object storage for media, and a data warehouse for analytics. Application services integrate with third-party providers for payments (Stripe/PayPal/Apple Pay), social login (Google/Facebook), shipping carriers (FedEx/UPS), email providers, and AI/ML platforms. Security, monitoring, consent and privacy controls are embedded throughout (TLS, WAF, tokenization, MFA, logging, SIEM), and the design supports EU/US regulatory constraints (PCI-DSS, PSD2/SCA, GDPR/CCPA) and scalability for peak loads.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\n  subgraph \"Edge Layer\"\n    Edge[Edge CDN & WAF]\n  end\n  subgraph \"Frontend Layer\"\n    Users[Customers & Admins]\n    FE[Web App SPA & Mobile App]\n    AdminUI[Admin UI]\n  end\n  subgraph \"Application Services\"\n    API[API Gateway & Edge Services]\n    Auth[Auth & IAM Service]\n    Commerce[Commerce & Order Service]\n    AI[AI Recommendations & Chatbot]\n    AdminSvc[Admin Dashboard Service]\n  end\n  subgraph \"Data Layer\"\n    DB[Relational DB Orders Users Inventory]\n    Search[Search Engine & Catalog]\n    Object[Object Storage Media Assets]\n    Warehouse[Analytics Data Warehouse]\n  end\n  subgraph \"External Services\"\n    Stripe[Stripe Payments]\n    PayPal[PayPal]\n    ApplePay[Apple Pay]\n    Social[Google & Facebook Auth]\n    Ship[Shipping Carriers FedEx/UPS]\n    Email[Transactional Email Provider]\n    AnalyticsExt[3rd-party Analytics]\n    ML[AI/ML Cloud Services]\n  end\n\n  Users --> Edge\n  Edge --> FE\n  Edge --> AdminUI\n  FE --> API\n  AdminUI --> API\n\n  API --> Auth\n  API --> Commerce\n  API --> AI\n  API --> AdminSvc\n\n  Auth --> Social\n  Auth --> DB\n\n  Commerce --> Stripe\n  Commerce --> PayPal\n  Commerce --> ApplePay\n  Commerce --> Ship\n  Commerce --> DB\n  Commerce --> Search\n\n  AI --> ML\n  AI --> Search\n\n  AdminSvc --> DB\n  AdminSvc --> Search\n\n  API --> Email\n  API --> AnalyticsExt\n\n  DB --> Warehouse\n  Search --> Warehouse\n  Object --> Search\n  AnalyticsExt --> Warehouse",
+    "components": [
+      {
+        "name": "Frontend Layer",
+        "responsibility": "Public storefront and admin UI providing product browsing, cart/checkout flows, account management, and admin operations with responsive and accessible UI.",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "CDN/WAF (edge)",
+          "Third-party Analytics",
+          "Social Login SDKs (Google/Facebook)"
+        ],
+        "data_handled": [
+          "User interactions (events/clicks)",
+          "Session tokens",
+          "Public product content",
+          "User-provided PII in forms"
+        ]
+      },
+      {
+        "name": "Edge Layer",
+        "responsibility": "CDN for performance, TLS termination, DDoS mitigation and WAF to filter malicious traffic prior to reaching application endpoints.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Managed CDN/WAF provider (e.g., CloudFront+WAF, Cloudflare)"
+        ],
+        "data_handled": [
+          "HTTPS requests and responses",
+          "Rate limiting and bot signals",
+          "Edge logs and metrics"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core business logic: authentication/IAM, cart/checkout, order processing, promotions engine, inventory, admin operations, AI services for recommendations and chatbot.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Stripe (payments)",
+          "PayPal/Apple Pay",
+          "Shipping APIs (FedEx/UPS)",
+          "AI/ML cloud services"
+        ],
+        "data_handled": [
+          "User accounts and PII",
+          "Order and payment metadata (tokenized)",
+          "Promotion rules and pricing",
+          "Behavioral signals for recommendations"
+        ]
+      },
+      {
+        "name": "Data Storage Layer",
+        "responsibility": "Persistent storage for transactional data, catalog/search index, media assets, and analytics/BI datasets supporting reporting and compliance.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Managed RDBMS (e.g., AWS RDS), Search (e.g., Elasticsearch/Opensearch), Object Storage (e.g., S3), Data Warehouse (e.g., Redshift/BigQuery)"
+        ],
+        "data_handled": [
+          "Orders, payments (tokens), users, inventory",
+          "Product catalog and images",
+          "Logs and analytics data",
+          "Consent and retention metadata"
+        ]
+      },
+      {
+        "name": "External Integrations",
+        "responsibility": "Third-party services for payments, social auth, shipping, email, analytics, and AI tooling used for payment flows, identity, notifications and advanced features.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Stripe, PayPal, Apple Pay, Google/Facebook Auth, FedEx, UPS, SendGrid/Mailgun, Analytics providers, AI cloud providers"
+        ],
+        "data_handled": [
+          "Payment tokens and transaction IDs",
+          "Auth tokens from social providers",
+          "Shipment details and tracking numbers",
+          "Transactional email content and delivery metadata"
+        ]
+      }
+    ],
+    "data_flow_description": "Users interact via browser/mobile; requests pass through CDN/WAF to the API gateway. Frontend requests (search, catalog, cart actions) are routed to application services which read/write to the relational DB and search index; media served from object storage. Checkout invokes the commerce service which calls payment providers (Stripe/PayPal/Apple Pay) to obtain payment tokens and complete charges; payment tokens (not PAN) and transaction metadata are stored. Once orders are created, shipping integration requests rates/labels from carriers and stores tracking numbers. Transactional emails are sent via an email provider. Behavioral events, logs and anonymized telemetry are streamed to the analytics warehouse and third-party analytics providers (respecting consent). AI/ML services consume anonymized or consented behavioral and product data for recommendations and categorization, and may write inference results back to the catalog or cache.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "Users",
+          "Third-party callbacks (payment/webhook endpoints)"
+        ],
+        "boundary_type": "Untrusted",
+        "security_controls": [
+          "HTTPS/TLS 1.2+",
+          "Rate limiting",
+          "User input validation and client-side protections",
+          "Content Security Policy (CSP) and secure cookies"
+        ]
+      },
+      {
+        "name": "DMZ / Edge Layer",
+        "components": [
+          "Edge CDN & WAF",
+          "TLS termination",
+          "Bot management"
+        ],
+        "boundary_type": "Perimeter",
+        "security_controls": [
+          "Managed WAF rules and OWASP protections",
+          "DDoS mitigation",
+          "IP allow/block lists",
+          "Edge logging and alerting"
+        ]
+      },
+      {
+        "name": "Application Layer",
+        "components": [
+          "API Gateway",
+          "Auth Service",
+          "Commerce Service",
+          "AI Service",
+          "Admin Service"
+        ],
+        "boundary_type": "Internal / Trusted",
+        "security_controls": [
+          "Mutual TLS between internal services where needed",
+          "API authentication and fine-grained authorization (OAuth2/JWT, RBAC)",
+          "MFA for admin access",
+          "Input validation, rate limiting, and WAF",
+          "SIEM and centralized logging"
+        ]
+      },
+      {
+        "name": "Database Tier",
+        "components": [
+          "Relational DB",
+          "Search Engine",
+          "Object Storage",
+          "Data Warehouse"
+        ],
+        "boundary_type": "Restricted",
+        "security_controls": [
+          "VPC isolation and private subnets",
+          "Encryption at rest and in transit",
+          "Least-privilege IAM and MFA for DB admins",
+          "Backup encryption and retention policies",
+          "Data access auditing and monitoring"
+        ]
+      },
+      {
+        "name": "Third-Party Services",
+        "components": [
+          "Stripe/PayPal/ApplePay",
+          "Google/Facebook",
+          "FedEx/UPS",
+          "Email Provider",
+          "AI/Analytics vendors"
+        ],
+        "boundary_type": "External Partner",
+        "security_controls": [
+          "DPAs and SCCs for EU data transfers",
+          "Scoped API credentials with rotation",
+          "IP-restricted webhooks and signed payloads",
+          "Minimized data sharing and tokenization",
+          "Vendor risk assessments"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Primary entry points: Public web/mobile UI (High risk) and exposed APIs via API Gateway (High risk) \u2014 mitigations include WAF, TLS, input validation, rate-limiting, CSP, and bot protection. Authentication endpoints and social login flows (High risk) require secure token handling, MFA and strict redirect/CSRF protections. Payment integration endpoints (High risk) interact with Stripe/PayPal/Apple Pay; PCI scope reduction via tokenization and server-side validation is mandatory. Admin UI and internal management APIs (High risk) must be protected by strong RBAC, IP controls, MFA and auditing. Third-party integrations (Medium risk) like shipping, email and analytics present data-exfiltration and webhook risks \u2014 use signed webhooks, scoped credentials, DPAs and data minimization. AI/chatbot interfaces and analytics tracking (Medium risk) can leak PII or training data \u2014 enforce redaction, consent gating and retention controls. Other surfaces: file uploads/media storage (Medium risk) require virus scanning and object ACLs; search and review systems (Low/Medium risk) need moderation and abuse detection. Overall mitigations: strong logging/monitoring, SIEM alerts, incident response runbooks, automated vulnerability scanning, dependency management, and least-privilege access throughout."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A cloud-hosted, mobile-responsive e-commerce platform for selling consumer electronics to EU and US customers that supports customer account management (including social login), a searchable product catalog with reviews, shopping cart and checkout flows, secure payment processing (Stripe/PayPal/Apple Pay) with saved payment methods, order management, shipping carrier integrations, AI-driven recommendations and categorization, analytics and marketing workflows, and an admin dashboard for inventory, orders and customer service \u2014 designed to meet privacy, payment and accessibility regulatory requirements.\",\n  \"high_level_requirements\": [\n    \"User registration and login with email/password and social login (Google, Facebook)\",\n    \"Multi-factor authentication (MFA) for account security\",\n    \"User profiles with saved shipping addresses and tokenized payment methods\",\n    \"Order history, order tracking and order confirmation notifications\",\n    \"Searchable and browsable product catalog with categories, filters, images and specifications\",\n    \"Customer reviews and ratings with moderation and abuse controls\",\n    \"Shopping cart management (add/remove/save items, persistent carts)\",\n    \"Checkout flow including guest checkout, saved payment methods and shipping selection\",\n    \"Promotions and discount code engine\",\n    \"Payment processing integration (Stripe) with PayPal and Apple Pay support; refunds and chargeback handling\",\n    \"Admin dashboard for product inventory, order management and customer service tools\",\n    \"Sales analytics, financial reporting and exportable reports\",\n    \"Integration with shipping carriers (FedEx, UPS) including rate lookup and label generation\",\n    \"Email and transactional notifications for order confirmations, shipment and status updates\",\n    \"AI features: product recommendations based on browsing/purchase history and automated product categorization\",\n    \"Chatbot for customer support (AI-assisted) with human escalation\",\n    \"Multi-currency pricing, localization and basic tax handling\",\n    \"Mobile-responsive design and accessibility (WCAG compliance)\",\n    \"Customer marketing data exports with consent management and opt-in/opt-out flows\",\n    \"Customer behavior analytics and tracking with consent/cookie management\",\n    \"Security, logging, monitoring and incident response capabilities\",\n    \"Data privacy features: data minimization, retention rules, data portability and deletion (GDPR/CCPA support)\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"User registration and login supporting email/password accounts plus social login via Google and Facebook, with account recovery flows.\",\n      \"business_category\": \"Authentication / Identity & Access Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Allow customers to create and access accounts easily to manage orders, addresses and preferences. Social login reduces friction but introduces third-party identity risk and requires secure handling of identity tokens and link/unlink flows.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Multi-factor authentication (MFA) option for user accounts (e.g., TOTP or SMS/Push) to protect high-value accounts and admin users.\",\n      \"business_category\": \"Authentication / Access Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"MFA mitigates credential stuffing and account takeover, especially important for accounts that store payment methods and order history.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"User profile management storing customer contact info, multiple shipping addresses, preferences, and tokenized references to stored payment methods (no raw PAN storage).\",\n      \"business_category\": \"Data Management / Payments\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Profiles are necessary for checkout convenience and marketing but contain PII and payment references that require strong protection and privacy controls. Payment tokens reduce PCI scope.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Order history and tracking visible to users; order statuses and shipment tracking links; order-related transactional emails.\",\n      \"business_category\": \"Order Management / Notifications\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Customers need visibility into past and current orders. Order records contain PII and purchase details that must be secured and auditable.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"Searchable and browsable product catalog supporting categories, facets/filters, product pages with images, specifications, stock availability and SKU-level details.\",\n      \"business_category\": \"Product Catalog / Search\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Core storefront capability enabling product discovery. Product content is generally public but inventory/stocks used operationally may be internal.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"Customer reviews and star ratings with moderation controls, spam detection and optional review owner verification.\",\n      \"business_category\": \"Customer Content / Moderation\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Public / Confidential (if reviews contain PII)\",\n      \"rationale\": \"Social proof drives conversions. Moderation reduces abuse, fraud and PII leakage; review data may include user identifiers and should be manageable for takedown requests.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Shopping cart capabilities allowing add/remove/update items, persistent carts across sessions, and save-for-later functionality.\",\n      \"business_category\": \"Commerce / Session Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Standard ecommerce flow; carts may contain product and user association info and require integrity protections to prevent tampering with prices or promotions.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Checkout flow supporting guest checkout, registered-user checkout, shipping selection, tax calculation, and use of saved (tokenized) payment methods.\",\n      \"business_category\": \"Checkout / Payment Processing\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Critical revenue flow that touches PII and payments; must be secure, user-friendly, and integrate with fraud detection and SCA where required.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Promotions and discount code engine enabling percentage/fixed discounts, coupon codes, stacking rules, and eligibility criteria.\",\n      \"business_category\": \"Commerce / Pricing Engine\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Marketing and sales driver; must prevent abuse and ensure correct application to order totals and reporting.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Payment processing via Stripe with support for PayPal and Apple Pay; capability to save payment methods using tokenization; support refunds and chargeback workflows and reconciliation.\",\n      \"business_category\": \"Payment Processing / Financial Operations\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Handling card payments requires PCI-DSS compliance and secure tokenization; refunds and chargebacks require workflow, audit trails and dispute handling to protect revenue and customers.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Admin dashboard for product inventory management, pricing, promotions, order management, customer service tools (order search, refunds, cancellations), and role-based access controls.\",\n      \"business_category\": \"Administration / Operations\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Operations staff require UI for operations; admin functions must be tightly controlled and audited to prevent insider misuse and errors.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"Sales analytics and reporting including revenue, order volume, returns, promotion effectiveness, with secure export capability and role-filtered access.\",\n      \"business_category\": \"Analytics / Reporting\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal / Confidential\",\n      \"rationale\": \"Business insights for decision-making. Reports contain financial and customer metrics that should be access-controlled and auditable.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"Integration with shipping carriers (FedEx, UPS) for rate calculation, label generation, tracking number retrieval, and shipment status synchronization.\",\n      \"business_category\": \"Integrations / Logistics\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Necessary to provide accurate shipping costs and tracking. Involves sharing PII and order data with carriers; integration must be secure and reliable.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Transactional email service for order confirmations, shipment notifications, password resets and promotional communications, with templates and unsubscribe management.\",\n      \"business_category\": \"Notifications / Communication\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal / Confidential\",\n      \"rationale\": \"Communication ensures customer trust and regulatory compliance for transaction messages; must respect marketing consent and unsubscribe preferences.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"AI-driven product recommendations based on browsing and purchase history and automated categorization for new SKUs (with human review where needed).\",\n      \"business_category\": \"AI / Personalization\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Increase conversions and reduce manual categorization. Recommendations and automated models process behavioral and purchase data, raising privacy, explainability and bias concerns.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"AI chatbot for customer support capable of answering common questions, escalating to human agents, and logging conversations for training and auditing.\",\n      \"business_category\": \"Customer Support / AI\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Improves support efficiency. Chat interactions can contain PII and order details; need consent, redaction, secure storage and ability to remove training data on request.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"Multi-currency pricing and localization (language, date formats, currency symbol), and basic tax calculation per jurisdiction for EU and US markets.\",\n      \"business_category\": \"Localization / Tax\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public / Internal\",\n      \"rationale\": \"Serve EU and US customers with correct prices and taxes; tax calculation integrations may be required and rounding rules must be consistent with accounting.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"Mobile-responsive front-end and accessibility compliance with WCAG AA standards.\",\n      \"business_category\": \"UX / Accessibility\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Ensure customers can use the site from mobile devices and meet legal accessibility obligations for users with disabilities.\"\n    },\n    {\n      \"requirement_id\": \"REQ-019\",\n      \"requirement_text\": \"Marketing data export capability with consent management, segmentation, opt-in/opt-out controls and Data Processing Agreement (DPA) enforcement for third-party marketing tools.\",\n      \"business_category\": \"Marketing / Data Privacy\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Marketing needs customer segments while regulatory compliance (GDPR/CCPA) requires honoring consent and contractual protections for shared data.\"\n    },\n    {\n      \"requirement_id\": \"REQ-020\",\n      \"requirement_text\": \"Customer behavior analytics and tracking (page views, clicks, funnels) with cookie consent, anonymization/pseudonymization options and data retention controls.\",\n      \"business_category\": \"Analytics / Privacy\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Behavioral analytics drive personalization and optimization but constitute profiling under privacy law and require consent, minimization and retention policies.\"\n    },\n    {\n      \"requirement_id\": \"REQ-021\",\n      \"requirement_text\": \"Security operations including centralized logging, alerting (SIEM), monitoring, vulnerability management, WAF, rate-limiting, fraud detection and an incident response plan.\",\n      \"business_category\": \"Security / Operations\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Protect platform availability and data integrity. Proactive detection and response reduce breach impact and support regulatory reporting obligations.\"\n    },\n    {\n      \"requirement_id\": \"REQ-022\",\n      \"requirement_text\": \"Data privacy controls: data minimization, configurable retention policies, subject access request handling, data portability and deletion workflows (GDPR Right to be Forgotten, CCPA deletions).\",\n      \"business_category\": \"Privacy / Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential / Restricted\",\n      \"rationale\": \"Legal compliance for EU and US customers requires mechanisms for users to exercise data rights; must be auditable and enforce data residency and transfer requirements.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulations and standards include: PCI-DSS (payment card handling and storage rules; must use tokenization and limit card data scope), EU PSD2 Strong Customer Authentication (SCA) requirements for card payments originating in the EEA, GDPR (data protection, lawful basis, data subject rights, breach notification and data transfers), ePrivacy Directive and national cookie laws (consent for tracking), CCPA/CPRA (California consumer privacy), consumer protection and e-commerce laws in target markets, accessibility standards (WCAG), industry best practices such as OWASP Top 10, TLS 1.2+/HTTPS everywhere, SOC 2/ISO 27001 for vendor assurances, Secure SDLC, and requirements for Data Processing Agreements (DPAs) and Standard Contractual Clauses (SCCs) when transferring EU personal data to third-country processors. Operational/compliance controls should include encryption at rest for sensitive data, key management, least privilege IAM, logging/monitoring (SIEM), vulnerability scanning/pen testing, privacy-by-design, breach notification timelines (e.g., GDPR 72 hours), and contractual security obligations with third-party providers (Stripe, FedEx/UPS, Google/Facebook, analytics providers).\",\n  \"assumptions\": [\n    \"Platform will be cloud-hosted (AWS/Azure/GCP) using managed services for databases, storage and compute.\",\n    \"Stripe will be used as the primary card processor and will provide tokenization; PayPal and Apple Pay integrations will use their official SDKs/APIs.\",\n    \"Shipping carriers (FedEx, UPS) provide API access for rates, labels and tracking; developer access keys will be provisioned.\",\n    \"Users have internet access and use modern browsers or mobile devices; support for older legacy browsers will be limited.\",\n    \"Third-party services (analytics, social login, chatbots) will have DPAs and support data subject requests where applicable.\",\n    \"Payment card PANs will not be stored on our infrastructure; only payment tokens returned by processors will be stored.\",\n    \"EU customers' personal data residency and transfer requirements will be handled via appropriate safeguards (SCCs, adequacy) or EU-hosted resources where required.\",\n    \"SCA/PSD2 will apply to a subset of EU transactions and the checkout flow must support challenge flows (3DS, redirect, etc.).\",\n    \"Marketing emails and tracking will be subject to opt-in consent in the EU and unsubscribe functionality in all markets.\"\n  ],\n  \"constraints\": [\n    \"PCI-DSS compliance constraint: Do not store raw PAN, use Stripe tokenization and ensure SAQ scope is minimized; any storage of sensitive payment authentication data is prohibited.\",\n    \"PSD2/SCA constraint: Checkout must support SCA flows for EU-issued cards (3DS or other supported challenge methods) without breaking UX.\",\n    \"Data residency and transfer constraints: EU personal data must be protected by appropriate mechanisms for cross-border transfers (SCCs or adequacy) and retention/deletion policies.\",\n    \"Third-party integration constraints: Must integrate with FedEx/UPS APIs and maintain API keys securely; social login relies on Google/Facebook APIs and their policies.\",\n    \"Accessibility constraint: Core user flows must meet WCAG AA compliance which affects front-end design and testing.\",\n    \"Operational constraints: System must scale for peak ecommerce load (sale events) and meet availability SLAs (e.g., 99.9%+ depending on business agreement).\",\n    \"Privacy and consent constraint: Behavioral tracking and marketing data exports require granular consent management; defaults must be privacy-friendly for EU users.\",\n    \"Regulatory reporting constraint: Breach notification procedures must enable 72-hour reporting for GDPR incidents including evidence collection and communication templates.\",\n    \"Logging and retention constraint: Security logs and transaction records must be retained for business/forensic needs but aligned with privacy retention requirements (configurable per region).\",\n    \"Budget/time constraint (implicit): Use of managed third-party services is preferred to accelerate compliance (e.g., Stripe, managed WAF, cloud IAM) but requires operational costs and contractual agreements.\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A cloud-hosted, mobile-responsive e-commerce platform for selling consumer electronics to EU and US customers that supports customer account management (including social login), a searchable product catalog with reviews, shopping cart and checkout flows, secure payment processing (Stripe/PayPal/Apple Pay) with saved payment methods, order management, shipping carrier integrations, AI-driven recommendations and categorization, analytics and marketing workflows, and an admin dashboard for inventory, orders and customer service \u2014 designed to meet privacy, payment and accessibility regulatory requirements.",
+        "high_level_requirements": [
+          "User registration and login with email/password and social login (Google, Facebook)",
+          "Multi-factor authentication (MFA) for account security",
+          "User profiles with saved shipping addresses and tokenized payment methods",
+          "Order history, order tracking and order confirmation notifications",
+          "Searchable and browsable product catalog with categories, filters, images and specifications",
+          "Customer reviews and ratings with moderation and abuse controls",
+          "Shopping cart management (add/remove/save items, persistent carts)",
+          "Checkout flow including guest checkout, saved payment methods and shipping selection",
+          "Promotions and discount code engine",
+          "Payment processing integration (Stripe) with PayPal and Apple Pay support; refunds and chargeback handling",
+          "Admin dashboard for product inventory, order management and customer service tools",
+          "Sales analytics, financial reporting and exportable reports",
+          "Integration with shipping carriers (FedEx, UPS) including rate lookup and label generation",
+          "Email and transactional notifications for order confirmations, shipment and status updates",
+          "AI features: product recommendations based on browsing/purchase history and automated product categorization",
+          "Chatbot for customer support (AI-assisted) with human escalation",
+          "Multi-currency pricing, localization and basic tax handling",
+          "Mobile-responsive design and accessibility (WCAG compliance)",
+          "Customer marketing data exports with consent management and opt-in/opt-out flows",
+          "Customer behavior analytics and tracking with consent/cookie management",
+          "Security, logging, monitoring and incident response capabilities",
+          "Data privacy features: data minimization, retention rules, data portability and deletion (GDPR/CCPA support)"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "User registration and login supporting email/password accounts plus social login via Google and Facebook, with account recovery flows.",
+            "business_category": "Authentication / Identity & Access Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Allow customers to create and access accounts easily to manage orders, addresses and preferences. Social login reduces friction but introduces third-party identity risk and requires secure handling of identity tokens and link/unlink flows."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Multi-factor authentication (MFA) option for user accounts (e.g., TOTP or SMS/Push) to protect high-value accounts and admin users.",
+            "business_category": "Authentication / Access Security",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "MFA mitigates credential stuffing and account takeover, especially important for accounts that store payment methods and order history."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "User profile management storing customer contact info, multiple shipping addresses, preferences, and tokenized references to stored payment methods (no raw PAN storage).",
+            "business_category": "Data Management / Payments",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Profiles are necessary for checkout convenience and marketing but contain PII and payment references that require strong protection and privacy controls. Payment tokens reduce PCI scope."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Order history and tracking visible to users; order statuses and shipment tracking links; order-related transactional emails.",
+            "business_category": "Order Management / Notifications",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Customers need visibility into past and current orders. Order records contain PII and purchase details that must be secured and auditable."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "Searchable and browsable product catalog supporting categories, facets/filters, product pages with images, specifications, stock availability and SKU-level details.",
+            "business_category": "Product Catalog / Search",
+            "security_sensitivity": "Low",
+            "data_classification": "Public",
+            "rationale": "Core storefront capability enabling product discovery. Product content is generally public but inventory/stocks used operationally may be internal."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "Customer reviews and star ratings with moderation controls, spam detection and optional review owner verification.",
+            "business_category": "Customer Content / Moderation",
+            "security_sensitivity": "Medium",
+            "data_classification": "Public / Confidential (if reviews contain PII)",
+            "rationale": "Social proof drives conversions. Moderation reduces abuse, fraud and PII leakage; review data may include user identifiers and should be manageable for takedown requests."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Shopping cart capabilities allowing add/remove/update items, persistent carts across sessions, and save-for-later functionality.",
+            "business_category": "Commerce / Session Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Standard ecommerce flow; carts may contain product and user association info and require integrity protections to prevent tampering with prices or promotions."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Checkout flow supporting guest checkout, registered-user checkout, shipping selection, tax calculation, and use of saved (tokenized) payment methods.",
+            "business_category": "Checkout / Payment Processing",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Critical revenue flow that touches PII and payments; must be secure, user-friendly, and integrate with fraud detection and SCA where required."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Promotions and discount code engine enabling percentage/fixed discounts, coupon codes, stacking rules, and eligibility criteria.",
+            "business_category": "Commerce / Pricing Engine",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Marketing and sales driver; must prevent abuse and ensure correct application to order totals and reporting."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Payment processing via Stripe with support for PayPal and Apple Pay; capability to save payment methods using tokenization; support refunds and chargeback workflows and reconciliation.",
+            "business_category": "Payment Processing / Financial Operations",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Handling card payments requires PCI-DSS compliance and secure tokenization; refunds and chargebacks require workflow, audit trails and dispute handling to protect revenue and customers."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Admin dashboard for product inventory management, pricing, promotions, order management, customer service tools (order search, refunds, cancellations), and role-based access controls.",
+            "business_category": "Administration / Operations",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Operations staff require UI for operations; admin functions must be tightly controlled and audited to prevent insider misuse and errors."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "Sales analytics and reporting including revenue, order volume, returns, promotion effectiveness, with secure export capability and role-filtered access.",
+            "business_category": "Analytics / Reporting",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal / Confidential",
+            "rationale": "Business insights for decision-making. Reports contain financial and customer metrics that should be access-controlled and auditable."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "Integration with shipping carriers (FedEx, UPS) for rate calculation, label generation, tracking number retrieval, and shipment status synchronization.",
+            "business_category": "Integrations / Logistics",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Necessary to provide accurate shipping costs and tracking. Involves sharing PII and order data with carriers; integration must be secure and reliable."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Transactional email service for order confirmations, shipment notifications, password resets and promotional communications, with templates and unsubscribe management.",
+            "business_category": "Notifications / Communication",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal / Confidential",
+            "rationale": "Communication ensures customer trust and regulatory compliance for transaction messages; must respect marketing consent and unsubscribe preferences."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "AI-driven product recommendations based on browsing and purchase history and automated categorization for new SKUs (with human review where needed).",
+            "business_category": "AI / Personalization",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Increase conversions and reduce manual categorization. Recommendations and automated models process behavioral and purchase data, raising privacy, explainability and bias concerns."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "AI chatbot for customer support capable of answering common questions, escalating to human agents, and logging conversations for training and auditing.",
+            "business_category": "Customer Support / AI",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Improves support efficiency. Chat interactions can contain PII and order details; need consent, redaction, secure storage and ability to remove training data on request."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "Multi-currency pricing and localization (language, date formats, currency symbol), and basic tax calculation per jurisdiction for EU and US markets.",
+            "business_category": "Localization / Tax",
+            "security_sensitivity": "Low",
+            "data_classification": "Public / Internal",
+            "rationale": "Serve EU and US customers with correct prices and taxes; tax calculation integrations may be required and rounding rules must be consistent with accounting."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "Mobile-responsive front-end and accessibility compliance with WCAG AA standards.",
+            "business_category": "UX / Accessibility",
+            "security_sensitivity": "Low",
+            "data_classification": "Public",
+            "rationale": "Ensure customers can use the site from mobile devices and meet legal accessibility obligations for users with disabilities."
+          },
+          {
+            "requirement_id": "REQ-019",
+            "requirement_text": "Marketing data export capability with consent management, segmentation, opt-in/opt-out controls and Data Processing Agreement (DPA) enforcement for third-party marketing tools.",
+            "business_category": "Marketing / Data Privacy",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Marketing needs customer segments while regulatory compliance (GDPR/CCPA) requires honoring consent and contractual protections for shared data."
+          },
+          {
+            "requirement_id": "REQ-020",
+            "requirement_text": "Customer behavior analytics and tracking (page views, clicks, funnels) with cookie consent, anonymization/pseudonymization options and data retention controls.",
+            "business_category": "Analytics / Privacy",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Behavioral analytics drive personalization and optimization but constitute profiling under privacy law and require consent, minimization and retention policies."
+          },
+          {
+            "requirement_id": "REQ-021",
+            "requirement_text": "Security operations including centralized logging, alerting (SIEM), monitoring, vulnerability management, WAF, rate-limiting, fraud detection and an incident response plan.",
+            "business_category": "Security / Operations",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Protect platform availability and data integrity. Proactive detection and response reduce breach impact and support regulatory reporting obligations."
+          },
+          {
+            "requirement_id": "REQ-022",
+            "requirement_text": "Data privacy controls: data minimization, configurable retention policies, subject access request handling, data portability and deletion workflows (GDPR Right to be Forgotten, CCPA deletions).",
+            "business_category": "Privacy / Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential / Restricted",
+            "rationale": "Legal compliance for EU and US customers requires mechanisms for users to exercise data rights; must be auditable and enforce data residency and transfer requirements."
+          }
+        ],
+        "security_context": "Applicable regulations and standards include: PCI-DSS (payment card handling and storage rules; must use tokenization and limit card data scope), EU PSD2 Strong Customer Authentication (SCA) requirements for card payments originating in the EEA, GDPR (data protection, lawful basis, data subject rights, breach notification and data transfers), ePrivacy Directive and national cookie laws (consent for tracking), CCPA/CPRA (California consumer privacy), consumer protection and e-commerce laws in target markets, accessibility standards (WCAG), industry best practices such as OWASP Top 10, TLS 1.2+/HTTPS everywhere, SOC 2/ISO 27001 for vendor assurances, Secure SDLC, and requirements for Data Processing Agreements (DPAs) and Standard Contractual Clauses (SCCs) when transferring EU personal data to third-country processors. Operational/compliance controls should include encryption at rest for sensitive data, key management, least privilege IAM, logging/monitoring (SIEM), vulnerability scanning/pen testing, privacy-by-design, breach notification timelines (e.g., GDPR 72 hours), and contractual security obligations with third-party providers (Stripe, FedEx/UPS, Google/Facebook, analytics providers).",
+        "assumptions": [
+          "Platform will be cloud-hosted (AWS/Azure/GCP) using managed services for databases, storage and compute.",
+          "Stripe will be used as the primary card processor and will provide tokenization; PayPal and Apple Pay integrations will use their official SDKs/APIs.",
+          "Shipping carriers (FedEx, UPS) provide API access for rates, labels and tracking; developer access keys will be provisioned.",
+          "Users have internet access and use modern browsers or mobile devices; support for older legacy browsers will be limited.",
+          "Third-party services (analytics, social login, chatbots) will have DPAs and support data subject requests where applicable.",
+          "Payment card PANs will not be stored on our infrastructure; only payment tokens returned by processors will be stored.",
+          "EU customers' personal data residency and transfer requirements will be handled via appropriate safeguards (SCCs, adequacy) or EU-hosted resources where required.",
+          "SCA/PSD2 will apply to a subset of EU transactions and the checkout flow must support challenge flows (3DS, redirect, etc.).",
+          "Marketing emails and tracking will be subject to opt-in consent in the EU and unsubscribe functionality in all markets."
+        ],
+        "constraints": [
+          "PCI-DSS compliance constraint: Do not store raw PAN, use Stripe tokenization and ensure SAQ scope is minimized; any storage of sensitive payment authentication data is prohibited.",
+          "PSD2/SCA constraint: Checkout must support SCA flows for EU-issued cards (3DS or other supported challenge methods) without breaking UX.",
+          "Data residency and transfer constraints: EU personal data must be protected by appropriate mechanisms for cross-border transfers (SCCs or adequacy) and retention/deletion policies.",
+          "Third-party integration constraints: Must integrate with FedEx/UPS APIs and maintain API keys securely; social login relies on Google/Facebook APIs and their policies.",
+          "Accessibility constraint: Core user flows must meet WCAG AA compliance which affects front-end design and testing.",
+          "Operational constraints: System must scale for peak ecommerce load (sale events) and meet availability SLAs (e.g., 99.9%+ depending on business agreement).",
+          "Privacy and consent constraint: Behavioral tracking and marketing data exports require granular consent management; defaults must be privacy-friendly for EU users.",
+          "Regulatory reporting constraint: Breach notification procedures must enable 72-hour reporting for GDPR incidents including evidence collection and communication templates.",
+          "Logging and retention constraint: Security logs and transaction records must be retained for business/forensic needs but aligned with privacy retention requirements (configurable per region).",
+          "Budget/time constraint (implicit): Use of managed third-party services is preferred to accelerate compliance (e.g., Stripe, managed WAF, cloud IAM) but requires operational costs and contractual agreements."
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"This e-commerce platform is a cloud-hosted, layered system composed of an edge layer (CDN and WAF) serving a mobile-responsive frontend (public storefront and admin UI), backed by an API gateway that routes to application services (authentication/IAM, commerce/order, inventory/catalog, admin, and AI services). Persistent storage includes relational databases for orders/users/inventory, a search engine for catalog and site search, object storage for media, and a data warehouse for analytics. Application services integrate with third-party providers for payments (Stripe/PayPal/Apple Pay), social login (Google/Facebook), shipping carriers (FedEx/UPS), email providers, and AI/ML platforms. Security, monitoring, consent and privacy controls are embedded throughout (TLS, WAF, tokenization, MFA, logging, SIEM), and the design supports EU/US regulatory constraints (PCI-DSS, PSD2/SCA, GDPR/CCPA) and scalability for peak loads.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\n  subgraph \\\"Edge Layer\\\"\\n    Edge[Edge CDN & WAF]\\n  end\\n  subgraph \\\"Frontend Layer\\\"\\n    Users[Customers & Admins]\\n    FE[Web App SPA & Mobile App]\\n    AdminUI[Admin UI]\\n  end\\n  subgraph \\\"Application Services\\\"\\n    API[API Gateway & Edge Services]\\n    Auth[Auth & IAM Service]\\n    Commerce[Commerce & Order Service]\\n    AI[AI Recommendations & Chatbot]\\n    AdminSvc[Admin Dashboard Service]\\n  end\\n  subgraph \\\"Data Layer\\\"\\n    DB[Relational DB Orders Users Inventory]\\n    Search[Search Engine & Catalog]\\n    Object[Object Storage Media Assets]\\n    Warehouse[Analytics Data Warehouse]\\n  end\\n  subgraph \\\"External Services\\\"\\n    Stripe[Stripe Payments]\\n    PayPal[PayPal]\\n    ApplePay[Apple Pay]\\n    Social[Google & Facebook Auth]\\n    Ship[Shipping Carriers FedEx/UPS]\\n    Email[Transactional Email Provider]\\n    AnalyticsExt[3rd-party Analytics]\\n    ML[AI/ML Cloud Services]\\n  end\\n\\n  Users --> Edge\\n  Edge --> FE\\n  Edge --> AdminUI\\n  FE --> API\\n  AdminUI --> API\\n\\n  API --> Auth\\n  API --> Commerce\\n  API --> AI\\n  API --> AdminSvc\\n\\n  Auth --> Social\\n  Auth --> DB\\n\\n  Commerce --> Stripe\\n  Commerce --> PayPal\\n  Commerce --> ApplePay\\n  Commerce --> Ship\\n  Commerce --> DB\\n  Commerce --> Search\\n\\n  AI --> ML\\n  AI --> Search\\n\\n  AdminSvc --> DB\\n  AdminSvc --> Search\\n\\n  API --> Email\\n  API --> AnalyticsExt\\n\\n  DB --> Warehouse\\n  Search --> Warehouse\\n  Object --> Search\\n  AnalyticsExt --> Warehouse\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Public storefront and admin UI providing product browsing, cart/checkout flows, account management, and admin operations with responsive and accessible UI.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN/WAF (edge)\",\n        \"Third-party Analytics\",\n        \"Social Login SDKs (Google/Facebook)\"\n      ],\n      \"data_handled\": [\n        \"User interactions (events/clicks)\",\n        \"Session tokens\",\n        \"Public product content\",\n        \"User-provided PII in forms\"\n      ]\n    },\n    {\n      \"name\": \"Edge Layer\",\n      \"responsibility\": \"CDN for performance, TLS termination, DDoS mitigation and WAF to filter malicious traffic prior to reaching application endpoints.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Managed CDN/WAF provider (e.g., CloudFront+WAF, Cloudflare)\"\n      ],\n      \"data_handled\": [\n        \"HTTPS requests and responses\",\n        \"Rate limiting and bot signals\",\n        \"Edge logs and metrics\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic: authentication/IAM, cart/checkout, order processing, promotions engine, inventory, admin operations, AI services for recommendations and chatbot.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Stripe (payments)\",\n        \"PayPal/Apple Pay\",\n        \"Shipping APIs (FedEx/UPS)\",\n        \"AI/ML cloud services\"\n      ],\n      \"data_handled\": [\n        \"User accounts and PII\",\n        \"Order and payment metadata (tokenized)\",\n        \"Promotion rules and pricing\",\n        \"Behavioral signals for recommendations\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage Layer\",\n      \"responsibility\": \"Persistent storage for transactional data, catalog/search index, media assets, and analytics/BI datasets supporting reporting and compliance.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Managed RDBMS (e.g., AWS RDS), Search (e.g., Elasticsearch/Opensearch), Object Storage (e.g., S3), Data Warehouse (e.g., Redshift/BigQuery)\"\n      ],\n      \"data_handled\": [\n        \"Orders, payments (tokens), users, inventory\",\n        \"Product catalog and images\",\n        \"Logs and analytics data\",\n        \"Consent and retention metadata\"\n      ]\n    },\n    {\n      \"name\": \"External Integrations\",\n      \"responsibility\": \"Third-party services for payments, social auth, shipping, email, analytics, and AI tooling used for payment flows, identity, notifications and advanced features.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Stripe, PayPal, Apple Pay, Google/Facebook Auth, FedEx, UPS, SendGrid/Mailgun, Analytics providers, AI cloud providers\"\n      ],\n      \"data_handled\": [\n        \"Payment tokens and transaction IDs\",\n        \"Auth tokens from social providers\",\n        \"Shipment details and tracking numbers\",\n        \"Transactional email content and delivery metadata\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users interact via browser/mobile; requests pass through CDN/WAF to the API gateway. Frontend requests (search, catalog, cart actions) are routed to application services which read/write to the relational DB and search index; media served from object storage. Checkout invokes the commerce service which calls payment providers (Stripe/PayPal/Apple Pay) to obtain payment tokens and complete charges; payment tokens (not PAN) and transaction metadata are stored. Once orders are created, shipping integration requests rates/labels from carriers and stores tracking numbers. Transactional emails are sent via an email provider. Behavioral events, logs and anonymized telemetry are streamed to the analytics warehouse and third-party analytics providers (respecting consent). AI/ML services consume anonymized or consented behavioral and product data for recommendations and categorization, and may write inference results back to the catalog or cache.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users\",\n        \"Third-party callbacks (payment/webhook endpoints)\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"HTTPS/TLS 1.2+\",\n        \"Rate limiting\",\n        \"User input validation and client-side protections\",\n        \"Content Security Policy (CSP) and secure cookies\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge Layer\",\n      \"components\": [\n        \"Edge CDN & WAF\",\n        \"TLS termination\",\n        \"Bot management\"\n      ],\n      \"boundary_type\": \"Perimeter\",\n      \"security_controls\": [\n        \"Managed WAF rules and OWASP protections\",\n        \"DDoS mitigation\",\n        \"IP allow/block lists\",\n        \"Edge logging and alerting\"\n      ]\n    },\n    {\n      \"name\": \"Application Layer\",\n      \"components\": [\n        \"API Gateway\",\n        \"Auth Service\",\n        \"Commerce Service\",\n        \"AI Service\",\n        \"Admin Service\"\n      ],\n      \"boundary_type\": \"Internal / Trusted\",\n      \"security_controls\": [\n        \"Mutual TLS between internal services where needed\",\n        \"API authentication and fine-grained authorization (OAuth2/JWT, RBAC)\",\n        \"MFA for admin access\",\n        \"Input validation, rate limiting, and WAF\",\n        \"SIEM and centralized logging\"\n      ]\n    },\n    {\n      \"name\": \"Database Tier\",\n      \"components\": [\n        \"Relational DB\",\n        \"Search Engine\",\n        \"Object Storage\",\n        \"Data Warehouse\"\n      ],\n      \"boundary_type\": \"Restricted\",\n      \"security_controls\": [\n        \"VPC isolation and private subnets\",\n        \"Encryption at rest and in transit\",\n        \"Least-privilege IAM and MFA for DB admins\",\n        \"Backup encryption and retention policies\",\n        \"Data access auditing and monitoring\"\n      ]\n    },\n    {\n      \"name\": \"Third-Party Services\",\n      \"components\": [\n        \"Stripe/PayPal/ApplePay\",\n        \"Google/Facebook\",\n        \"FedEx/UPS\",\n        \"Email Provider\",\n        \"AI/Analytics vendors\"\n      ],\n      \"boundary_type\": \"External Partner\",\n      \"security_controls\": [\n        \"DPAs and SCCs for EU data transfers\",\n        \"Scoped API credentials with rotation\",\n        \"IP-restricted webhooks and signed payloads\",\n        \"Minimized data sharing and tokenization\",\n        \"Vendor risk assessments\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: Public web/mobile UI (High risk) and exposed APIs via API Gateway (High risk) \u2014 mitigations include WAF, TLS, input validation, rate-limiting, CSP, and bot protection. Authentication endpoints and social login flows (High risk) require secure token handling, MFA and strict redirect/CSRF protections. Payment integration endpoints (High risk) interact with Stripe/PayPal/Apple Pay; PCI scope reduction via tokenization and server-side validation is mandatory. Admin UI and internal management APIs (High risk) must be protected by strong RBAC, IP controls, MFA and auditing. Third-party integrations (Medium risk) like shipping, email and analytics present data-exfiltration and webhook risks \u2014 use signed webhooks, scoped credentials, DPAs and data minimization. AI/chatbot interfaces and analytics tracking (Medium risk) can leak PII or training data \u2014 enforce redaction, consent gating and retention controls. Other surfaces: file uploads/media storage (Medium risk) require virus scanning and object ACLs; search and review systems (Low/Medium risk) need moderation and abuse detection. Overall mitigations: strong logging/monitoring, SIEM alerts, incident response runbooks, automated vulnerability scanning, dependency management, and least-privilege access throughout.\"\n}",
+      "pydantic": {
+        "architecture_summary": "This e-commerce platform is a cloud-hosted, layered system composed of an edge layer (CDN and WAF) serving a mobile-responsive frontend (public storefront and admin UI), backed by an API gateway that routes to application services (authentication/IAM, commerce/order, inventory/catalog, admin, and AI services). Persistent storage includes relational databases for orders/users/inventory, a search engine for catalog and site search, object storage for media, and a data warehouse for analytics. Application services integrate with third-party providers for payments (Stripe/PayPal/Apple Pay), social login (Google/Facebook), shipping carriers (FedEx/UPS), email providers, and AI/ML platforms. Security, monitoring, consent and privacy controls are embedded throughout (TLS, WAF, tokenization, MFA, logging, SIEM), and the design supports EU/US regulatory constraints (PCI-DSS, PSD2/SCA, GDPR/CCPA) and scalability for peak loads.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\n  subgraph \"Edge Layer\"\n    Edge[Edge CDN & WAF]\n  end\n  subgraph \"Frontend Layer\"\n    Users[Customers & Admins]\n    FE[Web App SPA & Mobile App]\n    AdminUI[Admin UI]\n  end\n  subgraph \"Application Services\"\n    API[API Gateway & Edge Services]\n    Auth[Auth & IAM Service]\n    Commerce[Commerce & Order Service]\n    AI[AI Recommendations & Chatbot]\n    AdminSvc[Admin Dashboard Service]\n  end\n  subgraph \"Data Layer\"\n    DB[Relational DB Orders Users Inventory]\n    Search[Search Engine & Catalog]\n    Object[Object Storage Media Assets]\n    Warehouse[Analytics Data Warehouse]\n  end\n  subgraph \"External Services\"\n    Stripe[Stripe Payments]\n    PayPal[PayPal]\n    ApplePay[Apple Pay]\n    Social[Google & Facebook Auth]\n    Ship[Shipping Carriers FedEx/UPS]\n    Email[Transactional Email Provider]\n    AnalyticsExt[3rd-party Analytics]\n    ML[AI/ML Cloud Services]\n  end\n\n  Users --> Edge\n  Edge --> FE\n  Edge --> AdminUI\n  FE --> API\n  AdminUI --> API\n\n  API --> Auth\n  API --> Commerce\n  API --> AI\n  API --> AdminSvc\n\n  Auth --> Social\n  Auth --> DB\n\n  Commerce --> Stripe\n  Commerce --> PayPal\n  Commerce --> ApplePay\n  Commerce --> Ship\n  Commerce --> DB\n  Commerce --> Search\n\n  AI --> ML\n  AI --> Search\n\n  AdminSvc --> DB\n  AdminSvc --> Search\n\n  API --> Email\n  API --> AnalyticsExt\n\n  DB --> Warehouse\n  Search --> Warehouse\n  Object --> Search\n  AnalyticsExt --> Warehouse",
+        "components": [
+          {
+            "name": "Frontend Layer",
+            "responsibility": "Public storefront and admin UI providing product browsing, cart/checkout flows, account management, and admin operations with responsive and accessible UI.",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "CDN/WAF (edge)",
+              "Third-party Analytics",
+              "Social Login SDKs (Google/Facebook)"
+            ],
+            "data_handled": [
+              "User interactions (events/clicks)",
+              "Session tokens",
+              "Public product content",
+              "User-provided PII in forms"
+            ]
+          },
+          {
+            "name": "Edge Layer",
+            "responsibility": "CDN for performance, TLS termination, DDoS mitigation and WAF to filter malicious traffic prior to reaching application endpoints.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Managed CDN/WAF provider (e.g., CloudFront+WAF, Cloudflare)"
+            ],
+            "data_handled": [
+              "HTTPS requests and responses",
+              "Rate limiting and bot signals",
+              "Edge logs and metrics"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core business logic: authentication/IAM, cart/checkout, order processing, promotions engine, inventory, admin operations, AI services for recommendations and chatbot.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Stripe (payments)",
+              "PayPal/Apple Pay",
+              "Shipping APIs (FedEx/UPS)",
+              "AI/ML cloud services"
+            ],
+            "data_handled": [
+              "User accounts and PII",
+              "Order and payment metadata (tokenized)",
+              "Promotion rules and pricing",
+              "Behavioral signals for recommendations"
+            ]
+          },
+          {
+            "name": "Data Storage Layer",
+            "responsibility": "Persistent storage for transactional data, catalog/search index, media assets, and analytics/BI datasets supporting reporting and compliance.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Managed RDBMS (e.g., AWS RDS), Search (e.g., Elasticsearch/Opensearch), Object Storage (e.g., S3), Data Warehouse (e.g., Redshift/BigQuery)"
+            ],
+            "data_handled": [
+              "Orders, payments (tokens), users, inventory",
+              "Product catalog and images",
+              "Logs and analytics data",
+              "Consent and retention metadata"
+            ]
+          },
+          {
+            "name": "External Integrations",
+            "responsibility": "Third-party services for payments, social auth, shipping, email, analytics, and AI tooling used for payment flows, identity, notifications and advanced features.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Stripe, PayPal, Apple Pay, Google/Facebook Auth, FedEx, UPS, SendGrid/Mailgun, Analytics providers, AI cloud providers"
+            ],
+            "data_handled": [
+              "Payment tokens and transaction IDs",
+              "Auth tokens from social providers",
+              "Shipment details and tracking numbers",
+              "Transactional email content and delivery metadata"
+            ]
+          }
+        ],
+        "data_flow_description": "Users interact via browser/mobile; requests pass through CDN/WAF to the API gateway. Frontend requests (search, catalog, cart actions) are routed to application services which read/write to the relational DB and search index; media served from object storage. Checkout invokes the commerce service which calls payment providers (Stripe/PayPal/Apple Pay) to obtain payment tokens and complete charges; payment tokens (not PAN) and transaction metadata are stored. Once orders are created, shipping integration requests rates/labels from carriers and stores tracking numbers. Transactional emails are sent via an email provider. Behavioral events, logs and anonymized telemetry are streamed to the analytics warehouse and third-party analytics providers (respecting consent). AI/ML services consume anonymized or consented behavioral and product data for recommendations and categorization, and may write inference results back to the catalog or cache.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "Users",
+              "Third-party callbacks (payment/webhook endpoints)"
+            ],
+            "boundary_type": "Untrusted",
+            "security_controls": [
+              "HTTPS/TLS 1.2+",
+              "Rate limiting",
+              "User input validation and client-side protections",
+              "Content Security Policy (CSP) and secure cookies"
+            ]
+          },
+          {
+            "name": "DMZ / Edge Layer",
+            "components": [
+              "Edge CDN & WAF",
+              "TLS termination",
+              "Bot management"
+            ],
+            "boundary_type": "Perimeter",
+            "security_controls": [
+              "Managed WAF rules and OWASP protections",
+              "DDoS mitigation",
+              "IP allow/block lists",
+              "Edge logging and alerting"
+            ]
+          },
+          {
+            "name": "Application Layer",
+            "components": [
+              "API Gateway",
+              "Auth Service",
+              "Commerce Service",
+              "AI Service",
+              "Admin Service"
+            ],
+            "boundary_type": "Internal / Trusted",
+            "security_controls": [
+              "Mutual TLS between internal services where needed",
+              "API authentication and fine-grained authorization (OAuth2/JWT, RBAC)",
+              "MFA for admin access",
+              "Input validation, rate limiting, and WAF",
+              "SIEM and centralized logging"
+            ]
+          },
+          {
+            "name": "Database Tier",
+            "components": [
+              "Relational DB",
+              "Search Engine",
+              "Object Storage",
+              "Data Warehouse"
+            ],
+            "boundary_type": "Restricted",
+            "security_controls": [
+              "VPC isolation and private subnets",
+              "Encryption at rest and in transit",
+              "Least-privilege IAM and MFA for DB admins",
+              "Backup encryption and retention policies",
+              "Data access auditing and monitoring"
+            ]
+          },
+          {
+            "name": "Third-Party Services",
+            "components": [
+              "Stripe/PayPal/ApplePay",
+              "Google/Facebook",
+              "FedEx/UPS",
+              "Email Provider",
+              "AI/Analytics vendors"
+            ],
+            "boundary_type": "External Partner",
+            "security_controls": [
+              "DPAs and SCCs for EU data transfers",
+              "Scoped API credentials with rotation",
+              "IP-restricted webhooks and signed payloads",
+              "Minimized data sharing and tokenization",
+              "Vendor risk assessments"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Primary entry points: Public web/mobile UI (High risk) and exposed APIs via API Gateway (High risk) \u2014 mitigations include WAF, TLS, input validation, rate-limiting, CSP, and bot protection. Authentication endpoints and social login flows (High risk) require secure token handling, MFA and strict redirect/CSRF protections. Payment integration endpoints (High risk) interact with Stripe/PayPal/Apple Pay; PCI scope reduction via tokenization and server-side validation is mandatory. Admin UI and internal management APIs (High risk) must be protected by strong RBAC, IP controls, MFA and auditing. Third-party integrations (Medium risk) like shipping, email and analytics present data-exfiltration and webhook risks \u2014 use signed webhooks, scoped credentials, DPAs and data minimization. AI/chatbot interfaces and analytics tracking (Medium risk) can leak PII or training data \u2014 enforce redaction, consent gating and retention controls. Other surfaces: file uploads/media storage (Medium risk) require virus scanning and object ACLs; search and review systems (Low/Medium risk) need moderation and abuse detection. Overall mitigations: strong logging/monitoring, SIEM alerts, incident response runbooks, automated vulnerability scanning, dependency management, and least-privilege access throughout."
+      }
+    }
+  ]
+}

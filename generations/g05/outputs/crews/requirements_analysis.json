@@ -1,0 +1,667 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"A web-based multi-tenant private cloud management platform composed of a secured edge and frontend layer (web SPA and CLI), an API gateway and application service plane that implements project, policy, provisioning, monitoring, health/security and notification/ticketing workflows, a resilient data layer (identity, tenant metadata, audit logs, metrics TSDB, secrets vault/KMS), and an integration layer of cloud/infra connectors plus external services (email/SMS/webhooks). Users and CLIs access the system through a hardened load balancer/WAF to the API Gateway which enforces authentication/authorization before routing to core services. Provisioning and orchestration components interact with customer infrastructure connectors that call Kubernetes/OpenStack/VMware APIs. Monitoring and an AI anomaly engine consume metrics and emit alerts to the notification/ticketing subsystem and admin dashboards. Audit logs and encrypted secrets are stored in tamper-evident stores with KMS integration for encryption keys.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Edge Layer\\\"\\n  LB[Load Balancer / WAF]\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web App SPA & Admin UI]\\n  CLI[CLI & API Clients]\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[API Gateway & Auth]\\n  APP[Core App Services]\\n  PROV[Provisioning & Orchestration]\\n  POL[Policy & RBAC Engine]\\n  MON[Monitoring & Analytics]\\n  HS[Health & Security Engine]\\n  NOTIF[Notifications & Ticketing]\\nend\\nsubgraph \\\"Data Layer\\\"\\n  USERDB[User & Identity DB]\\n  TENANTDB[Tenant DB & Quotas]\\n  AUDIT[Audit Log Store]\\n  METRICS[Metrics TSDB]\\n  VAULT[Secrets Vault / KMS]\\nend\\nsubgraph \\\"Integration & Connectors\\\"\\n  CONNECT[Cloud Infra Connectors]\\n  K8S[Kubernetes OpenStack VMware]\\nend\\nsubgraph \\\"Observability & AI\\\"\\n  AI[AI Anomaly Engine]\\nend\\nsubgraph \\\"External Services\\\"\\n  EXTSVC[Email/SMS/Webhook/CI]\\nend\\nLB --> FE\\nLB --> CLI\\nFE --> API\\nCLI --> API\\nAPI --> APP\\nAPI --> POL\\nAPP --> PROV\\nAPP --> MON\\nAPP --> NOTIF\\nPROV --> CONNECT\\nCONNECT --> K8S\\nMON --> METRICS\\nHS --> AUDIT\\nNOTIF --> EXTSVC\\nAPP --> USERDB\\nAPP --> TENANTDB\\nPROV --> VAULT\\nPOL --> TENANTDB\\nMON --> AI\\nAI --> NOTIF\",\n  \"components\": [\n    {\n      \"name\": \"Edge Layer\",\n      \"responsibility\": \"Ingress protection and routing for user traffic; DDoS/WAF, SSL termination, TLS inspection and API rate-limiting before forwarding to internal services.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"WAF/load balancer appliances\",\n        \"CDN (optional)\"\n      ],\n      \"data_handled\": [\n        \"Encrypted HTTP(S) session metadata\",\n        \"Client IPs and TLS metadata\"\n      ]\n    },\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"User-facing Web SPA, Admin UI and CLI/API client endpoints for project lifecycle, dashboards, notifications and ticketing UI.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"Browser ecosystems\",\n        \"OAuth2/OIDC providers (for SSO) optional\"\n      ],\n      \"data_handled\": [\n        \"User UI session tokens\",\n        \"User input (project configs, tickets)\",\n        \"Notification preferences\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic: API gateway & auth, project management, provisioning/orchestration, policy & RBAC enforcement, notifications & ticketing, admin workflows and access controls.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"OAuth2 identity providers / MFA provider\",\n        \"Third-party ticketing integrations (optional)\"\n      ],\n      \"data_handled\": [\n        \"User identities & roles\",\n        \"Project definitions & quotas\",\n        \"Provisioning requests\",\n        \"Policy rules and audit actions\"\n      ]\n    },\n    {\n      \"name\": \"Data Layer\",\n      \"responsibility\": \"Persistent storage for identity, tenant metadata, quota state, audit logs, metrics/time-series data, and secure secrets storage integrated with KMS.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Enterprise KMS/HSM\",\n        \"Relational DB or distributed datastore\",\n        \"Time-series DB (Prometheus/InfluxDB)\"\n      ],\n      \"data_handled\": [\n        \"Credentials & secrets (encrypted)\",\n        \"Audit logs\",\n        \"Tenant/project metadata\",\n        \"Telemetry & metrics\"\n      ]\n    },\n    {\n      \"name\": \"Integration & Connectors\",\n      \"responsibility\": \"Adapters to underlying customer/private infrastructure (Kubernetes, OpenStack, VMware, SDN controllers) for provisioning, telemetry ingestion and network segmentation operations.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Kubernetes API\",\n        \"OpenStack/VMware APIs\",\n        \"SDN controller APIs\"\n      ],\n      \"data_handled\": [\n        \"Provisioning API calls\",\n        \"Resource inventory\",\n        \"Network configuration commands\"\n      ]\n    },\n    {\n      \"name\": \"Observability & AI\",\n      \"responsibility\": \"Collect, store and analyze metrics/logs; run anomaly detection and AI-assisted fault detection; generate alerts, capacity warnings and feed remediation orchestration.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"AI/ML frameworks\",\n        \"Metrics/Logging backends\",\n        \"Optional external ML services\"\n      ],\n      \"data_handled\": [\n        \"Telemetry streams\",\n        \"Derived alerts and anomaly scores\",\n        \"Aggregated analytics\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Outbound communication services for notifications, alert delivery and CI/webhook integrations (email, SMS, webhooks, third-party ITSM).\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"Email/SMS providers\",\n        \"Webhook/CI endpoints\",\n        \"Optional external ticketing systems\"\n      ],\n      \"data_handled\": [\n        \"Notification payloads\",\n        \"Escalation messages\",\n        \"Ticket metadata\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users/CLIs connect via the Edge Layer to the API Gateway which authenticates and authorizes requests. Authenticated requests flow to core app services for project creation, policy evaluation and provisioning. Provisioning requests call Integration Connectors which translate actions to target platform APIs (Kubernetes/OpenStack/VMware); secrets are retrieved from the Vault (KMS-backed) when needed. Telemetry from managed infrastructure and agents is ingested by the Monitoring service into the Metrics TSDB and consumed by the AI Anomaly Engine which issues alerts to the Notification/Ticketing subsystem. Audit events from all services are streamed to the Audit Log Store for tamper-evident retention. Dashboards query the Metrics TSDB, Tenant DB and Audit store for visualizations and exports.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"End users\",\n        \"CLI clients\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS (strong ciphers) for all connections\",\n        \"MFA enforced for interactive logins\",\n        \"Client-side rate limiting recommendations\",\n        \"IP allowlists and geo controls (optional)\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge Layer\",\n      \"components\": [\n        \"Load Balancer / WAF\",\n        \"Ingress proxies\"\n      ],\n      \"boundary_type\": \"Perimeter\",\n      \"security_controls\": [\n        \"WAF rules and DDoS mitigation\",\n        \"TLS termination with strict validation\",\n        \"Layer7 rate-limiting\",\n        \"Ingress authentication gating to API Gateway\"\n      ]\n    },\n    {\n      \"name\": \"Application Layer / Internal Network\",\n      \"components\": [\n        \"API Gateway\",\n        \"Core App Services\",\n        \"Provisioning Services\",\n        \"Policy Engine\",\n        \"Monitoring & Health services\"\n      ],\n      \"boundary_type\": \"Trusted-Zone (Internal)\",\n      \"security_controls\": [\n        \"Mutual TLS between internal services\",\n        \"Network segmentation and microsegmentation\",\n        \"Service mesh or mTLS enforcement\",\n        \"RBAC & ABAC enforced at API Gateway\",\n        \"Just-in-time admin access workflows\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage / Database Tier\",\n      \"components\": [\n        \"User DB\",\n        \"Tenant DB\",\n        \"Audit Log Store\",\n        \"Metrics TSDB\",\n        \"Secrets Vault/KMS\"\n      ],\n      \"boundary_type\": \"High-Trust-Data-Tier\",\n      \"security_controls\": [\n        \"Encryption at rest (KMS/HSM)\",\n        \"Access controls limited to service principals\",\n        \"Tamper-evident append-only audit logs\",\n        \"Network ACLs & DB encryption in-transit\"\n      ]\n    },\n    {\n      \"name\": \"Connector / Customer Infrastructure\",\n      \"components\": [\n        \"Cloud Infra Connectors\",\n        \"Customer Kubernetes/OpenStack/VMware\"\n      ],\n      \"boundary_type\": \"Third-Party/Customer-Controlled\",\n      \"security_controls\": [\n        \"Scoped API credentials with least privilege\",\n        \"Mutual TLS and IP allowlists\",\n        \"Per-project credentials and rotation\",\n        \"Audit logging of connector actions\"\n      ]\n    },\n    {\n      \"name\": \"External Notification Services\",\n      \"components\": [\n        \"Email/SMS/Webhook providers\"\n      ],\n      \"boundary_type\": \"External\",\n      \"security_controls\": [\n        \"Webhooks signed and verified\",\n        \"Outbound data minimization\",\n        \"TLS for all outbound connections\",\n        \"Rate-limits and retry policies\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: Web UI and API Gateway (high risk) \u2014 these expose authentication endpoints, project and provisioning APIs and must be protected with strong MFA, rate-limiting, input validation and RBAC. CLI/API tokens and automation endpoints (high risk) \u2014 require OAuth2, scoped tokens, short TTLs and granular scopes. Integration connectors to customer infra (high risk) \u2014 these hold credentials and can execute provisioning; enforce least-privilege credentials, rotation, and isolation. Secrets Vault and KMS access (critical) \u2014 highly sensitive, restrict to service accounts and protected by HSM/KMS policies. Monitoring ingestion endpoints and observability APIs (medium risk) \u2014 can be abused to exfiltrate telemetry; restrict visibility by role and encrypt telemetry. Admin console and privileged operations (high risk) \u2014 require just-in-time elevation, session recording and privileged session controls. External notification integrations (low-medium risk) \u2014 risk of data leakage via misconfigured webhooks or SMS; enforce signing and output filtering. Exposed risks also include supply-chain of connectors and third-party libraries; mitigate with SBOM, vulnerability scanning and secure CI/CD. Overall prioritized mitigations: strong identity and access controls, encryption in transit and at rest, extensive audit logging, network segmentation, least-privilege connectors, input validation and WAF protections.\"\n}",
+  "pydantic": {
+    "architecture_summary": "A web-based multi-tenant private cloud management platform composed of a secured edge and frontend layer (web SPA and CLI), an API gateway and application service plane that implements project, policy, provisioning, monitoring, health/security and notification/ticketing workflows, a resilient data layer (identity, tenant metadata, audit logs, metrics TSDB, secrets vault/KMS), and an integration layer of cloud/infra connectors plus external services (email/SMS/webhooks). Users and CLIs access the system through a hardened load balancer/WAF to the API Gateway which enforces authentication/authorization before routing to core services. Provisioning and orchestration components interact with customer infrastructure connectors that call Kubernetes/OpenStack/VMware APIs. Monitoring and an AI anomaly engine consume metrics and emit alerts to the notification/ticketing subsystem and admin dashboards. Audit logs and encrypted secrets are stored in tamper-evident stores with KMS integration for encryption keys.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Edge Layer\"\n  LB[Load Balancer / WAF]\nend\nsubgraph \"Frontend Layer\"\n  FE[Web App SPA & Admin UI]\n  CLI[CLI & API Clients]\nend\nsubgraph \"Application Services\"\n  API[API Gateway & Auth]\n  APP[Core App Services]\n  PROV[Provisioning & Orchestration]\n  POL[Policy & RBAC Engine]\n  MON[Monitoring & Analytics]\n  HS[Health & Security Engine]\n  NOTIF[Notifications & Ticketing]\nend\nsubgraph \"Data Layer\"\n  USERDB[User & Identity DB]\n  TENANTDB[Tenant DB & Quotas]\n  AUDIT[Audit Log Store]\n  METRICS[Metrics TSDB]\n  VAULT[Secrets Vault / KMS]\nend\nsubgraph \"Integration & Connectors\"\n  CONNECT[Cloud Infra Connectors]\n  K8S[Kubernetes OpenStack VMware]\nend\nsubgraph \"Observability & AI\"\n  AI[AI Anomaly Engine]\nend\nsubgraph \"External Services\"\n  EXTSVC[Email/SMS/Webhook/CI]\nend\nLB --> FE\nLB --> CLI\nFE --> API\nCLI --> API\nAPI --> APP\nAPI --> POL\nAPP --> PROV\nAPP --> MON\nAPP --> NOTIF\nPROV --> CONNECT\nCONNECT --> K8S\nMON --> METRICS\nHS --> AUDIT\nNOTIF --> EXTSVC\nAPP --> USERDB\nAPP --> TENANTDB\nPROV --> VAULT\nPOL --> TENANTDB\nMON --> AI\nAI --> NOTIF",
+    "components": [
+      {
+        "name": "Edge Layer",
+        "responsibility": "Ingress protection and routing for user traffic; DDoS/WAF, SSL termination, TLS inspection and API rate-limiting before forwarding to internal services.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "WAF/load balancer appliances",
+          "CDN (optional)"
+        ],
+        "data_handled": [
+          "Encrypted HTTP(S) session metadata",
+          "Client IPs and TLS metadata"
+        ]
+      },
+      {
+        "name": "Frontend Layer",
+        "responsibility": "User-facing Web SPA, Admin UI and CLI/API client endpoints for project lifecycle, dashboards, notifications and ticketing UI.",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "Browser ecosystems",
+          "OAuth2/OIDC providers (for SSO) optional"
+        ],
+        "data_handled": [
+          "User UI session tokens",
+          "User input (project configs, tickets)",
+          "Notification preferences"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core business logic: API gateway & auth, project management, provisioning/orchestration, policy & RBAC enforcement, notifications & ticketing, admin workflows and access controls.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "OAuth2 identity providers / MFA provider",
+          "Third-party ticketing integrations (optional)"
+        ],
+        "data_handled": [
+          "User identities & roles",
+          "Project definitions & quotas",
+          "Provisioning requests",
+          "Policy rules and audit actions"
+        ]
+      },
+      {
+        "name": "Data Layer",
+        "responsibility": "Persistent storage for identity, tenant metadata, quota state, audit logs, metrics/time-series data, and secure secrets storage integrated with KMS.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Enterprise KMS/HSM",
+          "Relational DB or distributed datastore",
+          "Time-series DB (Prometheus/InfluxDB)"
+        ],
+        "data_handled": [
+          "Credentials & secrets (encrypted)",
+          "Audit logs",
+          "Tenant/project metadata",
+          "Telemetry & metrics"
+        ]
+      },
+      {
+        "name": "Integration & Connectors",
+        "responsibility": "Adapters to underlying customer/private infrastructure (Kubernetes, OpenStack, VMware, SDN controllers) for provisioning, telemetry ingestion and network segmentation operations.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Kubernetes API",
+          "OpenStack/VMware APIs",
+          "SDN controller APIs"
+        ],
+        "data_handled": [
+          "Provisioning API calls",
+          "Resource inventory",
+          "Network configuration commands"
+        ]
+      },
+      {
+        "name": "Observability & AI",
+        "responsibility": "Collect, store and analyze metrics/logs; run anomaly detection and AI-assisted fault detection; generate alerts, capacity warnings and feed remediation orchestration.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "AI/ML frameworks",
+          "Metrics/Logging backends",
+          "Optional external ML services"
+        ],
+        "data_handled": [
+          "Telemetry streams",
+          "Derived alerts and anomaly scores",
+          "Aggregated analytics"
+        ]
+      },
+      {
+        "name": "External Services",
+        "responsibility": "Outbound communication services for notifications, alert delivery and CI/webhook integrations (email, SMS, webhooks, third-party ITSM).",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "Email/SMS providers",
+          "Webhook/CI endpoints",
+          "Optional external ticketing systems"
+        ],
+        "data_handled": [
+          "Notification payloads",
+          "Escalation messages",
+          "Ticket metadata"
+        ]
+      }
+    ],
+    "data_flow_description": "Users/CLIs connect via the Edge Layer to the API Gateway which authenticates and authorizes requests. Authenticated requests flow to core app services for project creation, policy evaluation and provisioning. Provisioning requests call Integration Connectors which translate actions to target platform APIs (Kubernetes/OpenStack/VMware); secrets are retrieved from the Vault (KMS-backed) when needed. Telemetry from managed infrastructure and agents is ingested by the Monitoring service into the Metrics TSDB and consumed by the AI Anomaly Engine which issues alerts to the Notification/Ticketing subsystem. Audit events from all services are streamed to the Audit Log Store for tamper-evident retention. Dashboards query the Metrics TSDB, Tenant DB and Audit store for visualizations and exports.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "End users",
+          "CLI clients"
+        ],
+        "boundary_type": "Untrusted",
+        "security_controls": [
+          "TLS (strong ciphers) for all connections",
+          "MFA enforced for interactive logins",
+          "Client-side rate limiting recommendations",
+          "IP allowlists and geo controls (optional)"
+        ]
+      },
+      {
+        "name": "DMZ / Edge Layer",
+        "components": [
+          "Load Balancer / WAF",
+          "Ingress proxies"
+        ],
+        "boundary_type": "Perimeter",
+        "security_controls": [
+          "WAF rules and DDoS mitigation",
+          "TLS termination with strict validation",
+          "Layer7 rate-limiting",
+          "Ingress authentication gating to API Gateway"
+        ]
+      },
+      {
+        "name": "Application Layer / Internal Network",
+        "components": [
+          "API Gateway",
+          "Core App Services",
+          "Provisioning Services",
+          "Policy Engine",
+          "Monitoring & Health services"
+        ],
+        "boundary_type": "Trusted-Zone (Internal)",
+        "security_controls": [
+          "Mutual TLS between internal services",
+          "Network segmentation and microsegmentation",
+          "Service mesh or mTLS enforcement",
+          "RBAC & ABAC enforced at API Gateway",
+          "Just-in-time admin access workflows"
+        ]
+      },
+      {
+        "name": "Data Storage / Database Tier",
+        "components": [
+          "User DB",
+          "Tenant DB",
+          "Audit Log Store",
+          "Metrics TSDB",
+          "Secrets Vault/KMS"
+        ],
+        "boundary_type": "High-Trust-Data-Tier",
+        "security_controls": [
+          "Encryption at rest (KMS/HSM)",
+          "Access controls limited to service principals",
+          "Tamper-evident append-only audit logs",
+          "Network ACLs & DB encryption in-transit"
+        ]
+      },
+      {
+        "name": "Connector / Customer Infrastructure",
+        "components": [
+          "Cloud Infra Connectors",
+          "Customer Kubernetes/OpenStack/VMware"
+        ],
+        "boundary_type": "Third-Party/Customer-Controlled",
+        "security_controls": [
+          "Scoped API credentials with least privilege",
+          "Mutual TLS and IP allowlists",
+          "Per-project credentials and rotation",
+          "Audit logging of connector actions"
+        ]
+      },
+      {
+        "name": "External Notification Services",
+        "components": [
+          "Email/SMS/Webhook providers"
+        ],
+        "boundary_type": "External",
+        "security_controls": [
+          "Webhooks signed and verified",
+          "Outbound data minimization",
+          "TLS for all outbound connections",
+          "Rate-limits and retry policies"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Primary entry points: Web UI and API Gateway (high risk) \u2014 these expose authentication endpoints, project and provisioning APIs and must be protected with strong MFA, rate-limiting, input validation and RBAC. CLI/API tokens and automation endpoints (high risk) \u2014 require OAuth2, scoped tokens, short TTLs and granular scopes. Integration connectors to customer infra (high risk) \u2014 these hold credentials and can execute provisioning; enforce least-privilege credentials, rotation, and isolation. Secrets Vault and KMS access (critical) \u2014 highly sensitive, restrict to service accounts and protected by HSM/KMS policies. Monitoring ingestion endpoints and observability APIs (medium risk) \u2014 can be abused to exfiltrate telemetry; restrict visibility by role and encrypt telemetry. Admin console and privileged operations (high risk) \u2014 require just-in-time elevation, session recording and privileged session controls. External notification integrations (low-medium risk) \u2014 risk of data leakage via misconfigured webhooks or SMS; enforce signing and output filtering. Exposed risks also include supply-chain of connectors and third-party libraries; mitigate with SBOM, vulnerability scanning and secure CI/CD. Overall prioritized mitigations: strong identity and access controls, encryption in transit and at rest, extensive audit logging, network segmentation, least-privilege connectors, input validation and WAF protections."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A web-based Multi-Tenancy Private Cloud Management Platform that enables users and administrators to create and manage isolated project workspaces (tenants), provision and govern cloud resources (VNFs, CNFs, applications, networks), enforce per-project and per-user policies, and provide unified monitoring, analytics, health & security checks, notifications and ticketing \u2014 all while maintaining strong isolation, auditability and administrative support capabilities.\",\n  \"high_level_requirements\": [\n    \"User registration and login with role-based access control and session management\",\n    \"Platform administrator registration and privileged admin workflows\",\n    \"Multi-project membership support with per-user, per-project role assignments\",\n    \"Per-user, per-project policy customization and policy inheritance\",\n    \"Project creation workflow with quota and resource availability checks\",\n    \"Resource provisioning and lifecycle management (deploy/destroy VNFs, CNFs, apps, networks)\",\n    \"Project credential management and granular access rules (secrets/keys)\",\n    \"Project isolation (multi-tenancy) at compute, network, storage and data planes\",\n    \"Integrated monitoring and analytics for cloud, network, infra and applications\",\n    \"AI-assisted fault detection and automated alerting/notification\",\n    \"Capacity monitoring and automated capacity warning system\",\n    \"Health and security scanning (vulnerability, misconfiguration, integrity checks)\",\n    \"Notification delivery and role/policy-based notification rules and dashboards\",\n    \"Ticketing system for project-to-platform and internal support workflows\",\n    \"Platform-wide dashboards for admins with full visibility and audit trails\",\n    \"Audit logging and retention for actions, configuration changes and access\",\n    \"Policy-driven automated remediation actions (optional/controlled)\",\n    \"API and CLI for automation and integration with external systems\",\n    \"Secure storage and handling of sensitive data (secrets, credentials, telemetry)\",\n    \"Compliance and reporting features (data residency, access reports, exportable logs)\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"User registration and login through the portal with secure password policies, account verification, session management and support for multi-factor authentication (MFA).\",\n      \"business_category\": \"Authentication\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Users need a secure, auditable method to access the portal; MFA and strong session controls reduce account compromise risk and protect tenant resources.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Platform administrator registration and onboarding with elevated role provisioning, just-in-time admin role activation and separate admin console.\",\n      \"business_category\": \"Authorization / Administration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Platform admins require strong controls and separation from regular users. Elevated access must be tightly governed to protect platform-wide operations and tenant confidentiality.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"Support registering users to one or more isolated project spaces with the ability to assign roles (leader, admin, user) per project and manage role transitions.\",\n      \"business_category\": \"Project Management / Authorization\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Multi-project membership is core to multi-tenancy; role assignments control access boundaries and resource permissions per project.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Per-user, per-project policy customization allowing override of default role policies, constraints on actions, and attribute-based access controls (ABAC) where applicable.\",\n      \"business_category\": \"Policy Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Different projects and users require fine-grained controls; customization enables business flexibility while keeping least privilege and auditability.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"User-friendly cloud portal GUI to create, manage and administer projects, with role-based content rendering and accessibility features.\",\n      \"business_category\": \"User Experience / Administration\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"A usable GUI ensures correct actions by users and reduces operational errors; role-based views prevent exposure of irrelevant or sensitive controls.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"Project creation workflow where registered users can request and create projects, define quotas, required resource types (compute, storage, network), and preferred locations; enforce automated available-resource checks before provisioning.\",\n      \"business_category\": \"Provisioning / Resource Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Projects must be created only when resources exist and quotas applied to avoid oversubscription and contention; safeguards prevent accidental or malicious exhaustion of platform capacity.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Cloud resource administration capability to deploy, configure, scale and destroy VNFs, CNFs, applications and virtual networks within a project via portal and APIs, with change control, dry-run and rollback support.\",\n      \"business_category\": \"Infrastructure Provisioning\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Reliable and auditable lifecycle management of resources is required for service delivery and operational safety; rollback and dry-run reduce risk of disruptive changes.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Project credential and secrets management: per-project credential stores, role-limited access to secrets, encryption at-rest and in-transit, secret rotation and usage audit logs.\",\n      \"business_category\": \"Secrets Management / Data Protection\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Credentials provide access to infrastructure and must be protected to prevent lateral movement and data breaches; rotation and auditability are critical for security posture and compliance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Strict multi-tenant project isolation across compute, network (segmentation), storage and management APIs, with configurable isolation levels per project (strong/soft), and verification tests.\",\n      \"business_category\": \"Multi-Tenancy / Network Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Isolation prevents tenant data leakage and cross-tenant attacks; providing verified isolation is central to multi-tenant trust and compliance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Integrated monitoring and analytics for infrastructure, network, and application metrics with multi-dimensional dashboards, role-based visibility and exportable reports.\",\n      \"business_category\": \"Monitoring & Analytics\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Monitoring enables operational awareness, capacity planning and troubleshooting; role limits on visibility reduce risk of exposing sensitive telemetry between tenants.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Automated AI-assisted fault detection and anomaly detection with configurable sensitivity, explainability summaries, and escalation workflows for alerts.\",\n      \"business_category\": \"Monitoring / Automation\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"AI can surface subtle faults faster than manual monitoring; configurable behavior and auditability prevent false positives and allow operators to understand decisions.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"Automated capacity warnings and thresholds per resource type and per project, with proactive notification and suggested remediation steps.\",\n      \"business_category\": \"Capacity Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Early warnings prevent outages and ensure fair resource distribution; project-level thresholds help enforce quotas and billing/accounting.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"Health and security system to run periodic and on-demand checks (vulnerability scans, configuration checks, integrity checks, compliance posture) across cloud, network, infra and applications with severity tagging and remediation suggestions.\",\n      \"business_category\": \"Security & Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Continuous health and security checks detect vulnerabilities early and provide actionable remediation to reduce attack surface and maintain compliance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Automated notification system that flags security risks, vulnerabilities, capacity warnings and operational incidents to users according to roles and policy, with in-portal and optional email/SMS/WEBHOOK delivery.\",\n      \"business_category\": \"Notifications / Incident Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Timely notifications reduce mean time to repair; role-based delivery ensures sensitive security information reaches only authorized recipients.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"Ticketing system integrated with user profiles, project contexts and platform admin workflows allowing creation, escalation, comment threads, attachment of logs, and audit of ticket actions.\",\n      \"business_category\": \"Support / ITSM\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"A linked ticketing system streamlines support, documents interactions for audits, and ties operational actions to users and projects for accountability.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"Platform administrators have read/write access to all projects for support operations, constrained by just-in-time access approvals, privileged session logging and session recording where required.\",\n      \"business_category\": \"Administration / Access Control\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Admin access is necessary for support but must be tightly controlled and auditable to prevent misuse and to meet least-privilege principles.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"Audit logging of user actions, administrative operations, provisioning events, policy changes, security alerts and ticket interactions with tamper-evident storage, retention policies and export capability for forensics and compliance.\",\n      \"business_category\": \"Logging & Audit\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Comprehensive audit trails are necessary for security investigations, compliance reporting and detecting misconfigurations or malicious activities.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"Role-based notification preferences and a portal dashboard listing all notifications relevant to the user with filters, acknowledgement, and history.\",\n      \"business_category\": \"Notifications / UX\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Users must see and manage notifications appropriate to their role to act on incidents and reduce alert fatigue.\"\n    },\n    {\n      \"requirement_id\": \"REQ-019\",\n      \"requirement_text\": \"APIs and CLI endpoints for creating projects, provisioning resources, querying monitoring data, managing policies and automating ticketing, with OAuth2 / token-based authentication and rate-limiting.\",\n      \"business_category\": \"Integration / Automation\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Automation and integration are essential for CI/CD and operational workflows; API access must be secured to prevent automation abuse and data exfiltration.\"\n    },\n    {\n      \"requirement_id\": \"REQ-020\",\n      \"requirement_text\": \"Data protection measures including encryption at rest and in transit, role-limited access to telemetry, data minimization, and configurable data retention policies per project to accommodate data residency requirements.\",\n      \"business_category\": \"Data Protection\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Protecting tenant data is mandatory for confidentiality and regulatory compliance; retention and residency settings support customer and legal requirements.\"\n    },\n    {\n      \"requirement_id\": \"REQ-021\",\n      \"requirement_text\": \"Automated or semi-automated remediation actions (e.g., quarantine, restart, isolate network) driven by policy when critical health/security checks fail, with human approval workflows for high-risk actions.\",\n      \"business_category\": \"Incident Response / Automation\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Fast remediation reduces impact of incidents; human-in-the-loop prevents automated actions from causing unintended disruption.\"\n    },\n    {\n      \"requirement_id\": \"REQ-022\",\n      \"requirement_text\": \"Dashboards for platform-wide analytics accessible to platform admins and restricted views for project admins/users, with exportable metrics and role-based filtering.\",\n      \"business_category\": \"Reporting / Analytics\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Different stakeholders need tailored visibility into system health, usage and costs while preserving tenant privacy between projects.\"\n    },\n    {\n      \"requirement_id\": \"REQ-023\",\n      \"requirement_text\": \"Support for compliance and reporting: generate access reports, incident reports, configuration snapshots and SLA/usage reports; support data export for audits.\",\n      \"business_category\": \"Compliance / Reporting\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Regulatory and contractual obligations require evidence of controls, access and incidents; easy reporting reduces audit overhead and supports governance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-024\",\n      \"requirement_text\": \"Integration points for existing infrastructure: connectors for common cloud platforms (OpenStack, Kubernetes, VMware), SNMP/NetFlow for network telemetry and standard security scanners.\",\n      \"business_category\": \"Integration / Interoperability\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Enterprises will operate heterogeneous stacks; standardized connectors reduce integration cost and increase observability.\"\n    },\n    {\n      \"requirement_id\": \"REQ-025\",\n      \"requirement_text\": \"Operational policies and controls such as role-based provisioning, capacity planning constraints, backup/restore for critical control plane data, maintenance windows and change approval workflows.\",\n      \"business_category\": \"Operations / Governance\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Operational controls ensure stability, predictable changes and data recoverability which are essential for tenant trust and platform availability.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulations and frameworks likely to apply include: GDPR (if processing personal data of EU residents) \u2014 data subject rights, lawful basis, data residency and DPIA considerations; Data protection laws like CCPA/CPRA where relevant; ISO/IEC 27001 for an ISMS and SOC 2 for operational security and trust service criteria (security, availability, confidentiality); NIST SP 800-53 / NIST Cybersecurity Framework for controls mapping; CIS Benchmarks for host/network hardening; PCI-DSS only if payment card data is processed (note: platform should avoid storing card data unless necessary); industry-specific regulations (e.g., telecom regulators, critical infrastructure controls) if platform hosts telco/network functions. Applicable obligations: implement strong identity and access management, encryption in transit and at rest, least privilege, logging and monitoring, incident response, data residency and retention policies, breach notification timelines, regular vulnerability scanning/patching, secure software development lifecycle and supply chain risk management.\",\n  \"assumptions\": [\n    \"System will be hosted on private cloud infrastructure managed by the platform operator (on-prem or operator-controlled cloud).\",\n    \"Users have internet access and modern browsers or CLIs to access portal and APIs.\",\n    \"Underlying compute, storage and network platforms expose APIs compatible with integration (e.g., OpenStack, Kubernetes, VMware, SDN controllers).\",\n    \"Tenants/projects are logical isolation domains; some customers may request stronger physical separation (to be negotiated).\",\n    \"Platform administrators are trusted personnel with higher privileges but subject to just-in-time approval and audits.\",\n    \"Telemetry and monitoring agents can be deployed on managed workloads and underlying hosts as needed.\",\n    \"AI/ML components for anomaly detection will be trained on operational telemetry and tuned to reduce false positives.\",\n    \"Users will follow acceptable use policies and security awareness guidance provided during onboarding.\"\n  ],\n  \"constraints\": [\n    \"Must maintain strong multi-tenant isolation without relying on untrusted tenant-supplied code to modify platform control plane.\",\n    \"Integration is constrained to available APIs on customer-managed infrastructure; pre-built connectors must be developed for each supported platform.\",\n    \"Encryption key management must integrate with an approved KMS/HSM; keys cannot be stored in plaintext on the platform.\",\n    \"Audit log retention and storage capacity must meet regulatory and business retention periods and scale with tenant activity.\",\n    \"Platform must support role-based access control with fine-grained policies; legacy systems that lack RBAC may limit enforcement.\",\n    \"Automated remediation actions must have configurable risk thresholds and human-approval gating for high-impact operations.\",\n    \"Network topology and legacy network devices may restrict segmentation capabilities (e.g., limited VLANs, no microsegmentation support).\",\n    \"Operationally, upgrades and maintenance windows must be scheduled to avoid disrupting tenant SLAs; backward compatibility for APIs should be preserved where feasible.\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A web-based Multi-Tenancy Private Cloud Management Platform that enables users and administrators to create and manage isolated project workspaces (tenants), provision and govern cloud resources (VNFs, CNFs, applications, networks), enforce per-project and per-user policies, and provide unified monitoring, analytics, health & security checks, notifications and ticketing \u2014 all while maintaining strong isolation, auditability and administrative support capabilities.",
+        "high_level_requirements": [
+          "User registration and login with role-based access control and session management",
+          "Platform administrator registration and privileged admin workflows",
+          "Multi-project membership support with per-user, per-project role assignments",
+          "Per-user, per-project policy customization and policy inheritance",
+          "Project creation workflow with quota and resource availability checks",
+          "Resource provisioning and lifecycle management (deploy/destroy VNFs, CNFs, apps, networks)",
+          "Project credential management and granular access rules (secrets/keys)",
+          "Project isolation (multi-tenancy) at compute, network, storage and data planes",
+          "Integrated monitoring and analytics for cloud, network, infra and applications",
+          "AI-assisted fault detection and automated alerting/notification",
+          "Capacity monitoring and automated capacity warning system",
+          "Health and security scanning (vulnerability, misconfiguration, integrity checks)",
+          "Notification delivery and role/policy-based notification rules and dashboards",
+          "Ticketing system for project-to-platform and internal support workflows",
+          "Platform-wide dashboards for admins with full visibility and audit trails",
+          "Audit logging and retention for actions, configuration changes and access",
+          "Policy-driven automated remediation actions (optional/controlled)",
+          "API and CLI for automation and integration with external systems",
+          "Secure storage and handling of sensitive data (secrets, credentials, telemetry)",
+          "Compliance and reporting features (data residency, access reports, exportable logs)"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "User registration and login through the portal with secure password policies, account verification, session management and support for multi-factor authentication (MFA).",
+            "business_category": "Authentication",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Users need a secure, auditable method to access the portal; MFA and strong session controls reduce account compromise risk and protect tenant resources."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Platform administrator registration and onboarding with elevated role provisioning, just-in-time admin role activation and separate admin console.",
+            "business_category": "Authorization / Administration",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Platform admins require strong controls and separation from regular users. Elevated access must be tightly governed to protect platform-wide operations and tenant confidentiality."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "Support registering users to one or more isolated project spaces with the ability to assign roles (leader, admin, user) per project and manage role transitions.",
+            "business_category": "Project Management / Authorization",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Multi-project membership is core to multi-tenancy; role assignments control access boundaries and resource permissions per project."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Per-user, per-project policy customization allowing override of default role policies, constraints on actions, and attribute-based access controls (ABAC) where applicable.",
+            "business_category": "Policy Management",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Different projects and users require fine-grained controls; customization enables business flexibility while keeping least privilege and auditability."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "User-friendly cloud portal GUI to create, manage and administer projects, with role-based content rendering and accessibility features.",
+            "business_category": "User Experience / Administration",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "A usable GUI ensures correct actions by users and reduces operational errors; role-based views prevent exposure of irrelevant or sensitive controls."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "Project creation workflow where registered users can request and create projects, define quotas, required resource types (compute, storage, network), and preferred locations; enforce automated available-resource checks before provisioning.",
+            "business_category": "Provisioning / Resource Management",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Projects must be created only when resources exist and quotas applied to avoid oversubscription and contention; safeguards prevent accidental or malicious exhaustion of platform capacity."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Cloud resource administration capability to deploy, configure, scale and destroy VNFs, CNFs, applications and virtual networks within a project via portal and APIs, with change control, dry-run and rollback support.",
+            "business_category": "Infrastructure Provisioning",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Reliable and auditable lifecycle management of resources is required for service delivery and operational safety; rollback and dry-run reduce risk of disruptive changes."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Project credential and secrets management: per-project credential stores, role-limited access to secrets, encryption at-rest and in-transit, secret rotation and usage audit logs.",
+            "business_category": "Secrets Management / Data Protection",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Credentials provide access to infrastructure and must be protected to prevent lateral movement and data breaches; rotation and auditability are critical for security posture and compliance."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Strict multi-tenant project isolation across compute, network (segmentation), storage and management APIs, with configurable isolation levels per project (strong/soft), and verification tests.",
+            "business_category": "Multi-Tenancy / Network Security",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Isolation prevents tenant data leakage and cross-tenant attacks; providing verified isolation is central to multi-tenant trust and compliance."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Integrated monitoring and analytics for infrastructure, network, and application metrics with multi-dimensional dashboards, role-based visibility and exportable reports.",
+            "business_category": "Monitoring & Analytics",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Monitoring enables operational awareness, capacity planning and troubleshooting; role limits on visibility reduce risk of exposing sensitive telemetry between tenants."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Automated AI-assisted fault detection and anomaly detection with configurable sensitivity, explainability summaries, and escalation workflows for alerts.",
+            "business_category": "Monitoring / Automation",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "AI can surface subtle faults faster than manual monitoring; configurable behavior and auditability prevent false positives and allow operators to understand decisions."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "Automated capacity warnings and thresholds per resource type and per project, with proactive notification and suggested remediation steps.",
+            "business_category": "Capacity Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Early warnings prevent outages and ensure fair resource distribution; project-level thresholds help enforce quotas and billing/accounting."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "Health and security system to run periodic and on-demand checks (vulnerability scans, configuration checks, integrity checks, compliance posture) across cloud, network, infra and applications with severity tagging and remediation suggestions.",
+            "business_category": "Security & Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Continuous health and security checks detect vulnerabilities early and provide actionable remediation to reduce attack surface and maintain compliance."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Automated notification system that flags security risks, vulnerabilities, capacity warnings and operational incidents to users according to roles and policy, with in-portal and optional email/SMS/WEBHOOK delivery.",
+            "business_category": "Notifications / Incident Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Timely notifications reduce mean time to repair; role-based delivery ensures sensitive security information reaches only authorized recipients."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "Ticketing system integrated with user profiles, project contexts and platform admin workflows allowing creation, escalation, comment threads, attachment of logs, and audit of ticket actions.",
+            "business_category": "Support / ITSM",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "A linked ticketing system streamlines support, documents interactions for audits, and ties operational actions to users and projects for accountability."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "Platform administrators have read/write access to all projects for support operations, constrained by just-in-time access approvals, privileged session logging and session recording where required.",
+            "business_category": "Administration / Access Control",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Admin access is necessary for support but must be tightly controlled and auditable to prevent misuse and to meet least-privilege principles."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "Audit logging of user actions, administrative operations, provisioning events, policy changes, security alerts and ticket interactions with tamper-evident storage, retention policies and export capability for forensics and compliance.",
+            "business_category": "Logging & Audit",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Comprehensive audit trails are necessary for security investigations, compliance reporting and detecting misconfigurations or malicious activities."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "Role-based notification preferences and a portal dashboard listing all notifications relevant to the user with filters, acknowledgement, and history.",
+            "business_category": "Notifications / UX",
+            "security_sensitivity": "Low",
+            "data_classification": "Internal",
+            "rationale": "Users must see and manage notifications appropriate to their role to act on incidents and reduce alert fatigue."
+          },
+          {
+            "requirement_id": "REQ-019",
+            "requirement_text": "APIs and CLI endpoints for creating projects, provisioning resources, querying monitoring data, managing policies and automating ticketing, with OAuth2 / token-based authentication and rate-limiting.",
+            "business_category": "Integration / Automation",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Automation and integration are essential for CI/CD and operational workflows; API access must be secured to prevent automation abuse and data exfiltration."
+          },
+          {
+            "requirement_id": "REQ-020",
+            "requirement_text": "Data protection measures including encryption at rest and in transit, role-limited access to telemetry, data minimization, and configurable data retention policies per project to accommodate data residency requirements.",
+            "business_category": "Data Protection",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Protecting tenant data is mandatory for confidentiality and regulatory compliance; retention and residency settings support customer and legal requirements."
+          },
+          {
+            "requirement_id": "REQ-021",
+            "requirement_text": "Automated or semi-automated remediation actions (e.g., quarantine, restart, isolate network) driven by policy when critical health/security checks fail, with human approval workflows for high-risk actions.",
+            "business_category": "Incident Response / Automation",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Fast remediation reduces impact of incidents; human-in-the-loop prevents automated actions from causing unintended disruption."
+          },
+          {
+            "requirement_id": "REQ-022",
+            "requirement_text": "Dashboards for platform-wide analytics accessible to platform admins and restricted views for project admins/users, with exportable metrics and role-based filtering.",
+            "business_category": "Reporting / Analytics",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Different stakeholders need tailored visibility into system health, usage and costs while preserving tenant privacy between projects."
+          },
+          {
+            "requirement_id": "REQ-023",
+            "requirement_text": "Support for compliance and reporting: generate access reports, incident reports, configuration snapshots and SLA/usage reports; support data export for audits.",
+            "business_category": "Compliance / Reporting",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Regulatory and contractual obligations require evidence of controls, access and incidents; easy reporting reduces audit overhead and supports governance."
+          },
+          {
+            "requirement_id": "REQ-024",
+            "requirement_text": "Integration points for existing infrastructure: connectors for common cloud platforms (OpenStack, Kubernetes, VMware), SNMP/NetFlow for network telemetry and standard security scanners.",
+            "business_category": "Integration / Interoperability",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Enterprises will operate heterogeneous stacks; standardized connectors reduce integration cost and increase observability."
+          },
+          {
+            "requirement_id": "REQ-025",
+            "requirement_text": "Operational policies and controls such as role-based provisioning, capacity planning constraints, backup/restore for critical control plane data, maintenance windows and change approval workflows.",
+            "business_category": "Operations / Governance",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Operational controls ensure stability, predictable changes and data recoverability which are essential for tenant trust and platform availability."
+          }
+        ],
+        "security_context": "Applicable regulations and frameworks likely to apply include: GDPR (if processing personal data of EU residents) \u2014 data subject rights, lawful basis, data residency and DPIA considerations; Data protection laws like CCPA/CPRA where relevant; ISO/IEC 27001 for an ISMS and SOC 2 for operational security and trust service criteria (security, availability, confidentiality); NIST SP 800-53 / NIST Cybersecurity Framework for controls mapping; CIS Benchmarks for host/network hardening; PCI-DSS only if payment card data is processed (note: platform should avoid storing card data unless necessary); industry-specific regulations (e.g., telecom regulators, critical infrastructure controls) if platform hosts telco/network functions. Applicable obligations: implement strong identity and access management, encryption in transit and at rest, least privilege, logging and monitoring, incident response, data residency and retention policies, breach notification timelines, regular vulnerability scanning/patching, secure software development lifecycle and supply chain risk management.",
+        "assumptions": [
+          "System will be hosted on private cloud infrastructure managed by the platform operator (on-prem or operator-controlled cloud).",
+          "Users have internet access and modern browsers or CLIs to access portal and APIs.",
+          "Underlying compute, storage and network platforms expose APIs compatible with integration (e.g., OpenStack, Kubernetes, VMware, SDN controllers).",
+          "Tenants/projects are logical isolation domains; some customers may request stronger physical separation (to be negotiated).",
+          "Platform administrators are trusted personnel with higher privileges but subject to just-in-time approval and audits.",
+          "Telemetry and monitoring agents can be deployed on managed workloads and underlying hosts as needed.",
+          "AI/ML components for anomaly detection will be trained on operational telemetry and tuned to reduce false positives.",
+          "Users will follow acceptable use policies and security awareness guidance provided during onboarding."
+        ],
+        "constraints": [
+          "Must maintain strong multi-tenant isolation without relying on untrusted tenant-supplied code to modify platform control plane.",
+          "Integration is constrained to available APIs on customer-managed infrastructure; pre-built connectors must be developed for each supported platform.",
+          "Encryption key management must integrate with an approved KMS/HSM; keys cannot be stored in plaintext on the platform.",
+          "Audit log retention and storage capacity must meet regulatory and business retention periods and scale with tenant activity.",
+          "Platform must support role-based access control with fine-grained policies; legacy systems that lack RBAC may limit enforcement.",
+          "Automated remediation actions must have configurable risk thresholds and human-approval gating for high-impact operations.",
+          "Network topology and legacy network devices may restrict segmentation capabilities (e.g., limited VLANs, no microsegmentation support).",
+          "Operationally, upgrades and maintenance windows must be scheduled to avoid disrupting tenant SLAs; backward compatibility for APIs should be preserved where feasible."
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"A web-based multi-tenant private cloud management platform composed of a secured edge and frontend layer (web SPA and CLI), an API gateway and application service plane that implements project, policy, provisioning, monitoring, health/security and notification/ticketing workflows, a resilient data layer (identity, tenant metadata, audit logs, metrics TSDB, secrets vault/KMS), and an integration layer of cloud/infra connectors plus external services (email/SMS/webhooks). Users and CLIs access the system through a hardened load balancer/WAF to the API Gateway which enforces authentication/authorization before routing to core services. Provisioning and orchestration components interact with customer infrastructure connectors that call Kubernetes/OpenStack/VMware APIs. Monitoring and an AI anomaly engine consume metrics and emit alerts to the notification/ticketing subsystem and admin dashboards. Audit logs and encrypted secrets are stored in tamper-evident stores with KMS integration for encryption keys.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Edge Layer\\\"\\n  LB[Load Balancer / WAF]\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web App SPA & Admin UI]\\n  CLI[CLI & API Clients]\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[API Gateway & Auth]\\n  APP[Core App Services]\\n  PROV[Provisioning & Orchestration]\\n  POL[Policy & RBAC Engine]\\n  MON[Monitoring & Analytics]\\n  HS[Health & Security Engine]\\n  NOTIF[Notifications & Ticketing]\\nend\\nsubgraph \\\"Data Layer\\\"\\n  USERDB[User & Identity DB]\\n  TENANTDB[Tenant DB & Quotas]\\n  AUDIT[Audit Log Store]\\n  METRICS[Metrics TSDB]\\n  VAULT[Secrets Vault / KMS]\\nend\\nsubgraph \\\"Integration & Connectors\\\"\\n  CONNECT[Cloud Infra Connectors]\\n  K8S[Kubernetes OpenStack VMware]\\nend\\nsubgraph \\\"Observability & AI\\\"\\n  AI[AI Anomaly Engine]\\nend\\nsubgraph \\\"External Services\\\"\\n  EXTSVC[Email/SMS/Webhook/CI]\\nend\\nLB --> FE\\nLB --> CLI\\nFE --> API\\nCLI --> API\\nAPI --> APP\\nAPI --> POL\\nAPP --> PROV\\nAPP --> MON\\nAPP --> NOTIF\\nPROV --> CONNECT\\nCONNECT --> K8S\\nMON --> METRICS\\nHS --> AUDIT\\nNOTIF --> EXTSVC\\nAPP --> USERDB\\nAPP --> TENANTDB\\nPROV --> VAULT\\nPOL --> TENANTDB\\nMON --> AI\\nAI --> NOTIF\",\n  \"components\": [\n    {\n      \"name\": \"Edge Layer\",\n      \"responsibility\": \"Ingress protection and routing for user traffic; DDoS/WAF, SSL termination, TLS inspection and API rate-limiting before forwarding to internal services.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"WAF/load balancer appliances\",\n        \"CDN (optional)\"\n      ],\n      \"data_handled\": [\n        \"Encrypted HTTP(S) session metadata\",\n        \"Client IPs and TLS metadata\"\n      ]\n    },\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"User-facing Web SPA, Admin UI and CLI/API client endpoints for project lifecycle, dashboards, notifications and ticketing UI.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"Browser ecosystems\",\n        \"OAuth2/OIDC providers (for SSO) optional\"\n      ],\n      \"data_handled\": [\n        \"User UI session tokens\",\n        \"User input (project configs, tickets)\",\n        \"Notification preferences\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core business logic: API gateway & auth, project management, provisioning/orchestration, policy & RBAC enforcement, notifications & ticketing, admin workflows and access controls.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"OAuth2 identity providers / MFA provider\",\n        \"Third-party ticketing integrations (optional)\"\n      ],\n      \"data_handled\": [\n        \"User identities & roles\",\n        \"Project definitions & quotas\",\n        \"Provisioning requests\",\n        \"Policy rules and audit actions\"\n      ]\n    },\n    {\n      \"name\": \"Data Layer\",\n      \"responsibility\": \"Persistent storage for identity, tenant metadata, quota state, audit logs, metrics/time-series data, and secure secrets storage integrated with KMS.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Enterprise KMS/HSM\",\n        \"Relational DB or distributed datastore\",\n        \"Time-series DB (Prometheus/InfluxDB)\"\n      ],\n      \"data_handled\": [\n        \"Credentials & secrets (encrypted)\",\n        \"Audit logs\",\n        \"Tenant/project metadata\",\n        \"Telemetry & metrics\"\n      ]\n    },\n    {\n      \"name\": \"Integration & Connectors\",\n      \"responsibility\": \"Adapters to underlying customer/private infrastructure (Kubernetes, OpenStack, VMware, SDN controllers) for provisioning, telemetry ingestion and network segmentation operations.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Kubernetes API\",\n        \"OpenStack/VMware APIs\",\n        \"SDN controller APIs\"\n      ],\n      \"data_handled\": [\n        \"Provisioning API calls\",\n        \"Resource inventory\",\n        \"Network configuration commands\"\n      ]\n    },\n    {\n      \"name\": \"Observability & AI\",\n      \"responsibility\": \"Collect, store and analyze metrics/logs; run anomaly detection and AI-assisted fault detection; generate alerts, capacity warnings and feed remediation orchestration.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"AI/ML frameworks\",\n        \"Metrics/Logging backends\",\n        \"Optional external ML services\"\n      ],\n      \"data_handled\": [\n        \"Telemetry streams\",\n        \"Derived alerts and anomaly scores\",\n        \"Aggregated analytics\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Outbound communication services for notifications, alert delivery and CI/webhook integrations (email, SMS, webhooks, third-party ITSM).\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"Email/SMS providers\",\n        \"Webhook/CI endpoints\",\n        \"Optional external ticketing systems\"\n      ],\n      \"data_handled\": [\n        \"Notification payloads\",\n        \"Escalation messages\",\n        \"Ticket metadata\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users/CLIs connect via the Edge Layer to the API Gateway which authenticates and authorizes requests. Authenticated requests flow to core app services for project creation, policy evaluation and provisioning. Provisioning requests call Integration Connectors which translate actions to target platform APIs (Kubernetes/OpenStack/VMware); secrets are retrieved from the Vault (KMS-backed) when needed. Telemetry from managed infrastructure and agents is ingested by the Monitoring service into the Metrics TSDB and consumed by the AI Anomaly Engine which issues alerts to the Notification/Ticketing subsystem. Audit events from all services are streamed to the Audit Log Store for tamper-evident retention. Dashboards query the Metrics TSDB, Tenant DB and Audit store for visualizations and exports.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"End users\",\n        \"CLI clients\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS (strong ciphers) for all connections\",\n        \"MFA enforced for interactive logins\",\n        \"Client-side rate limiting recommendations\",\n        \"IP allowlists and geo controls (optional)\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge Layer\",\n      \"components\": [\n        \"Load Balancer / WAF\",\n        \"Ingress proxies\"\n      ],\n      \"boundary_type\": \"Perimeter\",\n      \"security_controls\": [\n        \"WAF rules and DDoS mitigation\",\n        \"TLS termination with strict validation\",\n        \"Layer7 rate-limiting\",\n        \"Ingress authentication gating to API Gateway\"\n      ]\n    },\n    {\n      \"name\": \"Application Layer / Internal Network\",\n      \"components\": [\n        \"API Gateway\",\n        \"Core App Services\",\n        \"Provisioning Services\",\n        \"Policy Engine\",\n        \"Monitoring & Health services\"\n      ],\n      \"boundary_type\": \"Trusted-Zone (Internal)\",\n      \"security_controls\": [\n        \"Mutual TLS between internal services\",\n        \"Network segmentation and microsegmentation\",\n        \"Service mesh or mTLS enforcement\",\n        \"RBAC & ABAC enforced at API Gateway\",\n        \"Just-in-time admin access workflows\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage / Database Tier\",\n      \"components\": [\n        \"User DB\",\n        \"Tenant DB\",\n        \"Audit Log Store\",\n        \"Metrics TSDB\",\n        \"Secrets Vault/KMS\"\n      ],\n      \"boundary_type\": \"High-Trust-Data-Tier\",\n      \"security_controls\": [\n        \"Encryption at rest (KMS/HSM)\",\n        \"Access controls limited to service principals\",\n        \"Tamper-evident append-only audit logs\",\n        \"Network ACLs & DB encryption in-transit\"\n      ]\n    },\n    {\n      \"name\": \"Connector / Customer Infrastructure\",\n      \"components\": [\n        \"Cloud Infra Connectors\",\n        \"Customer Kubernetes/OpenStack/VMware\"\n      ],\n      \"boundary_type\": \"Third-Party/Customer-Controlled\",\n      \"security_controls\": [\n        \"Scoped API credentials with least privilege\",\n        \"Mutual TLS and IP allowlists\",\n        \"Per-project credentials and rotation\",\n        \"Audit logging of connector actions\"\n      ]\n    },\n    {\n      \"name\": \"External Notification Services\",\n      \"components\": [\n        \"Email/SMS/Webhook providers\"\n      ],\n      \"boundary_type\": \"External\",\n      \"security_controls\": [\n        \"Webhooks signed and verified\",\n        \"Outbound data minimization\",\n        \"TLS for all outbound connections\",\n        \"Rate-limits and retry policies\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: Web UI and API Gateway (high risk) \u2014 these expose authentication endpoints, project and provisioning APIs and must be protected with strong MFA, rate-limiting, input validation and RBAC. CLI/API tokens and automation endpoints (high risk) \u2014 require OAuth2, scoped tokens, short TTLs and granular scopes. Integration connectors to customer infra (high risk) \u2014 these hold credentials and can execute provisioning; enforce least-privilege credentials, rotation, and isolation. Secrets Vault and KMS access (critical) \u2014 highly sensitive, restrict to service accounts and protected by HSM/KMS policies. Monitoring ingestion endpoints and observability APIs (medium risk) \u2014 can be abused to exfiltrate telemetry; restrict visibility by role and encrypt telemetry. Admin console and privileged operations (high risk) \u2014 require just-in-time elevation, session recording and privileged session controls. External notification integrations (low-medium risk) \u2014 risk of data leakage via misconfigured webhooks or SMS; enforce signing and output filtering. Exposed risks also include supply-chain of connectors and third-party libraries; mitigate with SBOM, vulnerability scanning and secure CI/CD. Overall prioritized mitigations: strong identity and access controls, encryption in transit and at rest, extensive audit logging, network segmentation, least-privilege connectors, input validation and WAF protections.\"\n}",
+      "pydantic": {
+        "architecture_summary": "A web-based multi-tenant private cloud management platform composed of a secured edge and frontend layer (web SPA and CLI), an API gateway and application service plane that implements project, policy, provisioning, monitoring, health/security and notification/ticketing workflows, a resilient data layer (identity, tenant metadata, audit logs, metrics TSDB, secrets vault/KMS), and an integration layer of cloud/infra connectors plus external services (email/SMS/webhooks). Users and CLIs access the system through a hardened load balancer/WAF to the API Gateway which enforces authentication/authorization before routing to core services. Provisioning and orchestration components interact with customer infrastructure connectors that call Kubernetes/OpenStack/VMware APIs. Monitoring and an AI anomaly engine consume metrics and emit alerts to the notification/ticketing subsystem and admin dashboards. Audit logs and encrypted secrets are stored in tamper-evident stores with KMS integration for encryption keys.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Edge Layer\"\n  LB[Load Balancer / WAF]\nend\nsubgraph \"Frontend Layer\"\n  FE[Web App SPA & Admin UI]\n  CLI[CLI & API Clients]\nend\nsubgraph \"Application Services\"\n  API[API Gateway & Auth]\n  APP[Core App Services]\n  PROV[Provisioning & Orchestration]\n  POL[Policy & RBAC Engine]\n  MON[Monitoring & Analytics]\n  HS[Health & Security Engine]\n  NOTIF[Notifications & Ticketing]\nend\nsubgraph \"Data Layer\"\n  USERDB[User & Identity DB]\n  TENANTDB[Tenant DB & Quotas]\n  AUDIT[Audit Log Store]\n  METRICS[Metrics TSDB]\n  VAULT[Secrets Vault / KMS]\nend\nsubgraph \"Integration & Connectors\"\n  CONNECT[Cloud Infra Connectors]\n  K8S[Kubernetes OpenStack VMware]\nend\nsubgraph \"Observability & AI\"\n  AI[AI Anomaly Engine]\nend\nsubgraph \"External Services\"\n  EXTSVC[Email/SMS/Webhook/CI]\nend\nLB --> FE\nLB --> CLI\nFE --> API\nCLI --> API\nAPI --> APP\nAPI --> POL\nAPP --> PROV\nAPP --> MON\nAPP --> NOTIF\nPROV --> CONNECT\nCONNECT --> K8S\nMON --> METRICS\nHS --> AUDIT\nNOTIF --> EXTSVC\nAPP --> USERDB\nAPP --> TENANTDB\nPROV --> VAULT\nPOL --> TENANTDB\nMON --> AI\nAI --> NOTIF",
+        "components": [
+          {
+            "name": "Edge Layer",
+            "responsibility": "Ingress protection and routing for user traffic; DDoS/WAF, SSL termination, TLS inspection and API rate-limiting before forwarding to internal services.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "WAF/load balancer appliances",
+              "CDN (optional)"
+            ],
+            "data_handled": [
+              "Encrypted HTTP(S) session metadata",
+              "Client IPs and TLS metadata"
+            ]
+          },
+          {
+            "name": "Frontend Layer",
+            "responsibility": "User-facing Web SPA, Admin UI and CLI/API client endpoints for project lifecycle, dashboards, notifications and ticketing UI.",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "Browser ecosystems",
+              "OAuth2/OIDC providers (for SSO) optional"
+            ],
+            "data_handled": [
+              "User UI session tokens",
+              "User input (project configs, tickets)",
+              "Notification preferences"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core business logic: API gateway & auth, project management, provisioning/orchestration, policy & RBAC enforcement, notifications & ticketing, admin workflows and access controls.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "OAuth2 identity providers / MFA provider",
+              "Third-party ticketing integrations (optional)"
+            ],
+            "data_handled": [
+              "User identities & roles",
+              "Project definitions & quotas",
+              "Provisioning requests",
+              "Policy rules and audit actions"
+            ]
+          },
+          {
+            "name": "Data Layer",
+            "responsibility": "Persistent storage for identity, tenant metadata, quota state, audit logs, metrics/time-series data, and secure secrets storage integrated with KMS.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Enterprise KMS/HSM",
+              "Relational DB or distributed datastore",
+              "Time-series DB (Prometheus/InfluxDB)"
+            ],
+            "data_handled": [
+              "Credentials & secrets (encrypted)",
+              "Audit logs",
+              "Tenant/project metadata",
+              "Telemetry & metrics"
+            ]
+          },
+          {
+            "name": "Integration & Connectors",
+            "responsibility": "Adapters to underlying customer/private infrastructure (Kubernetes, OpenStack, VMware, SDN controllers) for provisioning, telemetry ingestion and network segmentation operations.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Kubernetes API",
+              "OpenStack/VMware APIs",
+              "SDN controller APIs"
+            ],
+            "data_handled": [
+              "Provisioning API calls",
+              "Resource inventory",
+              "Network configuration commands"
+            ]
+          },
+          {
+            "name": "Observability & AI",
+            "responsibility": "Collect, store and analyze metrics/logs; run anomaly detection and AI-assisted fault detection; generate alerts, capacity warnings and feed remediation orchestration.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "AI/ML frameworks",
+              "Metrics/Logging backends",
+              "Optional external ML services"
+            ],
+            "data_handled": [
+              "Telemetry streams",
+              "Derived alerts and anomaly scores",
+              "Aggregated analytics"
+            ]
+          },
+          {
+            "name": "External Services",
+            "responsibility": "Outbound communication services for notifications, alert delivery and CI/webhook integrations (email, SMS, webhooks, third-party ITSM).",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "Email/SMS providers",
+              "Webhook/CI endpoints",
+              "Optional external ticketing systems"
+            ],
+            "data_handled": [
+              "Notification payloads",
+              "Escalation messages",
+              "Ticket metadata"
+            ]
+          }
+        ],
+        "data_flow_description": "Users/CLIs connect via the Edge Layer to the API Gateway which authenticates and authorizes requests. Authenticated requests flow to core app services for project creation, policy evaluation and provisioning. Provisioning requests call Integration Connectors which translate actions to target platform APIs (Kubernetes/OpenStack/VMware); secrets are retrieved from the Vault (KMS-backed) when needed. Telemetry from managed infrastructure and agents is ingested by the Monitoring service into the Metrics TSDB and consumed by the AI Anomaly Engine which issues alerts to the Notification/Ticketing subsystem. Audit events from all services are streamed to the Audit Log Store for tamper-evident retention. Dashboards query the Metrics TSDB, Tenant DB and Audit store for visualizations and exports.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "End users",
+              "CLI clients"
+            ],
+            "boundary_type": "Untrusted",
+            "security_controls": [
+              "TLS (strong ciphers) for all connections",
+              "MFA enforced for interactive logins",
+              "Client-side rate limiting recommendations",
+              "IP allowlists and geo controls (optional)"
+            ]
+          },
+          {
+            "name": "DMZ / Edge Layer",
+            "components": [
+              "Load Balancer / WAF",
+              "Ingress proxies"
+            ],
+            "boundary_type": "Perimeter",
+            "security_controls": [
+              "WAF rules and DDoS mitigation",
+              "TLS termination with strict validation",
+              "Layer7 rate-limiting",
+              "Ingress authentication gating to API Gateway"
+            ]
+          },
+          {
+            "name": "Application Layer / Internal Network",
+            "components": [
+              "API Gateway",
+              "Core App Services",
+              "Provisioning Services",
+              "Policy Engine",
+              "Monitoring & Health services"
+            ],
+            "boundary_type": "Trusted-Zone (Internal)",
+            "security_controls": [
+              "Mutual TLS between internal services",
+              "Network segmentation and microsegmentation",
+              "Service mesh or mTLS enforcement",
+              "RBAC & ABAC enforced at API Gateway",
+              "Just-in-time admin access workflows"
+            ]
+          },
+          {
+            "name": "Data Storage / Database Tier",
+            "components": [
+              "User DB",
+              "Tenant DB",
+              "Audit Log Store",
+              "Metrics TSDB",
+              "Secrets Vault/KMS"
+            ],
+            "boundary_type": "High-Trust-Data-Tier",
+            "security_controls": [
+              "Encryption at rest (KMS/HSM)",
+              "Access controls limited to service principals",
+              "Tamper-evident append-only audit logs",
+              "Network ACLs & DB encryption in-transit"
+            ]
+          },
+          {
+            "name": "Connector / Customer Infrastructure",
+            "components": [
+              "Cloud Infra Connectors",
+              "Customer Kubernetes/OpenStack/VMware"
+            ],
+            "boundary_type": "Third-Party/Customer-Controlled",
+            "security_controls": [
+              "Scoped API credentials with least privilege",
+              "Mutual TLS and IP allowlists",
+              "Per-project credentials and rotation",
+              "Audit logging of connector actions"
+            ]
+          },
+          {
+            "name": "External Notification Services",
+            "components": [
+              "Email/SMS/Webhook providers"
+            ],
+            "boundary_type": "External",
+            "security_controls": [
+              "Webhooks signed and verified",
+              "Outbound data minimization",
+              "TLS for all outbound connections",
+              "Rate-limits and retry policies"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Primary entry points: Web UI and API Gateway (high risk) \u2014 these expose authentication endpoints, project and provisioning APIs and must be protected with strong MFA, rate-limiting, input validation and RBAC. CLI/API tokens and automation endpoints (high risk) \u2014 require OAuth2, scoped tokens, short TTLs and granular scopes. Integration connectors to customer infra (high risk) \u2014 these hold credentials and can execute provisioning; enforce least-privilege credentials, rotation, and isolation. Secrets Vault and KMS access (critical) \u2014 highly sensitive, restrict to service accounts and protected by HSM/KMS policies. Monitoring ingestion endpoints and observability APIs (medium risk) \u2014 can be abused to exfiltrate telemetry; restrict visibility by role and encrypt telemetry. Admin console and privileged operations (high risk) \u2014 require just-in-time elevation, session recording and privileged session controls. External notification integrations (low-medium risk) \u2014 risk of data leakage via misconfigured webhooks or SMS; enforce signing and output filtering. Exposed risks also include supply-chain of connectors and third-party libraries; mitigate with SBOM, vulnerability scanning and secure CI/CD. Overall prioritized mitigations: strong identity and access controls, encryption in transit and at rest, extensive audit logging, network segmentation, least-privilege connectors, input validation and WAF protections."
+      }
+    }
+  ]
+}

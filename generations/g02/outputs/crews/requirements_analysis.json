@@ -1,0 +1,608 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"The system is a cloud-hosted web application composed of a user-facing frontend (web SPA and mobile apps) behind an edge layer (CDN, WAF, API gateway) that authenticates and routes requests to backend application services. The backend orchestrates upload/validation, queued OCR/AI processing, analysis and summarization, notification and audit services, and persists encrypted files and structured results in an encrypted object store and relational database. Identity, RBAC, audit logging, and key management services enforce security and compliance, while external vendors (AI/OCR providers, email/SMS gateways, identity providers) are integrated under strict DPAs. Components interact via authenticated TLS channels and queued jobs to support scalable asynchronous processing and maintainable audit trails.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Users\\\"\\n  U[End Users]\\n  A[Clinicians & Admins]\\nend\\nsubgraph \\\"Edge Layer\\\"\\n  CDN[CDN & WAF]\\n  API_GW[API Gateway & AuthN]\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web App SPA & Mobile App]\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[Core Backend API & Orchestration]\\n  UP[Upload Service & Validation]\\n  QUEUE[Job Queue & Orchestration]\\n  OCR[AI/OCR Workers]\\n  ANALYTICS[Analysis & Summarization]\\n  NOTIF[Notification Service]\\n  AUDIT[Audit Logging & Monitoring]\\n  AUTH[IAM & RBAC Service]\\nend\\nsubgraph \\\"Data Layer\\\"\\n  DB[Encrypted Relational DB]\\n  OBJ[Encrypted Object Store]\\n  LOGS[Immutable Audit Store]\\n  KMS[Key Management Service]\\nend\\nsubgraph \\\"External Services\\\"\\n  AI[Third-party AI/OCR]\\n  EMAIL[Email/SMS Gateway]\\n  IDP[External Identity Provider]\\nend\\n\\nU --> CDN\\nCDN --> FE\\nFE --> API_GW\\nA --> API_GW\\nAPI_GW --> AUTH\\nAPI_GW --> API\\nAPI --> UP\\nUP --> OBJ\\nUP --> QUEUE\\nQUEUE --> OCR\\nOCR --> AI\\nOCR --> ANALYTICS\\nANALYTICS --> DB\\nANALYTICS --> OBJ\\nAPI --> DB\\nAPI --> AUDIT\\nAPI --> NOTIF\\nNOTIF --> EMAIL\\nAUTH --> IDP\\nAUDIT --> LOGS\\nDB --> KMS\\nOBJ --> KMS\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Provides user interfaces (web SPA and mobile apps) for uploads, profile management, viewing results, visualizations, and configuring notifications/consent.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN/WAF (cloud provider)\",\n        \"External Identity Providers (optional)\"\n      ],\n      \"data_handled\": [\n        \"User credentials (transit only)\",\n        \"PII for profile\",\n        \"Upload metadata and status\",\n        \"Visualization queries and results (transit)\"\n      ]\n    },\n    {\n      \"name\": \"Edge Layer\",\n      \"responsibility\": \"Protects and routes traffic using CDN, WAF, and API gateway; enforces TLS, input rate limiting, basic auth checks and request validation before reaching backend.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Cloud CDN/WAF provider\",\n        \"API Gateway service\"\n      ],\n      \"data_handled\": [\n        \"Incoming HTTP(S) requests\",\n        \"Authentication tokens\",\n        \"Upload session control data\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core backend that handles authentication & RBAC, upload validation, job orchestration, OCR/AI integration, analysis/summarization, notifications, audit logging and export generation.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Third-party AI/OCR providers\",\n        \"Email/SMS gateways\",\n        \"Message queue service\"\n      ],\n      \"data_handled\": [\n        \"Raw uploaded files (PHI)\",\n        \"Extracted structured lab results (PHI)\",\n        \"Analysis results and summaries\",\n        \"Audit events and processing metadata\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Secure, encrypted storage for raw files, structured results, user profiles, audit logs, and backups with versioning, retention, and deletion controls.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud object storage\",\n        \"Managed relational database\",\n        \"Key Management Service (KMS)\"\n      ],\n      \"data_handled\": [\n        \"Encrypted raw reports (images, PDFs)\",\n        \"Structured lab data and user profiles\",\n        \"Immutable audit logs and export files\",\n        \"Backups and archived data\"\n      ]\n    },\n    {\n      \"name\": \"Identity & Security Services\",\n      \"responsibility\": \"Provides authentication, MFA, RBAC, consent management, key management, audit integrity, and supports compliance features (consent capture, DPIA evidence).\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"External IdP for federated auth (optional)\",\n        \"KMS provider\",\n        \"SIEM or logging service\"\n      ],\n      \"data_handled\": [\n        \"Authentication logs\",\n        \"Consent records\",\n        \"Encryption keys (metadata)\",\n        \"Access control metadata and roles\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Third-party integrations used for OCR/AI inference, email/SMS delivery, optional identity federation and vendor tools subject to DPAs and data minimization.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"AI/OCR SaaS or cloud ML APIs\",\n        \"Email/SMS gateway providers\",\n        \"Third-party identity providers\"\n      ],\n      \"data_handled\": [\n        \"Selected extracted text or redacted images (minimized)\",\n        \"Notification payloads (may include PHI fragments if misconfigured)\",\n        \"Audit/usage telemetry\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users upload images/PDFs via the Frontend which transmits files over TLS to the Edge Layer (CDN/API gateway). The Upload Service validates format/quality and stores files in the encrypted object store and enqueues a job in the Job Queue. OCR/AI Workers pull jobs, call internal or third-party AI/OCR, produce structured test records with confidence scores, and push results to Analysis service. Analysis flags abnormalities, generates summaries, and persists structured data in the encrypted relational DB and provenance metadata in the audit store. Notifications are emitted via the Notification Service (in-app and email/SMS). Exports are rendered from persisted structured data and object store files. KMS manages keys for encryption; audit logs and immutable stores preserve tamper-evident trails. Backups and retention policies archive data to cold storage and support secure deletion/erasure workflows.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"End Users\",\n        \"Public Mobile/Browser Clients\"\n      ],\n      \"boundary_type\": \"Untrusted Network\",\n      \"security_controls\": [\n        \"TLS for all traffic\",\n        \"Client-side input validation\",\n        \"Rate limiting and CAPTCHA for abuse prevention\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge Layer\",\n      \"components\": [\n        \"CDN\",\n        \"WAF\",\n        \"API Gateway\"\n      ],\n      \"boundary_type\": \"Semi-Trusted Perimeter\",\n      \"security_controls\": [\n        \"WAF rules\",\n        \"API authentication and token validation\",\n        \"IP allowlists for admin endpoints\",\n        \"DDoS protection\"\n      ]\n    },\n    {\n      \"name\": \"Application Tier\",\n      \"components\": [\n        \"Backend API\",\n        \"Upload Service\",\n        \"Job Queue\",\n        \"OCR Workers\",\n        \"Notification Service\"\n      ],\n      \"boundary_type\": \"Trusted Internal Network\",\n      \"security_controls\": [\n        \"Mutual TLS between services or mTLS\",\n        \"RBAC and least-privilege service accounts\",\n        \"Input/output sanitization and malware scanning\",\n        \"Segmentation and network ACLs\"\n      ]\n    },\n    {\n      \"name\": \"Data / Storage Tier\",\n      \"components\": [\n        \"Encrypted Relational DB\",\n        \"Encrypted Object Store\",\n        \"Immutable Audit Store\",\n        \"KMS\"\n      ],\n      \"boundary_type\": \"High-Trust Security Zone\",\n      \"security_controls\": [\n        \"At-rest encryption with KMS\",\n        \"Access controls with DB user separation\",\n        \"Database auditing and tamper-evident logs\",\n        \"Separation of duties for key management\"\n      ]\n    },\n    {\n      \"name\": \"External Vendor Zone\",\n      \"components\": [\n        \"Third-party AI/OCR\",\n        \"Email/SMS Gateway\",\n        \"External IdP\"\n      ],\n      \"boundary_type\": \"Third-Party Trust Boundary\",\n      \"security_controls\": [\n        \"Data Processing Agreements (DPAs)\",\n        \"Minimal data sharing and redaction\",\n        \"Outbound egress controls and monitored API keys\",\n        \"Vendor risk assessments and periodic audits\"\n      ]\n    },\n    {\n      \"name\": \"Admin/Operations Network\",\n      \"components\": [\n        \"Operational Consoles\",\n        \"DevOps Tools\",\n        \"Monitoring/SIEM\"\n      ],\n      \"boundary_type\": \"Privileged Internal Zone\",\n      \"security_controls\": [\n        \"Bastion hosts with MFA\",\n        \"Just-in-time elevated access\",\n        \"Audit logging of admin actions\",\n        \"Least privilege for developers and operators\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Major entry points: 1) Public web/mobile UI (High) \u2014 risks include XSS, CSRF, insecure storage of tokens, and file-based attacks via uploads. Mitigations: OWASP ASVS controls, CSP, secure cookie flags, client-side encryption options, robust input validation and malware scanning. 2) File upload API (High) \u2014 accepts PHI and potentially malicious files. Mitigations: authenticated endpoints, file-type/size/quality validation, sandboxed processing, virus scanning, content disarm & reconstruction, throttling and resumable upload auth. 3) Backend API endpoints (High) \u2014 exposed CRUD and export functions. Mitigations: strict RBAC, parameterized queries, input validation, rate limiting, mTLS for inter-service calls, strong monitoring and WAF. 4) Third-party AI/OCR integration (Medium-High) \u2014 data exfiltration and compliance risk. Mitigations: minimal redaction before sending, DPAs, encryption in transit, allow-listing, and differential privacy or on-premise options where required. 5) Notification channels (Email/SMS) (Medium) \u2014 risk of PHI leakage in notifications. Mitigations: redaction, user-configurable notification preferences, avoid PHI in subject lines, use secure email gateways. 6) Admin/Operations consoles and logs (High) \u2014 insider and credential compromise risk. Mitigations: MFA, least privilege, JIT access, separation of environments, and immutable audit logging. 7) Identity federation endpoints (Medium) \u2014 token replay or misconfiguration risks. Mitigations: use trusted IdPs, rotate keys, validate tokens, and restrict scopes. Overall risk management: encrypt data at rest and in transit, rigorous vendor management, continuous monitoring/alerting, regular pen-tests, and compliance-driven controls (HIPAA/GDPR) to reduce residual risk.\"\n}",
+  "pydantic": {
+    "architecture_summary": "The system is a cloud-hosted web application composed of a user-facing frontend (web SPA and mobile apps) behind an edge layer (CDN, WAF, API gateway) that authenticates and routes requests to backend application services. The backend orchestrates upload/validation, queued OCR/AI processing, analysis and summarization, notification and audit services, and persists encrypted files and structured results in an encrypted object store and relational database. Identity, RBAC, audit logging, and key management services enforce security and compliance, while external vendors (AI/OCR providers, email/SMS gateways, identity providers) are integrated under strict DPAs. Components interact via authenticated TLS channels and queued jobs to support scalable asynchronous processing and maintainable audit trails.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Users\"\n  U[End Users]\n  A[Clinicians & Admins]\nend\nsubgraph \"Edge Layer\"\n  CDN[CDN & WAF]\n  API_GW[API Gateway & AuthN]\nend\nsubgraph \"Frontend Layer\"\n  FE[Web App SPA & Mobile App]\nend\nsubgraph \"Application Services\"\n  API[Core Backend API & Orchestration]\n  UP[Upload Service & Validation]\n  QUEUE[Job Queue & Orchestration]\n  OCR[AI/OCR Workers]\n  ANALYTICS[Analysis & Summarization]\n  NOTIF[Notification Service]\n  AUDIT[Audit Logging & Monitoring]\n  AUTH[IAM & RBAC Service]\nend\nsubgraph \"Data Layer\"\n  DB[Encrypted Relational DB]\n  OBJ[Encrypted Object Store]\n  LOGS[Immutable Audit Store]\n  KMS[Key Management Service]\nend\nsubgraph \"External Services\"\n  AI[Third-party AI/OCR]\n  EMAIL[Email/SMS Gateway]\n  IDP[External Identity Provider]\nend\n\nU --> CDN\nCDN --> FE\nFE --> API_GW\nA --> API_GW\nAPI_GW --> AUTH\nAPI_GW --> API\nAPI --> UP\nUP --> OBJ\nUP --> QUEUE\nQUEUE --> OCR\nOCR --> AI\nOCR --> ANALYTICS\nANALYTICS --> DB\nANALYTICS --> OBJ\nAPI --> DB\nAPI --> AUDIT\nAPI --> NOTIF\nNOTIF --> EMAIL\nAUTH --> IDP\nAUDIT --> LOGS\nDB --> KMS\nOBJ --> KMS",
+    "components": [
+      {
+        "name": "Frontend Layer",
+        "responsibility": "Provides user interfaces (web SPA and mobile apps) for uploads, profile management, viewing results, visualizations, and configuring notifications/consent.",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "CDN/WAF (cloud provider)",
+          "External Identity Providers (optional)"
+        ],
+        "data_handled": [
+          "User credentials (transit only)",
+          "PII for profile",
+          "Upload metadata and status",
+          "Visualization queries and results (transit)"
+        ]
+      },
+      {
+        "name": "Edge Layer",
+        "responsibility": "Protects and routes traffic using CDN, WAF, and API gateway; enforces TLS, input rate limiting, basic auth checks and request validation before reaching backend.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "Cloud CDN/WAF provider",
+          "API Gateway service"
+        ],
+        "data_handled": [
+          "Incoming HTTP(S) requests",
+          "Authentication tokens",
+          "Upload session control data"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core backend that handles authentication & RBAC, upload validation, job orchestration, OCR/AI integration, analysis/summarization, notifications, audit logging and export generation.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Third-party AI/OCR providers",
+          "Email/SMS gateways",
+          "Message queue service"
+        ],
+        "data_handled": [
+          "Raw uploaded files (PHI)",
+          "Extracted structured lab results (PHI)",
+          "Analysis results and summaries",
+          "Audit events and processing metadata"
+        ]
+      },
+      {
+        "name": "Data Storage",
+        "responsibility": "Secure, encrypted storage for raw files, structured results, user profiles, audit logs, and backups with versioning, retention, and deletion controls.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Cloud object storage",
+          "Managed relational database",
+          "Key Management Service (KMS)"
+        ],
+        "data_handled": [
+          "Encrypted raw reports (images, PDFs)",
+          "Structured lab data and user profiles",
+          "Immutable audit logs and export files",
+          "Backups and archived data"
+        ]
+      },
+      {
+        "name": "Identity & Security Services",
+        "responsibility": "Provides authentication, MFA, RBAC, consent management, key management, audit integrity, and supports compliance features (consent capture, DPIA evidence).",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "External IdP for federated auth (optional)",
+          "KMS provider",
+          "SIEM or logging service"
+        ],
+        "data_handled": [
+          "Authentication logs",
+          "Consent records",
+          "Encryption keys (metadata)",
+          "Access control metadata and roles"
+        ]
+      },
+      {
+        "name": "External Services",
+        "responsibility": "Third-party integrations used for OCR/AI inference, email/SMS delivery, optional identity federation and vendor tools subject to DPAs and data minimization.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "AI/OCR SaaS or cloud ML APIs",
+          "Email/SMS gateway providers",
+          "Third-party identity providers"
+        ],
+        "data_handled": [
+          "Selected extracted text or redacted images (minimized)",
+          "Notification payloads (may include PHI fragments if misconfigured)",
+          "Audit/usage telemetry"
+        ]
+      }
+    ],
+    "data_flow_description": "Users upload images/PDFs via the Frontend which transmits files over TLS to the Edge Layer (CDN/API gateway). The Upload Service validates format/quality and stores files in the encrypted object store and enqueues a job in the Job Queue. OCR/AI Workers pull jobs, call internal or third-party AI/OCR, produce structured test records with confidence scores, and push results to Analysis service. Analysis flags abnormalities, generates summaries, and persists structured data in the encrypted relational DB and provenance metadata in the audit store. Notifications are emitted via the Notification Service (in-app and email/SMS). Exports are rendered from persisted structured data and object store files. KMS manages keys for encryption; audit logs and immutable stores preserve tamper-evident trails. Backups and retention policies archive data to cold storage and support secure deletion/erasure workflows.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "End Users",
+          "Public Mobile/Browser Clients"
+        ],
+        "boundary_type": "Untrusted Network",
+        "security_controls": [
+          "TLS for all traffic",
+          "Client-side input validation",
+          "Rate limiting and CAPTCHA for abuse prevention"
+        ]
+      },
+      {
+        "name": "DMZ / Edge Layer",
+        "components": [
+          "CDN",
+          "WAF",
+          "API Gateway"
+        ],
+        "boundary_type": "Semi-Trusted Perimeter",
+        "security_controls": [
+          "WAF rules",
+          "API authentication and token validation",
+          "IP allowlists for admin endpoints",
+          "DDoS protection"
+        ]
+      },
+      {
+        "name": "Application Tier",
+        "components": [
+          "Backend API",
+          "Upload Service",
+          "Job Queue",
+          "OCR Workers",
+          "Notification Service"
+        ],
+        "boundary_type": "Trusted Internal Network",
+        "security_controls": [
+          "Mutual TLS between services or mTLS",
+          "RBAC and least-privilege service accounts",
+          "Input/output sanitization and malware scanning",
+          "Segmentation and network ACLs"
+        ]
+      },
+      {
+        "name": "Data / Storage Tier",
+        "components": [
+          "Encrypted Relational DB",
+          "Encrypted Object Store",
+          "Immutable Audit Store",
+          "KMS"
+        ],
+        "boundary_type": "High-Trust Security Zone",
+        "security_controls": [
+          "At-rest encryption with KMS",
+          "Access controls with DB user separation",
+          "Database auditing and tamper-evident logs",
+          "Separation of duties for key management"
+        ]
+      },
+      {
+        "name": "External Vendor Zone",
+        "components": [
+          "Third-party AI/OCR",
+          "Email/SMS Gateway",
+          "External IdP"
+        ],
+        "boundary_type": "Third-Party Trust Boundary",
+        "security_controls": [
+          "Data Processing Agreements (DPAs)",
+          "Minimal data sharing and redaction",
+          "Outbound egress controls and monitored API keys",
+          "Vendor risk assessments and periodic audits"
+        ]
+      },
+      {
+        "name": "Admin/Operations Network",
+        "components": [
+          "Operational Consoles",
+          "DevOps Tools",
+          "Monitoring/SIEM"
+        ],
+        "boundary_type": "Privileged Internal Zone",
+        "security_controls": [
+          "Bastion hosts with MFA",
+          "Just-in-time elevated access",
+          "Audit logging of admin actions",
+          "Least privilege for developers and operators"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Major entry points: 1) Public web/mobile UI (High) \u2014 risks include XSS, CSRF, insecure storage of tokens, and file-based attacks via uploads. Mitigations: OWASP ASVS controls, CSP, secure cookie flags, client-side encryption options, robust input validation and malware scanning. 2) File upload API (High) \u2014 accepts PHI and potentially malicious files. Mitigations: authenticated endpoints, file-type/size/quality validation, sandboxed processing, virus scanning, content disarm & reconstruction, throttling and resumable upload auth. 3) Backend API endpoints (High) \u2014 exposed CRUD and export functions. Mitigations: strict RBAC, parameterized queries, input validation, rate limiting, mTLS for inter-service calls, strong monitoring and WAF. 4) Third-party AI/OCR integration (Medium-High) \u2014 data exfiltration and compliance risk. Mitigations: minimal redaction before sending, DPAs, encryption in transit, allow-listing, and differential privacy or on-premise options where required. 5) Notification channels (Email/SMS) (Medium) \u2014 risk of PHI leakage in notifications. Mitigations: redaction, user-configurable notification preferences, avoid PHI in subject lines, use secure email gateways. 6) Admin/Operations consoles and logs (High) \u2014 insider and credential compromise risk. Mitigations: MFA, least privilege, JIT access, separation of environments, and immutable audit logging. 7) Identity federation endpoints (Medium) \u2014 token replay or misconfiguration risks. Mitigations: use trusted IdPs, rotate keys, validate tokens, and restrict scopes. Overall risk management: encrypt data at rest and in transit, rigorous vendor management, continuous monitoring/alerting, regular pen-tests, and compliance-driven controls (HIPAA/GDPR) to reduce residual risk."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"A web application that lets users securely upload images/PDFs of their blood test reports, uses OCR and AI to extract structured test data, identifies abnormalities, provides human-friendly summaries and longitudinal visualizations, and preserves historical health records while giving users control over privacy, consent, notifications, and exports.\",\n  \"high_level_requirements\": [\n    \"User registration and login with multi-factor authentication and password recovery\",\n    \"User profile management with personal details and optional health metrics\",\n    \"User consent and privacy preferences management (consent capture, audit, revocation)\",\n    \"Secure upload pipeline for images and PDF blood test reports (device storage + mobile camera)\",\n    \"File format, quality, size validation, and malware scanning for uploads\",\n    \"Metadata capture for uploads (test date, laboratory name, device/time metadata)\",\n    \"Upload progress feedback and reliable completion status with resumable uploads\",\n    \"OCR and AI-based extraction of test names, values, units, and reference ranges\",\n    \"Automatic identification and flagging of abnormal values with confidence scores\",\n    \"Generation of plain-language summaries and contextual explanations for findings\",\n    \"Maintain and manage historical blood-test records with versioning and provenance\",\n    \"Time-series visualizations and charts with filters (test type, date range) and trend indicators\",\n    \"Export capability for selected data to PDF and CSV with redaction and consent checks\",\n    \"Notification system: email and in-app notifications for analysis completion and alerts for out-of-range results\",\n    \"Configurable notification preferences and escalation settings\",\n    \"Access control and role-based administration (user, clinician, admin, auditor)\",\n    \"Audit logging, monitoring, and tamper-evident trails for all sensitive operations\",\n    \"Encryption of data in transit and at rest, key management, and secure storage\",\n    \"Third-party integration and vendor risk management for AI/OCR providers and email gateways\",\n    \"Data retention, deletion (right to be forgotten), backup, and disaster recovery procedures\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"User registration and login with multi-factor authentication and secure password reset flows.\",\n      \"business_category\": \"Authentication\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Provides secure access to personal accounts and protects against unauthorized access; MFA reduces account compromise risk; secure password recovery prevents account takeover.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"User profile management capturing personal details (age, gender) and optional health metrics with edit and consent controls.\",\n      \"business_category\": \"User Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Profiles contain PII and health-related attributes used in analysis and personalization; must be protected and allow user control over data sharing.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"User consent and privacy preferences management including recording consent, purpose, timestamp, and ability to revoke or modify preferences.\",\n      \"business_category\": \"Security & Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Medical data requires explicit informed consent and traceability for legal compliance (e.g., HIPAA, GDPR); users must control processing purposes and data sharing.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Secure upload pipeline supporting images and PDFs from device storage and direct camera capture on mobile, with TLS and authenticated endpoints.\",\n      \"business_category\": \"Data Ingestion\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Uploads contain PHI; transport must be encrypted and authenticated to prevent interception and ensure integrity.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"Server-side file validation for allowed formats, size limits, image quality heuristics (resolution, legibility), and malware scanning prior to processing.\",\n      \"business_category\": \"Data Ingestion\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Prevents processing of unusable or malicious files, reduces false AI outputs, and protects backend systems from threats.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"Capture and store metadata for each upload including test date, laboratory name, device/time metadata and source identifier.\",\n      \"business_category\": \"Data Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Metadata enables provenance, sorting, filtering, and auditing, and supports data quality and medico-legal traceability.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Provide upload progress, resumable uploads for large files or unreliable networks, and clear completion status with error handling.\",\n      \"business_category\": \"User Experience\",\n      \"security_sensitivity\": \"Low\",\n      \"data_classification\": \"Public\",\n      \"rationale\": \"Improves UX on mobile/weak networks; resumable uploads reduce data loss and re-submission; error messages should avoid leaking sensitive details.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Perform OCR and AI-based structured data extraction to identify test names, result values, units, and reference ranges, with confidence scores and auditability.\",\n      \"business_category\": \"AI/ML Processing\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Transforms unstructured reports into structured PHI; confidence and audit trails are required for traceability and to allow manual review of low-confidence outputs.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Automatically detect and flag abnormal values relative to reference ranges and user-specific factors (age, gender) and provide severity/priority tags.\",\n      \"business_category\": \"Clinical Decision Support\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Users need immediate, understandable alerts for potentially important health changes; classification and risk labelling support triage and downstream notifications.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Generate plain-language summaries and contextual explanations for findings, including limitations, confidence, and guidance to consult healthcare professionals.\",\n      \"business_category\": \"Reporting & UX\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Provides value to users while clearly communicating that the tool is informational and not a medical diagnosis; mitigates risk of misinterpretation.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Persist historical blood-test records with versioning, provenance (which file and extraction version), and the ability to correct or annotate entries.\",\n      \"business_category\": \"Data Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Longitudinal tracking is core to the product and must maintain an auditable history while enabling corrections and provenance for clinical trust.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"Provide interactive time-series visualizations and charts with filtering by test type, date range, and trend indicators showing improvement or deterioration.\",\n      \"business_category\": \"Visualization\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Helps users understand trajectories of biomarkers; visualizations should respect access controls and avoid exposing other users' data.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"Allow export of selected data and reports into PDF and CSV formats, enforce redaction rules based on user preferences and consent, and log exports.\",\n      \"business_category\": \"Data Export\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Users need portability of their data; exports contain PHI so must be controlled, logged, and support redaction or minimization per consent.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Notify users (email and in-app) when AI analysis completes and when results are outside normal ranges, with configurable notification preferences and escalation.\",\n      \"business_category\": \"Notifications\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Timely communication of analysis and alerts enhances safety; notifications must be configurable to avoid unwanted disclosure (e.g., email preview risks).\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"Implement configurable notification preferences (channels, thresholds, frequency) and allow users to pause or opt out of non-critical notifications.\",\n      \"business_category\": \"User Experience\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Respects user autonomy and privacy; reduces notification fatigue and risk of unintentional PHI exposure via certain channels.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"Role-based access control for users, clinicians, administrators, and auditors; principle of least privilege and role-separated duties.\",\n      \"business_category\": \"Access Control\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Prevents unauthorized access to sensitive medical data and mitigates insider threat; supports audit and compliance requirements.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"Comprehensive audit logging and monitoring of authentication events, data access, uploads, edits, exports, consent changes, and admin actions; logs protected and tamper-evident.\",\n      \"business_category\": \"Security & Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Provides forensic capability, compliance evidence, and detection of suspicious activity; logs must themselves be protected to maintain integrity.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"Encrypt all sensitive data in transit (TLS) and at rest (AES-256 or equivalent), with secure key management and separation of keys from data stores.\",\n      \"business_category\": \"Cryptography\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Protects PHI from interception and unauthorized access; key management is critical for regulatory compliance and operational security.\"\n    },\n    {\n      \"requirement_id\": \"REQ-019\",\n      \"requirement_text\": \"Manage third-party integrations (AI/OCR, email/SMS gateways, cloud storage) with vendor risk assessments, contractual data processing agreements, and minimal data sharing.\",\n      \"business_category\": \"Third-Party Risk\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Processing PHI with external vendors creates compliance obligations; contracts and assessments reduce legal and security exposure.\"\n    },\n    {\n      \"requirement_id\": \"REQ-020\",\n      \"requirement_text\": \"Define data retention and deletion policies (including right-to-be-forgotten), automated backups, cross-region disaster recovery, and procedures for secure data disposal.\",\n      \"business_category\": \"Data Lifecycle Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Ensures compliance with legal retention requirements, supports business continuity, and honors user deletion requests while protecting backups and archives.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulatory and compliance obligations include HIPAA (US) for protection of PHI and required safeguards (administrative, physical, technical), GDPR (EU) for personal data protection and data subject rights (consent, access, erasure, portability) when EU residents are involved, local/state data protection laws (e.g., CCPA in CA), and applicable medical device/health software guidance if clinical decision support thresholds are used. Security frameworks and standards to apply: NIST CSF/NIST SP 800-53, ISO 27001 for ISMS, SOC 2 controls for operational security, and OWASP ASVS for web application security. Obligations include breach notification timelines, Data Processing Agreements with vendors, Data Protection Impact Assessments (DPIA) for high-risk processing (AI on health data), secure handling of cross-border transfers (standard contractual clauses or adequacy mechanisms), maintaining audit trails, encryption, access controls, and rights fulfilment (access, correction, deletion).\",\n  \"assumptions\": [\n    \"System will be cloud-hosted on a major provider (e.g., AWS/GCP/Azure) with shared-responsibility security model.\",\n    \"End users have internet access and typical modern browsers or mobile devices with camera capability.\",\n    \"Third-party AI/OCR components may be used (cloud or SaaS) and must be integrated under strict DPA terms.\",\n    \"Laboratory reports follow commonly used layouts and languages primarily in the target market(s); occasional manual review will be required.\",\n    \"Users will provide explicit consent for processing of their blood test data and optional PII fields.\",\n    \"There will be a product operations team responsible for incident response, vendor management, and compliance activities.\",\n    \"Scale assumptions: initial user base modest (thousands), design should be scalable to hundreds of thousands with autoscaling and queuing for OCR/AI jobs.\"\n  ],\n  \"constraints\": [\n    \"Must comply with applicable healthcare data regulations in target jurisdictions (e.g., HIPAA, GDPR) which may restrict cross-border data flows and require specific controls.\",\n    \"Integration constraints: may need to interoperate with legacy EHR systems or clinician portals via HL7/FHIR in future releases.\",\n    \"Latency constraints for AI/analysis: balance between real-time user expectations and batch/queued processing for costly AI inference.\",\n    \"Storage constraints: file size and retention limits to control cost; must implement retention schedules and archival tiers.\",\n    \"Usability constraints: mobile camera capture must handle varied lighting and device capabilities; image pre-processing required.\",\n    \"Operational constraints: budget and team competence for 24/7 monitoring and incident response; must plan for SOC/ISO readiness if demanded by enterprise customers.\",\n    \"Security constraints: key management separation, limited access to production data for developers, and requirement to anonymize/sanitize logs to avoid PHI leakage.\",\n    \"Legal constraints: requirement to have Data Processing Agreements (DPAs) with any AI/OCR provider and email/SMS vendors; some vendors may be disallowed in certain jurisdictions.\",\n    \"Export constraints: PDF/CSV exports must include redaction controls and must honor user consent before allowing third-party sharing.\",\n    \"Retention/deletion constraints: must implement secure deletion and ensure backups and logs conform to deletion/retention policy to satisfy 'right to be forgotten'.\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "A web application that lets users securely upload images/PDFs of their blood test reports, uses OCR and AI to extract structured test data, identifies abnormalities, provides human-friendly summaries and longitudinal visualizations, and preserves historical health records while giving users control over privacy, consent, notifications, and exports.",
+        "high_level_requirements": [
+          "User registration and login with multi-factor authentication and password recovery",
+          "User profile management with personal details and optional health metrics",
+          "User consent and privacy preferences management (consent capture, audit, revocation)",
+          "Secure upload pipeline for images and PDF blood test reports (device storage + mobile camera)",
+          "File format, quality, size validation, and malware scanning for uploads",
+          "Metadata capture for uploads (test date, laboratory name, device/time metadata)",
+          "Upload progress feedback and reliable completion status with resumable uploads",
+          "OCR and AI-based extraction of test names, values, units, and reference ranges",
+          "Automatic identification and flagging of abnormal values with confidence scores",
+          "Generation of plain-language summaries and contextual explanations for findings",
+          "Maintain and manage historical blood-test records with versioning and provenance",
+          "Time-series visualizations and charts with filters (test type, date range) and trend indicators",
+          "Export capability for selected data to PDF and CSV with redaction and consent checks",
+          "Notification system: email and in-app notifications for analysis completion and alerts for out-of-range results",
+          "Configurable notification preferences and escalation settings",
+          "Access control and role-based administration (user, clinician, admin, auditor)",
+          "Audit logging, monitoring, and tamper-evident trails for all sensitive operations",
+          "Encryption of data in transit and at rest, key management, and secure storage",
+          "Third-party integration and vendor risk management for AI/OCR providers and email gateways",
+          "Data retention, deletion (right to be forgotten), backup, and disaster recovery procedures"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "User registration and login with multi-factor authentication and secure password reset flows.",
+            "business_category": "Authentication",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Provides secure access to personal accounts and protects against unauthorized access; MFA reduces account compromise risk; secure password recovery prevents account takeover."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "User profile management capturing personal details (age, gender) and optional health metrics with edit and consent controls.",
+            "business_category": "User Management",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Profiles contain PII and health-related attributes used in analysis and personalization; must be protected and allow user control over data sharing."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "User consent and privacy preferences management including recording consent, purpose, timestamp, and ability to revoke or modify preferences.",
+            "business_category": "Security & Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Medical data requires explicit informed consent and traceability for legal compliance (e.g., HIPAA, GDPR); users must control processing purposes and data sharing."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Secure upload pipeline supporting images and PDFs from device storage and direct camera capture on mobile, with TLS and authenticated endpoints.",
+            "business_category": "Data Ingestion",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Uploads contain PHI; transport must be encrypted and authenticated to prevent interception and ensure integrity."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "Server-side file validation for allowed formats, size limits, image quality heuristics (resolution, legibility), and malware scanning prior to processing.",
+            "business_category": "Data Ingestion",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Prevents processing of unusable or malicious files, reduces false AI outputs, and protects backend systems from threats."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "Capture and store metadata for each upload including test date, laboratory name, device/time metadata and source identifier.",
+            "business_category": "Data Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Metadata enables provenance, sorting, filtering, and auditing, and supports data quality and medico-legal traceability."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Provide upload progress, resumable uploads for large files or unreliable networks, and clear completion status with error handling.",
+            "business_category": "User Experience",
+            "security_sensitivity": "Low",
+            "data_classification": "Public",
+            "rationale": "Improves UX on mobile/weak networks; resumable uploads reduce data loss and re-submission; error messages should avoid leaking sensitive details."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Perform OCR and AI-based structured data extraction to identify test names, result values, units, and reference ranges, with confidence scores and auditability.",
+            "business_category": "AI/ML Processing",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Transforms unstructured reports into structured PHI; confidence and audit trails are required for traceability and to allow manual review of low-confidence outputs."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Automatically detect and flag abnormal values relative to reference ranges and user-specific factors (age, gender) and provide severity/priority tags.",
+            "business_category": "Clinical Decision Support",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Users need immediate, understandable alerts for potentially important health changes; classification and risk labelling support triage and downstream notifications."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Generate plain-language summaries and contextual explanations for findings, including limitations, confidence, and guidance to consult healthcare professionals.",
+            "business_category": "Reporting & UX",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Provides value to users while clearly communicating that the tool is informational and not a medical diagnosis; mitigates risk of misinterpretation."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Persist historical blood-test records with versioning, provenance (which file and extraction version), and the ability to correct or annotate entries.",
+            "business_category": "Data Management",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Longitudinal tracking is core to the product and must maintain an auditable history while enabling corrections and provenance for clinical trust."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "Provide interactive time-series visualizations and charts with filtering by test type, date range, and trend indicators showing improvement or deterioration.",
+            "business_category": "Visualization",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Helps users understand trajectories of biomarkers; visualizations should respect access controls and avoid exposing other users' data."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "Allow export of selected data and reports into PDF and CSV formats, enforce redaction rules based on user preferences and consent, and log exports.",
+            "business_category": "Data Export",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Users need portability of their data; exports contain PHI so must be controlled, logged, and support redaction or minimization per consent."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Notify users (email and in-app) when AI analysis completes and when results are outside normal ranges, with configurable notification preferences and escalation.",
+            "business_category": "Notifications",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Timely communication of analysis and alerts enhances safety; notifications must be configurable to avoid unwanted disclosure (e.g., email preview risks)."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "Implement configurable notification preferences (channels, thresholds, frequency) and allow users to pause or opt out of non-critical notifications.",
+            "business_category": "User Experience",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Respects user autonomy and privacy; reduces notification fatigue and risk of unintentional PHI exposure via certain channels."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "Role-based access control for users, clinicians, administrators, and auditors; principle of least privilege and role-separated duties.",
+            "business_category": "Access Control",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Prevents unauthorized access to sensitive medical data and mitigates insider threat; supports audit and compliance requirements."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "Comprehensive audit logging and monitoring of authentication events, data access, uploads, edits, exports, consent changes, and admin actions; logs protected and tamper-evident.",
+            "business_category": "Security & Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Provides forensic capability, compliance evidence, and detection of suspicious activity; logs must themselves be protected to maintain integrity."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "Encrypt all sensitive data in transit (TLS) and at rest (AES-256 or equivalent), with secure key management and separation of keys from data stores.",
+            "business_category": "Cryptography",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Protects PHI from interception and unauthorized access; key management is critical for regulatory compliance and operational security."
+          },
+          {
+            "requirement_id": "REQ-019",
+            "requirement_text": "Manage third-party integrations (AI/OCR, email/SMS gateways, cloud storage) with vendor risk assessments, contractual data processing agreements, and minimal data sharing.",
+            "business_category": "Third-Party Risk",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Processing PHI with external vendors creates compliance obligations; contracts and assessments reduce legal and security exposure."
+          },
+          {
+            "requirement_id": "REQ-020",
+            "requirement_text": "Define data retention and deletion policies (including right-to-be-forgotten), automated backups, cross-region disaster recovery, and procedures for secure data disposal.",
+            "business_category": "Data Lifecycle Management",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Ensures compliance with legal retention requirements, supports business continuity, and honors user deletion requests while protecting backups and archives."
+          }
+        ],
+        "security_context": "Applicable regulatory and compliance obligations include HIPAA (US) for protection of PHI and required safeguards (administrative, physical, technical), GDPR (EU) for personal data protection and data subject rights (consent, access, erasure, portability) when EU residents are involved, local/state data protection laws (e.g., CCPA in CA), and applicable medical device/health software guidance if clinical decision support thresholds are used. Security frameworks and standards to apply: NIST CSF/NIST SP 800-53, ISO 27001 for ISMS, SOC 2 controls for operational security, and OWASP ASVS for web application security. Obligations include breach notification timelines, Data Processing Agreements with vendors, Data Protection Impact Assessments (DPIA) for high-risk processing (AI on health data), secure handling of cross-border transfers (standard contractual clauses or adequacy mechanisms), maintaining audit trails, encryption, access controls, and rights fulfilment (access, correction, deletion).",
+        "assumptions": [
+          "System will be cloud-hosted on a major provider (e.g., AWS/GCP/Azure) with shared-responsibility security model.",
+          "End users have internet access and typical modern browsers or mobile devices with camera capability.",
+          "Third-party AI/OCR components may be used (cloud or SaaS) and must be integrated under strict DPA terms.",
+          "Laboratory reports follow commonly used layouts and languages primarily in the target market(s); occasional manual review will be required.",
+          "Users will provide explicit consent for processing of their blood test data and optional PII fields.",
+          "There will be a product operations team responsible for incident response, vendor management, and compliance activities.",
+          "Scale assumptions: initial user base modest (thousands), design should be scalable to hundreds of thousands with autoscaling and queuing for OCR/AI jobs."
+        ],
+        "constraints": [
+          "Must comply with applicable healthcare data regulations in target jurisdictions (e.g., HIPAA, GDPR) which may restrict cross-border data flows and require specific controls.",
+          "Integration constraints: may need to interoperate with legacy EHR systems or clinician portals via HL7/FHIR in future releases.",
+          "Latency constraints for AI/analysis: balance between real-time user expectations and batch/queued processing for costly AI inference.",
+          "Storage constraints: file size and retention limits to control cost; must implement retention schedules and archival tiers.",
+          "Usability constraints: mobile camera capture must handle varied lighting and device capabilities; image pre-processing required.",
+          "Operational constraints: budget and team competence for 24/7 monitoring and incident response; must plan for SOC/ISO readiness if demanded by enterprise customers.",
+          "Security constraints: key management separation, limited access to production data for developers, and requirement to anonymize/sanitize logs to avoid PHI leakage.",
+          "Legal constraints: requirement to have Data Processing Agreements (DPAs) with any AI/OCR provider and email/SMS vendors; some vendors may be disallowed in certain jurisdictions.",
+          "Export constraints: PDF/CSV exports must include redaction controls and must honor user consent before allowing third-party sharing.",
+          "Retention/deletion constraints: must implement secure deletion and ensure backups and logs conform to deletion/retention policy to satisfy 'right to be forgotten'."
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"The system is a cloud-hosted web application composed of a user-facing frontend (web SPA and mobile apps) behind an edge layer (CDN, WAF, API gateway) that authenticates and routes requests to backend application services. The backend orchestrates upload/validation, queued OCR/AI processing, analysis and summarization, notification and audit services, and persists encrypted files and structured results in an encrypted object store and relational database. Identity, RBAC, audit logging, and key management services enforce security and compliance, while external vendors (AI/OCR providers, email/SMS gateways, identity providers) are integrated under strict DPAs. Components interact via authenticated TLS channels and queued jobs to support scalable asynchronous processing and maintainable audit trails.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\nsubgraph \\\"Users\\\"\\n  U[End Users]\\n  A[Clinicians & Admins]\\nend\\nsubgraph \\\"Edge Layer\\\"\\n  CDN[CDN & WAF]\\n  API_GW[API Gateway & AuthN]\\nend\\nsubgraph \\\"Frontend Layer\\\"\\n  FE[Web App SPA & Mobile App]\\nend\\nsubgraph \\\"Application Services\\\"\\n  API[Core Backend API & Orchestration]\\n  UP[Upload Service & Validation]\\n  QUEUE[Job Queue & Orchestration]\\n  OCR[AI/OCR Workers]\\n  ANALYTICS[Analysis & Summarization]\\n  NOTIF[Notification Service]\\n  AUDIT[Audit Logging & Monitoring]\\n  AUTH[IAM & RBAC Service]\\nend\\nsubgraph \\\"Data Layer\\\"\\n  DB[Encrypted Relational DB]\\n  OBJ[Encrypted Object Store]\\n  LOGS[Immutable Audit Store]\\n  KMS[Key Management Service]\\nend\\nsubgraph \\\"External Services\\\"\\n  AI[Third-party AI/OCR]\\n  EMAIL[Email/SMS Gateway]\\n  IDP[External Identity Provider]\\nend\\n\\nU --> CDN\\nCDN --> FE\\nFE --> API_GW\\nA --> API_GW\\nAPI_GW --> AUTH\\nAPI_GW --> API\\nAPI --> UP\\nUP --> OBJ\\nUP --> QUEUE\\nQUEUE --> OCR\\nOCR --> AI\\nOCR --> ANALYTICS\\nANALYTICS --> DB\\nANALYTICS --> OBJ\\nAPI --> DB\\nAPI --> AUDIT\\nAPI --> NOTIF\\nNOTIF --> EMAIL\\nAUTH --> IDP\\nAUDIT --> LOGS\\nDB --> KMS\\nOBJ --> KMS\",\n  \"components\": [\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Provides user interfaces (web SPA and mobile apps) for uploads, profile management, viewing results, visualizations, and configuring notifications/consent.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"CDN/WAF (cloud provider)\",\n        \"External Identity Providers (optional)\"\n      ],\n      \"data_handled\": [\n        \"User credentials (transit only)\",\n        \"PII for profile\",\n        \"Upload metadata and status\",\n        \"Visualization queries and results (transit)\"\n      ]\n    },\n    {\n      \"name\": \"Edge Layer\",\n      \"responsibility\": \"Protects and routes traffic using CDN, WAF, and API gateway; enforces TLS, input rate limiting, basic auth checks and request validation before reaching backend.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"Cloud CDN/WAF provider\",\n        \"API Gateway service\"\n      ],\n      \"data_handled\": [\n        \"Incoming HTTP(S) requests\",\n        \"Authentication tokens\",\n        \"Upload session control data\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core backend that handles authentication & RBAC, upload validation, job orchestration, OCR/AI integration, analysis/summarization, notifications, audit logging and export generation.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Third-party AI/OCR providers\",\n        \"Email/SMS gateways\",\n        \"Message queue service\"\n      ],\n      \"data_handled\": [\n        \"Raw uploaded files (PHI)\",\n        \"Extracted structured lab results (PHI)\",\n        \"Analysis results and summaries\",\n        \"Audit events and processing metadata\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage\",\n      \"responsibility\": \"Secure, encrypted storage for raw files, structured results, user profiles, audit logs, and backups with versioning, retention, and deletion controls.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Cloud object storage\",\n        \"Managed relational database\",\n        \"Key Management Service (KMS)\"\n      ],\n      \"data_handled\": [\n        \"Encrypted raw reports (images, PDFs)\",\n        \"Structured lab data and user profiles\",\n        \"Immutable audit logs and export files\",\n        \"Backups and archived data\"\n      ]\n    },\n    {\n      \"name\": \"Identity & Security Services\",\n      \"responsibility\": \"Provides authentication, MFA, RBAC, consent management, key management, audit integrity, and supports compliance features (consent capture, DPIA evidence).\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"External IdP for federated auth (optional)\",\n        \"KMS provider\",\n        \"SIEM or logging service\"\n      ],\n      \"data_handled\": [\n        \"Authentication logs\",\n        \"Consent records\",\n        \"Encryption keys (metadata)\",\n        \"Access control metadata and roles\"\n      ]\n    },\n    {\n      \"name\": \"External Services\",\n      \"responsibility\": \"Third-party integrations used for OCR/AI inference, email/SMS delivery, optional identity federation and vendor tools subject to DPAs and data minimization.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"AI/OCR SaaS or cloud ML APIs\",\n        \"Email/SMS gateway providers\",\n        \"Third-party identity providers\"\n      ],\n      \"data_handled\": [\n        \"Selected extracted text or redacted images (minimized)\",\n        \"Notification payloads (may include PHI fragments if misconfigured)\",\n        \"Audit/usage telemetry\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Users upload images/PDFs via the Frontend which transmits files over TLS to the Edge Layer (CDN/API gateway). The Upload Service validates format/quality and stores files in the encrypted object store and enqueues a job in the Job Queue. OCR/AI Workers pull jobs, call internal or third-party AI/OCR, produce structured test records with confidence scores, and push results to Analysis service. Analysis flags abnormalities, generates summaries, and persists structured data in the encrypted relational DB and provenance metadata in the audit store. Notifications are emitted via the Notification Service (in-app and email/SMS). Exports are rendered from persisted structured data and object store files. KMS manages keys for encryption; audit logs and immutable stores preserve tamper-evident trails. Backups and retention policies archive data to cold storage and support secure deletion/erasure workflows.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"End Users\",\n        \"Public Mobile/Browser Clients\"\n      ],\n      \"boundary_type\": \"Untrusted Network\",\n      \"security_controls\": [\n        \"TLS for all traffic\",\n        \"Client-side input validation\",\n        \"Rate limiting and CAPTCHA for abuse prevention\"\n      ]\n    },\n    {\n      \"name\": \"DMZ / Edge Layer\",\n      \"components\": [\n        \"CDN\",\n        \"WAF\",\n        \"API Gateway\"\n      ],\n      \"boundary_type\": \"Semi-Trusted Perimeter\",\n      \"security_controls\": [\n        \"WAF rules\",\n        \"API authentication and token validation\",\n        \"IP allowlists for admin endpoints\",\n        \"DDoS protection\"\n      ]\n    },\n    {\n      \"name\": \"Application Tier\",\n      \"components\": [\n        \"Backend API\",\n        \"Upload Service\",\n        \"Job Queue\",\n        \"OCR Workers\",\n        \"Notification Service\"\n      ],\n      \"boundary_type\": \"Trusted Internal Network\",\n      \"security_controls\": [\n        \"Mutual TLS between services or mTLS\",\n        \"RBAC and least-privilege service accounts\",\n        \"Input/output sanitization and malware scanning\",\n        \"Segmentation and network ACLs\"\n      ]\n    },\n    {\n      \"name\": \"Data / Storage Tier\",\n      \"components\": [\n        \"Encrypted Relational DB\",\n        \"Encrypted Object Store\",\n        \"Immutable Audit Store\",\n        \"KMS\"\n      ],\n      \"boundary_type\": \"High-Trust Security Zone\",\n      \"security_controls\": [\n        \"At-rest encryption with KMS\",\n        \"Access controls with DB user separation\",\n        \"Database auditing and tamper-evident logs\",\n        \"Separation of duties for key management\"\n      ]\n    },\n    {\n      \"name\": \"External Vendor Zone\",\n      \"components\": [\n        \"Third-party AI/OCR\",\n        \"Email/SMS Gateway\",\n        \"External IdP\"\n      ],\n      \"boundary_type\": \"Third-Party Trust Boundary\",\n      \"security_controls\": [\n        \"Data Processing Agreements (DPAs)\",\n        \"Minimal data sharing and redaction\",\n        \"Outbound egress controls and monitored API keys\",\n        \"Vendor risk assessments and periodic audits\"\n      ]\n    },\n    {\n      \"name\": \"Admin/Operations Network\",\n      \"components\": [\n        \"Operational Consoles\",\n        \"DevOps Tools\",\n        \"Monitoring/SIEM\"\n      ],\n      \"boundary_type\": \"Privileged Internal Zone\",\n      \"security_controls\": [\n        \"Bastion hosts with MFA\",\n        \"Just-in-time elevated access\",\n        \"Audit logging of admin actions\",\n        \"Least privilege for developers and operators\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Major entry points: 1) Public web/mobile UI (High) \u2014 risks include XSS, CSRF, insecure storage of tokens, and file-based attacks via uploads. Mitigations: OWASP ASVS controls, CSP, secure cookie flags, client-side encryption options, robust input validation and malware scanning. 2) File upload API (High) \u2014 accepts PHI and potentially malicious files. Mitigations: authenticated endpoints, file-type/size/quality validation, sandboxed processing, virus scanning, content disarm & reconstruction, throttling and resumable upload auth. 3) Backend API endpoints (High) \u2014 exposed CRUD and export functions. Mitigations: strict RBAC, parameterized queries, input validation, rate limiting, mTLS for inter-service calls, strong monitoring and WAF. 4) Third-party AI/OCR integration (Medium-High) \u2014 data exfiltration and compliance risk. Mitigations: minimal redaction before sending, DPAs, encryption in transit, allow-listing, and differential privacy or on-premise options where required. 5) Notification channels (Email/SMS) (Medium) \u2014 risk of PHI leakage in notifications. Mitigations: redaction, user-configurable notification preferences, avoid PHI in subject lines, use secure email gateways. 6) Admin/Operations consoles and logs (High) \u2014 insider and credential compromise risk. Mitigations: MFA, least privilege, JIT access, separation of environments, and immutable audit logging. 7) Identity federation endpoints (Medium) \u2014 token replay or misconfiguration risks. Mitigations: use trusted IdPs, rotate keys, validate tokens, and restrict scopes. Overall risk management: encrypt data at rest and in transit, rigorous vendor management, continuous monitoring/alerting, regular pen-tests, and compliance-driven controls (HIPAA/GDPR) to reduce residual risk.\"\n}",
+      "pydantic": {
+        "architecture_summary": "The system is a cloud-hosted web application composed of a user-facing frontend (web SPA and mobile apps) behind an edge layer (CDN, WAF, API gateway) that authenticates and routes requests to backend application services. The backend orchestrates upload/validation, queued OCR/AI processing, analysis and summarization, notification and audit services, and persists encrypted files and structured results in an encrypted object store and relational database. Identity, RBAC, audit logging, and key management services enforce security and compliance, while external vendors (AI/OCR providers, email/SMS gateways, identity providers) are integrated under strict DPAs. Components interact via authenticated TLS channels and queued jobs to support scalable asynchronous processing and maintainable audit trails.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\nsubgraph \"Users\"\n  U[End Users]\n  A[Clinicians & Admins]\nend\nsubgraph \"Edge Layer\"\n  CDN[CDN & WAF]\n  API_GW[API Gateway & AuthN]\nend\nsubgraph \"Frontend Layer\"\n  FE[Web App SPA & Mobile App]\nend\nsubgraph \"Application Services\"\n  API[Core Backend API & Orchestration]\n  UP[Upload Service & Validation]\n  QUEUE[Job Queue & Orchestration]\n  OCR[AI/OCR Workers]\n  ANALYTICS[Analysis & Summarization]\n  NOTIF[Notification Service]\n  AUDIT[Audit Logging & Monitoring]\n  AUTH[IAM & RBAC Service]\nend\nsubgraph \"Data Layer\"\n  DB[Encrypted Relational DB]\n  OBJ[Encrypted Object Store]\n  LOGS[Immutable Audit Store]\n  KMS[Key Management Service]\nend\nsubgraph \"External Services\"\n  AI[Third-party AI/OCR]\n  EMAIL[Email/SMS Gateway]\n  IDP[External Identity Provider]\nend\n\nU --> CDN\nCDN --> FE\nFE --> API_GW\nA --> API_GW\nAPI_GW --> AUTH\nAPI_GW --> API\nAPI --> UP\nUP --> OBJ\nUP --> QUEUE\nQUEUE --> OCR\nOCR --> AI\nOCR --> ANALYTICS\nANALYTICS --> DB\nANALYTICS --> OBJ\nAPI --> DB\nAPI --> AUDIT\nAPI --> NOTIF\nNOTIF --> EMAIL\nAUTH --> IDP\nAUDIT --> LOGS\nDB --> KMS\nOBJ --> KMS",
+        "components": [
+          {
+            "name": "Frontend Layer",
+            "responsibility": "Provides user interfaces (web SPA and mobile apps) for uploads, profile management, viewing results, visualizations, and configuring notifications/consent.",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "CDN/WAF (cloud provider)",
+              "External Identity Providers (optional)"
+            ],
+            "data_handled": [
+              "User credentials (transit only)",
+              "PII for profile",
+              "Upload metadata and status",
+              "Visualization queries and results (transit)"
+            ]
+          },
+          {
+            "name": "Edge Layer",
+            "responsibility": "Protects and routes traffic using CDN, WAF, and API gateway; enforces TLS, input rate limiting, basic auth checks and request validation before reaching backend.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "Cloud CDN/WAF provider",
+              "API Gateway service"
+            ],
+            "data_handled": [
+              "Incoming HTTP(S) requests",
+              "Authentication tokens",
+              "Upload session control data"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core backend that handles authentication & RBAC, upload validation, job orchestration, OCR/AI integration, analysis/summarization, notifications, audit logging and export generation.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Third-party AI/OCR providers",
+              "Email/SMS gateways",
+              "Message queue service"
+            ],
+            "data_handled": [
+              "Raw uploaded files (PHI)",
+              "Extracted structured lab results (PHI)",
+              "Analysis results and summaries",
+              "Audit events and processing metadata"
+            ]
+          },
+          {
+            "name": "Data Storage",
+            "responsibility": "Secure, encrypted storage for raw files, structured results, user profiles, audit logs, and backups with versioning, retention, and deletion controls.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Cloud object storage",
+              "Managed relational database",
+              "Key Management Service (KMS)"
+            ],
+            "data_handled": [
+              "Encrypted raw reports (images, PDFs)",
+              "Structured lab data and user profiles",
+              "Immutable audit logs and export files",
+              "Backups and archived data"
+            ]
+          },
+          {
+            "name": "Identity & Security Services",
+            "responsibility": "Provides authentication, MFA, RBAC, consent management, key management, audit integrity, and supports compliance features (consent capture, DPIA evidence).",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "External IdP for federated auth (optional)",
+              "KMS provider",
+              "SIEM or logging service"
+            ],
+            "data_handled": [
+              "Authentication logs",
+              "Consent records",
+              "Encryption keys (metadata)",
+              "Access control metadata and roles"
+            ]
+          },
+          {
+            "name": "External Services",
+            "responsibility": "Third-party integrations used for OCR/AI inference, email/SMS delivery, optional identity federation and vendor tools subject to DPAs and data minimization.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "AI/OCR SaaS or cloud ML APIs",
+              "Email/SMS gateway providers",
+              "Third-party identity providers"
+            ],
+            "data_handled": [
+              "Selected extracted text or redacted images (minimized)",
+              "Notification payloads (may include PHI fragments if misconfigured)",
+              "Audit/usage telemetry"
+            ]
+          }
+        ],
+        "data_flow_description": "Users upload images/PDFs via the Frontend which transmits files over TLS to the Edge Layer (CDN/API gateway). The Upload Service validates format/quality and stores files in the encrypted object store and enqueues a job in the Job Queue. OCR/AI Workers pull jobs, call internal or third-party AI/OCR, produce structured test records with confidence scores, and push results to Analysis service. Analysis flags abnormalities, generates summaries, and persists structured data in the encrypted relational DB and provenance metadata in the audit store. Notifications are emitted via the Notification Service (in-app and email/SMS). Exports are rendered from persisted structured data and object store files. KMS manages keys for encryption; audit logs and immutable stores preserve tamper-evident trails. Backups and retention policies archive data to cold storage and support secure deletion/erasure workflows.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "End Users",
+              "Public Mobile/Browser Clients"
+            ],
+            "boundary_type": "Untrusted Network",
+            "security_controls": [
+              "TLS for all traffic",
+              "Client-side input validation",
+              "Rate limiting and CAPTCHA for abuse prevention"
+            ]
+          },
+          {
+            "name": "DMZ / Edge Layer",
+            "components": [
+              "CDN",
+              "WAF",
+              "API Gateway"
+            ],
+            "boundary_type": "Semi-Trusted Perimeter",
+            "security_controls": [
+              "WAF rules",
+              "API authentication and token validation",
+              "IP allowlists for admin endpoints",
+              "DDoS protection"
+            ]
+          },
+          {
+            "name": "Application Tier",
+            "components": [
+              "Backend API",
+              "Upload Service",
+              "Job Queue",
+              "OCR Workers",
+              "Notification Service"
+            ],
+            "boundary_type": "Trusted Internal Network",
+            "security_controls": [
+              "Mutual TLS between services or mTLS",
+              "RBAC and least-privilege service accounts",
+              "Input/output sanitization and malware scanning",
+              "Segmentation and network ACLs"
+            ]
+          },
+          {
+            "name": "Data / Storage Tier",
+            "components": [
+              "Encrypted Relational DB",
+              "Encrypted Object Store",
+              "Immutable Audit Store",
+              "KMS"
+            ],
+            "boundary_type": "High-Trust Security Zone",
+            "security_controls": [
+              "At-rest encryption with KMS",
+              "Access controls with DB user separation",
+              "Database auditing and tamper-evident logs",
+              "Separation of duties for key management"
+            ]
+          },
+          {
+            "name": "External Vendor Zone",
+            "components": [
+              "Third-party AI/OCR",
+              "Email/SMS Gateway",
+              "External IdP"
+            ],
+            "boundary_type": "Third-Party Trust Boundary",
+            "security_controls": [
+              "Data Processing Agreements (DPAs)",
+              "Minimal data sharing and redaction",
+              "Outbound egress controls and monitored API keys",
+              "Vendor risk assessments and periodic audits"
+            ]
+          },
+          {
+            "name": "Admin/Operations Network",
+            "components": [
+              "Operational Consoles",
+              "DevOps Tools",
+              "Monitoring/SIEM"
+            ],
+            "boundary_type": "Privileged Internal Zone",
+            "security_controls": [
+              "Bastion hosts with MFA",
+              "Just-in-time elevated access",
+              "Audit logging of admin actions",
+              "Least privilege for developers and operators"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Major entry points: 1) Public web/mobile UI (High) \u2014 risks include XSS, CSRF, insecure storage of tokens, and file-based attacks via uploads. Mitigations: OWASP ASVS controls, CSP, secure cookie flags, client-side encryption options, robust input validation and malware scanning. 2) File upload API (High) \u2014 accepts PHI and potentially malicious files. Mitigations: authenticated endpoints, file-type/size/quality validation, sandboxed processing, virus scanning, content disarm & reconstruction, throttling and resumable upload auth. 3) Backend API endpoints (High) \u2014 exposed CRUD and export functions. Mitigations: strict RBAC, parameterized queries, input validation, rate limiting, mTLS for inter-service calls, strong monitoring and WAF. 4) Third-party AI/OCR integration (Medium-High) \u2014 data exfiltration and compliance risk. Mitigations: minimal redaction before sending, DPAs, encryption in transit, allow-listing, and differential privacy or on-premise options where required. 5) Notification channels (Email/SMS) (Medium) \u2014 risk of PHI leakage in notifications. Mitigations: redaction, user-configurable notification preferences, avoid PHI in subject lines, use secure email gateways. 6) Admin/Operations consoles and logs (High) \u2014 insider and credential compromise risk. Mitigations: MFA, least privilege, JIT access, separation of environments, and immutable audit logging. 7) Identity federation endpoints (Medium) \u2014 token replay or misconfiguration risks. Mitigations: use trusted IdPs, rotate keys, validate tokens, and restrict scopes. Overall risk management: encrypt data at rest and in transit, rigorous vendor management, continuous monitoring/alerting, regular pen-tests, and compliance-driven controls (HIPAA/GDPR) to reduce residual risk."
+      }
+    }
+  ]
+}

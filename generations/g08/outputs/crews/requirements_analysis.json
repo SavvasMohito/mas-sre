@@ -1,0 +1,712 @@
+{
+  "raw": "{\n  \"architecture_summary\": \"The platform is a cloud-first, optionally private/SaaS system composed of a secure edge/API gateway and frontend for developers and CI/CD, core application services that orchestrate analysis workflows, an AI-powered analysis engine (LLM inference + SAST + dependency/secret scanning), a model management plane for training/versioning/inference, and a data layer that securely stores code artifacts, vulnerability data, audit logs, caches, and models. External integrations include Git providers (OAuth/webhooks), CVE/NVD feeds, notification systems (Slack/Teams), CI/CD pipelines, SSO providers, managed model hosts/GPUs, and SIEM. Components communicate via authenticated HTTPS APIs and message queues for async processing; sensitive artifacts and keys are encrypted and access-controlled via RBAC and KMS/BYOK.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\n  subgraph \\\"Edge Layer\\\"\\n    Users[Developers CI-CD Agents] --> API[API Gateway & Auth]\\n  end\\n\\n  subgraph \\\"Frontend Layer\\\"\\n    API --> FE[Web App SPA & Dashboards]\\n  end\\n\\n  subgraph \\\"Application Services\\\"\\n    API --> Orch[Orchestration & Core App Services]\\n    Orch --> Analysis[AI Analysis Engine LLM+SAST]\\n    Orch --> ModelMgmt[Model Management & Inference API]\\n    Orch --> Collab[Collaboration, Comments & Notifications]\\n    Orch --> CICD[CI/CD Integration & Webhook Handler]\\n  end\\n\\n  subgraph \\\"Data Layer\\\"\\n    Analysis --> Cache[Secure Cache Results]\\n    Analysis --> Artifacts[Encrypted Code Artifacts Storage]\\n    ModelMgmt --> ModelStore[Model Store & Versioning]\\n    Orch --> VDB[Vulnerability DB & CVE Metadata]\\n    Orch --> Audit[Immutable Audit Logs & Reports]\\n    KMS[KMS & Secrets Manager]\\n  end\\n\\n  subgraph \\\"External Services\\\"\\n    Users --> Git[GitHub GitLab Bitbucket]\\n    Orch --> Slack[Slack & Microsoft Teams]\\n    VDB --> CVE[NVD CVE Feeds]\\n    ModelStore --> GPU[Managed GPU / Model Host]\\n    API --> SSO[SSO SAML/OIDC]\\n    Audit --> SIEM[SIEM / SOAR]\\n  end\\n\\n  Artifacts --> Git\\n  KMS --> Artifacts\\n  KMS --> ModelStore\\n  Orch --> SIEM\\n\",\n  \"components\": [\n    {\n      \"name\": \"Edge/API Gateway\",\n      \"responsibility\": \"Handle ingress traffic, OAuth flows, JWT validation, rate limiting, request routing to backend services, and initial authz/authn enforcement.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"SSO SAML/OIDC providers\",\n        \"WAF / DDoS protection\",\n        \"Identity Providers\"\n      ],\n      \"data_handled\": [\n        \"Auth tokens\",\n        \"API requests/metadata\",\n        \"User session data\"\n      ]\n    },\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Web SPA and dashboards for developers and managers to view findings, collaborate, manage repos, and configure policies and model settings.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"Browser clients\",\n        \"API Gateway\"\n      ],\n      \"data_handled\": [\n        \"UI session data\",\n        \"Aggregated scan results and metrics\",\n        \"User preferences\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core orchestration, business logic, workflows for scans, PR creation, notifications, RBAC enforcement, and integrations with CI/CD and collaboration tools.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"GitHub/GitLab/Bitbucket APIs\",\n        \"CI/CD systems (GitHub Actions, Jenkins)\",\n        \"Slack/Teams\"\n      ],\n      \"data_handled\": [\n        \"Repository metadata\",\n        \"Scan job metadata\",\n        \"Notification payloads\",\n        \"Audit events\"\n      ]\n    },\n    {\n      \"name\": \"AI Analysis Engine\",\n      \"responsibility\": \"Perform LLM-based code review, static analysis (SAST), pattern recognition, dependency scanning, and secret detection; produce findings with severity and remediation suggestions.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Managed model hosts / GPU providers\",\n        \"Local/on-prem model infra (for private deployments)\",\n        \"Vulnerability feeds\"\n      ],\n      \"data_handled\": [\n        \"Code snippets and diffs\",\n        \"Analysis artifacts\",\n        \"Generated remediation suggestions\"\n      ]\n    },\n    {\n      \"name\": \"Model Management\",\n      \"responsibility\": \"Host inference APIs, version models, manage A/B testing and staged rollouts, enable isolated/custom training workflows and monitor model performance and drift.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"GPU/Model hosting providers\",\n        \"Model training pipelines\",\n        \"Customer-provided training environments (on-prem/VPC)\"\n      ],\n      \"data_handled\": [\n        \"Model binaries and metadata\",\n        \"Training artifacts\",\n        \"Inference logs (sanitized)\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage & Persistence\",\n      \"responsibility\": \"Securely store code artifacts, vulnerability DB, audit logs, caches, remediation history, and configuration; enforce encryption, retention, and immutability where required.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"KMS / BYOK providers\",\n        \"Immutable storage providers (WORM/append-only)\",\n        \"Backup/archival services\"\n      ],\n      \"data_handled\": [\n        \"Encrypted code artifacts and snippets\",\n        \"Vulnerability/CVE metadata\",\n        \"Audit logs and reports\",\n        \"Cached analysis results\"\n      ]\n    },\n    {\n      \"name\": \"External Integrations\",\n      \"responsibility\": \"Connectors to third-party systems: Git providers (OAuth/webhooks), CVE/NVD feeds, CI/CD, Slack/Teams, SIEM, and identity providers.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"GitHub GitLab Bitbucket APIs\",\n        \"NVD/CVE feeds\",\n        \"Slack Microsoft Teams\",\n        \"SIEM services\"\n      ],\n      \"data_handled\": [\n        \"Webhook events\",\n        \"CVE feed data\",\n        \"Notification metadata\",\n        \"Integration tokens (encrypted)\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Developers or CI/CD send commits/webhook events to the Edge/API Gateway which authenticates requests and forwards them to Orchestration. Orchestration fetches code via repository APIs (OAuth-scoped), stores encrypted artifacts, and enqueues analysis tasks. The AI Analysis Engine runs LLM inference and SAST, consults the Vulnerability DB, and writes findings to Audit Logs and Data Storage; remediation suggestions are generated and optionally open PRs back to the Git provider. Model Management serves inference endpoints and may receive opt-in training data in isolated environments. Results are cached for performance; dashboards and notifications surface findings. Sensitive data (code, tokens, secrets) are encrypted at rest and in transit; audit logs and exports are produced on demand.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users\",\n        \"CI/CD Agents\",\n        \"Git Providers\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS only endpoints\",\n        \"WAF and DDoS protection\",\n        \"Strong OAuth flows and webhook validation\",\n        \"Rate limiting and IP allowlists for enterprise customers\"\n      ]\n    },\n    {\n      \"name\": \"Edge/API Gateway (DMZ)\",\n      \"components\": [\n        \"API Gateway\",\n        \"Auth/Token Validation\",\n        \"Ingress Rate Limiting\"\n      ],\n      \"boundary_type\": \"Semi-Trusted\",\n      \"security_controls\": [\n        \"JWT/OAuth validation\",\n        \"Request signing and webhook verification\",\n        \"WAF rules\",\n        \"Anomaly detection and abuse prevention\"\n      ]\n    },\n    {\n      \"name\": \"Internal Application Network\",\n      \"components\": [\n        \"Orchestration\",\n        \"Analysis Engine\",\n        \"Model Management\",\n        \"Collaboration Services\"\n      ],\n      \"boundary_type\": \"Trusted/Internal\",\n      \"security_controls\": [\n        \"Mutual TLS between services\",\n        \"RBAC and least-privilege service accounts\",\n        \"Network segmentation and VPCs\",\n        \"SIEM logging and IDS/IPS\"\n      ]\n    },\n    {\n      \"name\": \"Data/Storage Tier\",\n      \"components\": [\n        \"Encrypted Artifact Storage\",\n        \"Vulnerability DB\",\n        \"Audit Logs\",\n        \"Cache\",\n        \"KMS\"\n      ],\n      \"boundary_type\": \"Highly Trusted/Protected\",\n      \"security_controls\": [\n        \"Encryption at rest with KMS/BYOK\",\n        \"Access control lists and IAM policies\",\n        \"Immutable logging (WORM) for audit logs\",\n        \"Separation of duties and key rotation\"\n      ]\n    },\n    {\n      \"name\": \"Model Training/Hosting Isolation\",\n      \"components\": [\n        \"ModelStore\",\n        \"GPU/Model Hosts\",\n        \"Customer Isolated Training Envs\"\n      ],\n      \"boundary_type\": \"Isolated/Controlled\",\n      \"security_controls\": [\n        \"Tenant isolation (VPC, namespaces)\",\n        \"Consent and opt-in controls for training\",\n        \"Data minimization and privacy-preserving techniques\",\n        \"Provenance tracking and model signing\"\n      ]\n    },\n    {\n      \"name\": \"Customer On-Prem/VPC\",\n      \"components\": [\n        \"On-prem Deployments\",\n        \"Private SaaS VPC Peering\"\n      ],\n      \"boundary_type\": \"Customer Controlled\",\n      \"security_controls\": [\n        \"Network peering with strict routing\",\n        \"Customer-managed KMS/BYOK\",\n        \"Local audit and compliance controls\",\n        \"Restricted outbound access\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: API Gateway endpoints (inference APIs, REST APIs), OAuth webhook endpoints from Git providers, and the Web UI. These are high-risk and require strong authn/authz, rate limiting, WAF, and webhook signature validation. Integration points with Git providers and CI/CD are exposed via OAuth tokens and webhooks; compromised tokens can expose code\u2014mitigate with least-privilege scopes, token rotation, and monitoring. Model inference endpoints are sensitive (risk of data exfiltration and prompt injection) and should enforce input sanitization, access controls, rate limits, and logging; A/B testing and training endpoints add risk for model leakage and must be isolated and opt-in. Data storage endpoints (artifact stores, caches, vulnerability DB, audit logs) represent a critical defensive boundary\u2014protect with encryption, KMS, and strict IAM. Notification integrations (Slack/Teams) risk accidental exposure of secrets; notifications must redact code and include role-based visibility. Administrative interfaces and model management UIs need MFA and SSO enforcement. Overall risk priorities: OAuth/webhook integrations (High), Inference APIs and model training surfaces (High), Data stores and audit logs (Critical), Web UI and API Gateway (High), External feeds and notifications (Medium). Continuous monitoring, SIEM integration, automated anomaly detection, and incident response play a central role in reducing residual risk.\"\n}",
+  "pydantic": {
+    "architecture_summary": "The platform is a cloud-first, optionally private/SaaS system composed of a secure edge/API gateway and frontend for developers and CI/CD, core application services that orchestrate analysis workflows, an AI-powered analysis engine (LLM inference + SAST + dependency/secret scanning), a model management plane for training/versioning/inference, and a data layer that securely stores code artifacts, vulnerability data, audit logs, caches, and models. External integrations include Git providers (OAuth/webhooks), CVE/NVD feeds, notification systems (Slack/Teams), CI/CD pipelines, SSO providers, managed model hosts/GPUs, and SIEM. Components communicate via authenticated HTTPS APIs and message queues for async processing; sensitive artifacts and keys are encrypted and access-controlled via RBAC and KMS/BYOK.",
+    "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\n  subgraph \"Edge Layer\"\n    Users[Developers CI-CD Agents] --> API[API Gateway & Auth]\n  end\n\n  subgraph \"Frontend Layer\"\n    API --> FE[Web App SPA & Dashboards]\n  end\n\n  subgraph \"Application Services\"\n    API --> Orch[Orchestration & Core App Services]\n    Orch --> Analysis[AI Analysis Engine LLM+SAST]\n    Orch --> ModelMgmt[Model Management & Inference API]\n    Orch --> Collab[Collaboration, Comments & Notifications]\n    Orch --> CICD[CI/CD Integration & Webhook Handler]\n  end\n\n  subgraph \"Data Layer\"\n    Analysis --> Cache[Secure Cache Results]\n    Analysis --> Artifacts[Encrypted Code Artifacts Storage]\n    ModelMgmt --> ModelStore[Model Store & Versioning]\n    Orch --> VDB[Vulnerability DB & CVE Metadata]\n    Orch --> Audit[Immutable Audit Logs & Reports]\n    KMS[KMS & Secrets Manager]\n  end\n\n  subgraph \"External Services\"\n    Users --> Git[GitHub GitLab Bitbucket]\n    Orch --> Slack[Slack & Microsoft Teams]\n    VDB --> CVE[NVD CVE Feeds]\n    ModelStore --> GPU[Managed GPU / Model Host]\n    API --> SSO[SSO SAML/OIDC]\n    Audit --> SIEM[SIEM / SOAR]\n  end\n\n  Artifacts --> Git\n  KMS --> Artifacts\n  KMS --> ModelStore\n  Orch --> SIEM\n",
+    "components": [
+      {
+        "name": "Edge/API Gateway",
+        "responsibility": "Handle ingress traffic, OAuth flows, JWT validation, rate limiting, request routing to backend services, and initial authz/authn enforcement.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "SSO SAML/OIDC providers",
+          "WAF / DDoS protection",
+          "Identity Providers"
+        ],
+        "data_handled": [
+          "Auth tokens",
+          "API requests/metadata",
+          "User session data"
+        ]
+      },
+      {
+        "name": "Frontend Layer",
+        "responsibility": "Web SPA and dashboards for developers and managers to view findings, collaborate, manage repos, and configure policies and model settings.",
+        "security_criticality": "Medium",
+        "external_dependencies": [
+          "Browser clients",
+          "API Gateway"
+        ],
+        "data_handled": [
+          "UI session data",
+          "Aggregated scan results and metrics",
+          "User preferences"
+        ]
+      },
+      {
+        "name": "Application Services",
+        "responsibility": "Core orchestration, business logic, workflows for scans, PR creation, notifications, RBAC enforcement, and integrations with CI/CD and collaboration tools.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "GitHub/GitLab/Bitbucket APIs",
+          "CI/CD systems (GitHub Actions, Jenkins)",
+          "Slack/Teams"
+        ],
+        "data_handled": [
+          "Repository metadata",
+          "Scan job metadata",
+          "Notification payloads",
+          "Audit events"
+        ]
+      },
+      {
+        "name": "AI Analysis Engine",
+        "responsibility": "Perform LLM-based code review, static analysis (SAST), pattern recognition, dependency scanning, and secret detection; produce findings with severity and remediation suggestions.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "Managed model hosts / GPU providers",
+          "Local/on-prem model infra (for private deployments)",
+          "Vulnerability feeds"
+        ],
+        "data_handled": [
+          "Code snippets and diffs",
+          "Analysis artifacts",
+          "Generated remediation suggestions"
+        ]
+      },
+      {
+        "name": "Model Management",
+        "responsibility": "Host inference APIs, version models, manage A/B testing and staged rollouts, enable isolated/custom training workflows and monitor model performance and drift.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "GPU/Model hosting providers",
+          "Model training pipelines",
+          "Customer-provided training environments (on-prem/VPC)"
+        ],
+        "data_handled": [
+          "Model binaries and metadata",
+          "Training artifacts",
+          "Inference logs (sanitized)"
+        ]
+      },
+      {
+        "name": "Data Storage & Persistence",
+        "responsibility": "Securely store code artifacts, vulnerability DB, audit logs, caches, remediation history, and configuration; enforce encryption, retention, and immutability where required.",
+        "security_criticality": "Critical",
+        "external_dependencies": [
+          "KMS / BYOK providers",
+          "Immutable storage providers (WORM/append-only)",
+          "Backup/archival services"
+        ],
+        "data_handled": [
+          "Encrypted code artifacts and snippets",
+          "Vulnerability/CVE metadata",
+          "Audit logs and reports",
+          "Cached analysis results"
+        ]
+      },
+      {
+        "name": "External Integrations",
+        "responsibility": "Connectors to third-party systems: Git providers (OAuth/webhooks), CVE/NVD feeds, CI/CD, Slack/Teams, SIEM, and identity providers.",
+        "security_criticality": "High",
+        "external_dependencies": [
+          "GitHub GitLab Bitbucket APIs",
+          "NVD/CVE feeds",
+          "Slack Microsoft Teams",
+          "SIEM services"
+        ],
+        "data_handled": [
+          "Webhook events",
+          "CVE feed data",
+          "Notification metadata",
+          "Integration tokens (encrypted)"
+        ]
+      }
+    ],
+    "data_flow_description": "Developers or CI/CD send commits/webhook events to the Edge/API Gateway which authenticates requests and forwards them to Orchestration. Orchestration fetches code via repository APIs (OAuth-scoped), stores encrypted artifacts, and enqueues analysis tasks. The AI Analysis Engine runs LLM inference and SAST, consults the Vulnerability DB, and writes findings to Audit Logs and Data Storage; remediation suggestions are generated and optionally open PRs back to the Git provider. Model Management serves inference endpoints and may receive opt-in training data in isolated environments. Results are cached for performance; dashboards and notifications surface findings. Sensitive data (code, tokens, secrets) are encrypted at rest and in transit; audit logs and exports are produced on demand.",
+    "trust_boundaries": [
+      {
+        "name": "Internet",
+        "components": [
+          "Users",
+          "CI/CD Agents",
+          "Git Providers"
+        ],
+        "boundary_type": "Untrusted",
+        "security_controls": [
+          "TLS only endpoints",
+          "WAF and DDoS protection",
+          "Strong OAuth flows and webhook validation",
+          "Rate limiting and IP allowlists for enterprise customers"
+        ]
+      },
+      {
+        "name": "Edge/API Gateway (DMZ)",
+        "components": [
+          "API Gateway",
+          "Auth/Token Validation",
+          "Ingress Rate Limiting"
+        ],
+        "boundary_type": "Semi-Trusted",
+        "security_controls": [
+          "JWT/OAuth validation",
+          "Request signing and webhook verification",
+          "WAF rules",
+          "Anomaly detection and abuse prevention"
+        ]
+      },
+      {
+        "name": "Internal Application Network",
+        "components": [
+          "Orchestration",
+          "Analysis Engine",
+          "Model Management",
+          "Collaboration Services"
+        ],
+        "boundary_type": "Trusted/Internal",
+        "security_controls": [
+          "Mutual TLS between services",
+          "RBAC and least-privilege service accounts",
+          "Network segmentation and VPCs",
+          "SIEM logging and IDS/IPS"
+        ]
+      },
+      {
+        "name": "Data/Storage Tier",
+        "components": [
+          "Encrypted Artifact Storage",
+          "Vulnerability DB",
+          "Audit Logs",
+          "Cache",
+          "KMS"
+        ],
+        "boundary_type": "Highly Trusted/Protected",
+        "security_controls": [
+          "Encryption at rest with KMS/BYOK",
+          "Access control lists and IAM policies",
+          "Immutable logging (WORM) for audit logs",
+          "Separation of duties and key rotation"
+        ]
+      },
+      {
+        "name": "Model Training/Hosting Isolation",
+        "components": [
+          "ModelStore",
+          "GPU/Model Hosts",
+          "Customer Isolated Training Envs"
+        ],
+        "boundary_type": "Isolated/Controlled",
+        "security_controls": [
+          "Tenant isolation (VPC, namespaces)",
+          "Consent and opt-in controls for training",
+          "Data minimization and privacy-preserving techniques",
+          "Provenance tracking and model signing"
+        ]
+      },
+      {
+        "name": "Customer On-Prem/VPC",
+        "components": [
+          "On-prem Deployments",
+          "Private SaaS VPC Peering"
+        ],
+        "boundary_type": "Customer Controlled",
+        "security_controls": [
+          "Network peering with strict routing",
+          "Customer-managed KMS/BYOK",
+          "Local audit and compliance controls",
+          "Restricted outbound access"
+        ]
+      }
+    ],
+    "attack_surface_analysis": "Primary entry points: API Gateway endpoints (inference APIs, REST APIs), OAuth webhook endpoints from Git providers, and the Web UI. These are high-risk and require strong authn/authz, rate limiting, WAF, and webhook signature validation. Integration points with Git providers and CI/CD are exposed via OAuth tokens and webhooks; compromised tokens can expose code\u2014mitigate with least-privilege scopes, token rotation, and monitoring. Model inference endpoints are sensitive (risk of data exfiltration and prompt injection) and should enforce input sanitization, access controls, rate limits, and logging; A/B testing and training endpoints add risk for model leakage and must be isolated and opt-in. Data storage endpoints (artifact stores, caches, vulnerability DB, audit logs) represent a critical defensive boundary\u2014protect with encryption, KMS, and strict IAM. Notification integrations (Slack/Teams) risk accidental exposure of secrets; notifications must redact code and include role-based visibility. Administrative interfaces and model management UIs need MFA and SSO enforcement. Overall risk priorities: OAuth/webhook integrations (High), Inference APIs and model training surfaces (High), Data stores and audit logs (Critical), Web UI and API Gateway (High), External feeds and notifications (Medium). Continuous monitoring, SIEM integration, automated anomaly detection, and incident response play a central role in reducing residual risk."
+  },
+  "tasks": [
+    {
+      "name": "analyze_requirements",
+      "raw": "{\n  \"application_summary\": \"An AI-powered code review and security analysis platform that integrates with Git repositories to automatically analyze commits and codebases (via LLM and static analysis), identify security vulnerabilities and secrets, score and explain risks, propose and optionally create fixes (PRs), support team collaboration and CI/CD integration, manage and serve models (inference and training) securely, and provide compliance reporting and audit logging while protecting sensitive source code, tokens, and configuration data.\",\n  \"high_level_requirements\": [\n    \"Repository integration with GitHub, GitLab, and Bitbucket (OAuth + webhooks) and support for real-time commit monitoring\",\n    \"Multi-language source code analysis (Python, Java, JavaScript, Go, etc.)\",\n    \"LLM-based code review engine (inference API) with fine-tuned models and model versioning\",\n    \"Static code analysis and pattern recognition for security anti-patterns\",\n    \"Dependency scanning for known CVEs and supply-chain vulnerabilities\",\n    \"Secret detection in code and configuration files\",\n    \"AI-generated remediation suggestions including code snippets and contextual explanations\",\n    \"Automatic pull request creation and optional auto-apply fixes with approval workflows\",\n    \"Severity scoring, risk assessment, and contextual prioritization\",\n    \"Developer dashboards with personalized security metrics and trend analysis\",\n    \"Issue comment threads, collaboration features, and integration with Slack/Teams notifications\",\n    \"Integration with CI/CD pipelines for pre-merge and post-merge scanning\",\n    \"OWASP Top 10 and custom security policy enforcement with customizable rules\",\n    \"Audit logging and immutable records of findings, decisions, and remediation history\",\n    \"Exportable compliance reports and evidence packages\",\n    \"Model management: inference API endpoints, versioning, A/B testing, performance monitoring, and drift detection\",\n    \"Custom model training on organization codebases with privacy-preserving controls\",\n    \"Secure storage and handling of code snippets, tokens, keys, and analysis results (encryption, retention, redaction)\",\n    \"Vulnerability database management and mapping to CVE/NVD feeds\",\n    \"Caching of analysis results for performance with cache invalidation policies\",\n    \"Access control and RBAC for repo access, model access, and UI/API operations\",\n    \"Rate limiting, abuse prevention, and API authentication/authorization\",\n    \"Support for on-premises or isolated VPC/SaaS deployment models and data residency controls\",\n    \"Consent, data usage policies, and ability to opt-in/opt-out model training on customer code\",\n    \"Monitoring, alerting, and incident response for platform security (SIEM integration)\"\n  ],\n  \"detailed_requirements\": [\n    {\n      \"requirement_id\": \"REQ-001\",\n      \"requirement_text\": \"Repository integration with GitHub, GitLab, and Bitbucket using OAuth-based authentication, webhook registration for real-time commit events, and granular repo-scoped permissions.\",\n      \"business_category\": \"Repository Integration / Authentication\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"The platform must access source code and commit data securely and only with explicit organizational consent. OAuth with least-privilege scopes and webhooks enable real-time analysis while minimizing credential exposure.\"\n    },\n    {\n      \"requirement_id\": \"REQ-002\",\n      \"requirement_text\": \"Support multi-language parsing and analysis for Python, Java, JavaScript/TypeScript, Go, and an extensible plugin system to add languages and frameworks.\",\n      \"business_category\": \"Analysis Engine\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Accurate scanning requires language-aware parsing. Extensibility ensures the platform supports customers' diverse tech stacks and future languages.\"\n    },\n    {\n      \"requirement_id\": \"REQ-003\",\n      \"requirement_text\": \"Provide an LLM-based code review engine exposed via secure API endpoints for inference, supporting fine-tuned models (e.g., GPT-4, CodeLlama, custom models) with authentication and access controls.\",\n      \"business_category\": \"Model Management / Inference\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"LLM inference produces remediation suggestions and must be protected to prevent leakage of proprietary code and to control who can query models and under what conditions.\"\n    },\n    {\n      \"requirement_id\": \"REQ-004\",\n      \"requirement_text\": \"Perform static code analysis (SAST) and pattern recognition to detect insecure coding patterns, misconfigurations, and known security anti-patterns integrated with LLM outputs.\",\n      \"business_category\": \"Analysis Engine / Security Testing\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Combining deterministic SAST with LLM insights increases detection coverage and reduces false positives for actionable security findings.\"\n    },\n    {\n      \"requirement_id\": \"REQ-005\",\n      \"requirement_text\": \"Dependency scanning that identifies libraries, versions, and maps to known CVEs (NVD/CVE feeds), with alerts for transitive dependency issues and suggested remediation versions.\",\n      \"business_category\": \"Dependency Management / Vulnerability Management\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Supply-chain vulnerabilities are common and require automated detection and prioritized remediation guidance to reduce exposure.\"\n    },\n    {\n      \"requirement_id\": \"REQ-006\",\n      \"requirement_text\": \"Secret detection across code, config files, and commits using pattern detection, entropy checks, and known secret repository scanning with redaction and secure handling of detected secrets.\",\n      \"business_category\": \"Secret Management / Data Protection\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Secrets (tokens, keys, certificates) are highly sensitive; detection, secure storage, and immediate remediation actions reduce risk of credential compromise.\"\n    },\n    {\n      \"requirement_id\": \"REQ-007\",\n      \"requirement_text\": \"Generate AI remediation suggestions with code snippets, unit/regression test suggestions, and contextual explanation including root cause and confidence scores.\",\n      \"business_category\": \"Remediation / Developer Productivity\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Developers need actionable fixes with context and confidence to efficiently remediate vulnerabilities and maintain code quality.\"\n    },\n    {\n      \"requirement_id\": \"REQ-008\",\n      \"requirement_text\": \"Support automatic pull request creation with proposed fixes, configurable auto-apply actions, and an approval workflow that enforces human review for high-risk changes.\",\n      \"business_category\": \"Automation / CI/CD Integration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Automating PR creation speeds remediation but must include controls to prevent unsafe automatic changes to production code without appropriate approvals.\"\n    },\n    {\n      \"requirement_id\": \"REQ-009\",\n      \"requirement_text\": \"Provide severity scoring and risk assessment that combines CVSS, exploitability, code context (usage, exposure), and business impact tags to prioritize findings.\",\n      \"business_category\": \"Risk Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Prioritization is essential to direct developer attention and align remediation with business risk and SLAs.\"\n    },\n    {\n      \"requirement_id\": \"REQ-010\",\n      \"requirement_text\": \"Context-aware explanations for each finding, including code locations, stack traces, reproduction steps, and links to relevant security guidance or standards.\",\n      \"business_category\": \"Reporting / Developer Support\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Explanations reduce cognitive load and increase remediation velocity; linking to standards (OWASP) aids compliance and developer education.\"\n    },\n    {\n      \"requirement_id\": \"REQ-011\",\n      \"requirement_text\": \"Developer dashboards displaying personalized security metrics, team-level metrics, live issue queues, SLA tracking, and historical trend analysis of security posture.\",\n      \"business_category\": \"Team Collaboration / Analytics\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Dashboards provide visibility, accountability, and operational metrics to improve security outcomes over time.\"\n    },\n    {\n      \"requirement_id\": \"REQ-012\",\n      \"requirement_text\": \"Support comment threads on identified issues, assignment workflows, and integrations that allow developers to acknowledge, triage, and resolve findings collaboratively.\",\n      \"business_category\": \"Collaboration / Workflow\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Collaboration features are needed to coordinate remediation and maintain an audit trail of decisions and communications.\"\n    },\n    {\n      \"requirement_id\": \"REQ-013\",\n      \"requirement_text\": \"Integrate with CI/CD pipelines (e.g., GitHub Actions, GitLab CI, Jenkins) to run pre-merge and post-merge scans, block merges on policy violations, and surface findings in pipeline logs.\",\n      \"business_category\": \"CI/CD Integration\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Embedding checks in CI/CD enforces security gates early in the development lifecycle and prevents insecure code from reaching production.\"\n    },\n    {\n      \"requirement_id\": \"REQ-014\",\n      \"requirement_text\": \"Send configurable notifications for critical findings to Slack and Microsoft Teams with secure links to the platform and role-based visibility filters.\",\n      \"business_category\": \"Notifications / Collaboration\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Real-time alerting ensures critical issues are seen promptly by the right teams, improving response time without leaking sensitive code in notifications.\"\n    },\n    {\n      \"requirement_id\": \"REQ-015\",\n      \"requirement_text\": \"Provide OWASP Top 10 checks and allow creation/enforcement of custom security policies and rule sets per organization or team.\",\n      \"business_category\": \"Compliance / Policy Enforcement\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Mapping findings to recognized standards and allowing custom policy enforcement enables compliance posture and specific organizational controls.\"\n    },\n    {\n      \"requirement_id\": \"REQ-016\",\n      \"requirement_text\": \"Maintain immutable audit logs of all analyses, findings, remediation actions, approvals, and access to source artifacts with tamper-evidence and configurable retention.\",\n      \"business_category\": \"Audit / Compliance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Audits are required for compliance, investigations, and demonstrating due diligence; tamper-evidence preserves trustworthiness of records.\"\n    },\n    {\n      \"requirement_id\": \"REQ-017\",\n      \"requirement_text\": \"Exportable compliance reports and evidence packages (PDF/CSV/JSON) covering findings, remediation history, policy compliance, and trend data for audits and regulatory purposes.\",\n      \"business_category\": \"Reporting / Compliance\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Organizations must produce documentation to satisfy auditors and regulators; exportable evidence simplifies compliance workflows.\"\n    },\n    {\n      \"requirement_id\": \"REQ-018\",\n      \"requirement_text\": \"Model management features including model versioning, A/B testing frameworks, staged rollouts, and labeling of models with provenance and training dataset metadata.\",\n      \"business_category\": \"Model Management / Governance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Controlling which model version is used for inference, understanding training provenance, and testing changes mitigates risk from model regressions and data leakage.\"\n    },\n    {\n      \"requirement_id\": \"REQ-019\",\n      \"requirement_text\": \"Enable custom model training on customers' codebase with controls: opt-in consent, isolated training environments, optional on-prem training, data minimization, and privacy-preserving techniques (e.g., differential privacy, prompt filtering).\",\n      \"business_category\": \"Model Training / Data Privacy\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Customer code may be proprietary; training on it requires strict controls to prevent model memorization and leakage and to satisfy legal/data residency constraints.\"\n    },\n    {\n      \"requirement_id\": \"REQ-020\",\n      \"requirement_text\": \"Model performance monitoring and drift detection with alerts, metrics (precision/recall/false positive rates), and retraining triggers while maintaining labeled ground-truth datasets.\",\n      \"business_category\": \"Model Monitoring / Quality\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Models must remain accurate over time; monitoring prevents degradation that would cause missed vulnerabilities or noisy alerts.\"\n    },\n    {\n      \"requirement_id\": \"REQ-021\",\n      \"requirement_text\": \"Secure processing and storage of code snippets, analysis artifacts, remediation history, and vulnerability database entries with encryption at rest and in transit, key management, and access controls.\",\n      \"business_category\": \"Data Handling / Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Source code and secrets are highly sensitive and require strong cryptographic protections and strict access control to prevent unauthorized disclosure.\"\n    },\n    {\n      \"requirement_id\": \"REQ-022\",\n      \"requirement_text\": \"Maintain and update a vulnerability database mapped to CVE/NVD feeds, with metadata about exploitation, fix guidance, and confidence scoring.\",\n      \"business_category\": \"Vulnerability Management / Threat Intelligence\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Accurate vulnerability metadata improves scan results and remediation suggestions and needs to be kept current for relevance.\"\n    },\n    {\n      \"requirement_id\": \"REQ-023\",\n      \"requirement_text\": \"Cache analysis results for performance with secure caching layers, cache invalidation policies tied to code changes, and TTL configuration per repository or organization.\",\n      \"business_category\": \"Performance / Data Management\",\n      \"security_sensitivity\": \"Medium\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Caching reduces compute and latency but must ensure stale results are not presented after code changes and caches must be protected from unauthorized access.\"\n    },\n    {\n      \"requirement_id\": \"REQ-024\",\n      \"requirement_text\": \"Implement fine-grained access control and RBAC for platform UI, API, model endpoints, and repository integrations; include SSO (SAML/OIDC), MFA, and organization/team scoping.\",\n      \"business_category\": \"Authentication / Authorization\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Least-privilege access is essential to limit who can view or change sensitive code, secrets, and model training settings and to support enterprise security policies.\"\n    },\n    {\n      \"requirement_id\": \"REQ-025\",\n      \"requirement_text\": \"API gateway protections: API key management, OAuth2 scopes, JWT validation, rate limiting, quotas, request logging, and abuse detection.\",\n      \"business_category\": \"API Security / Operational Security\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"APIs expose model inference and data; they must be protected to prevent exfiltration, brute-force attacks, or excessive usage that could lead to data exposure or denial of service.\"\n    },\n    {\n      \"requirement_id\": \"REQ-026\",\n      \"requirement_text\": \"Support deployment options: SaaS with VPC peering, private SaaS deployments, and on-premises/self-hosted versions to meet customer data residency and isolation requirements.\",\n      \"business_category\": \"Deployment / Infrastructure\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Confidential\",\n      \"rationale\": \"Customers with strict regulatory or IP concerns require deployment options that keep code and models within their control and jurisdiction.\"\n    },\n    {\n      \"requirement_id\": \"REQ-027\",\n      \"requirement_text\": \"Data usage and consent controls including the ability to opt out of sharing code for global model training, to delete stored code/artifacts, and to manage retention/archival policies.\",\n      \"business_category\": \"Privacy / Data Governance\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Restricted\",\n      \"rationale\": \"Customers must control how their proprietary code is used to train models and how long artifacts are retained to meet privacy and contractual obligations.\"\n    },\n    {\n      \"requirement_id\": \"REQ-028\",\n      \"requirement_text\": \"Integrate platform monitoring with SIEM/SOAR for security alerts, platform incident detection, operational health metrics, and provide runbooks for incident response.\",\n      \"business_category\": \"Monitoring / Incident Response\",\n      \"security_sensitivity\": \"High\",\n      \"data_classification\": \"Internal\",\n      \"rationale\": \"Active monitoring and integration with enterprise detection systems allow timely detection and response to security incidents affecting the platform or customer data.\"\n    }\n  ],\n  \"security_context\": \"Applicable regulations and frameworks include: GDPR (personal data processing and cross-border data transfers) and national data protection laws for EU customers; CCPA/CPRA for California residents; SOC 2 Type II controls and ISO 27001 for information security management; NIST SP 800-53 / NIST CSF for federal or enterprise customers; OWASP Application Security standards (including OWASP Top 10) for web and API security; CWE/CVE/NVD for vulnerability classification; export control restrictions for cryptographic technologies; and industry-specific regulations as applicable (e.g., HIPAA if platform processes healthcare-related code containing PHI, PCI-DSS if code or artifacts contain payment card data). Legal obligations around intellectual property, contractual non-disclosure agreements, and customer-specific data residency or sovereignty requirements must be observed. Where models are trained on customer data, intellectual property and confidentiality clauses govern permissible use. Privacy expectations necessitate data minimization, consent, and the ability to erase or export customer data on request.\",\n  \"assumptions\": [\n    \"Platform is primarily cloud-hosted but must offer private SaaS/VPC or on-premises deployment options for customers with stricter controls.\",\n    \"Customers will provide OAuth consent and necessary repository scopes for analysis and webhook registration.\",\n    \"Users have internet access and modern browsers for the UI; CI/CD systems can reach the platform API endpoints.\",\n    \"Customers will provide clear authority to analyze and (optionally) train models on their codebases; legal contracts will define usage rights.\",\n    \"Encryption key management will be possible either via platform-managed KMS or customer-managed keys (BYOK) for enterprise customers.\",\n    \"Customers will classify their own data sensitivity; platform will annotate but not automatically override customer classification.\",\n    \"Real-time analysis is expected for commits via webhooks, while deeper analysis of full repositories can be scheduled asynchronously.\",\n    \"Third-party services (e.g., Slack, Teams, model hosting providers) used by the platform will meet security integration requirements (e.g., support for secure webhooks, tokens).\"\n  ],\n  \"constraints\": [\n    \"Must support multiple Git providers (GitHub/GitLab/Bitbucket) and their differing OAuth/webhook APIs and permission models.\",\n    \"Must respect data residency and sovereignty constraints; some customers will require on-prem or single-tenant deployments.\",\n    \"Performance constraints: inference latency and scalability for LLMs are bounded by available compute and cost; caching and async workflows needed to meet SLAs.\",\n    \"Legal/contractual constraints: cannot use customer code for global model training without explicit opt-in and must provide deletion/export mechanisms.\",\n    \"Operational constraints: must maintain timely CVE feed updates and vulnerability intelligence; third-party feed outages must be handled gracefully.\",\n    \"Security constraints: all sensitive data must be encrypted in transit and at rest; support BYOK for enterprise customers and hardened secrets management.\",\n    \"Integration constraints: must integrate with diverse CI/CD tools and enterprise SSO systems (SAML/OIDC) with varying configuration complexity.\",\n    \"Model governance constraints: A/B testing and model rollouts must avoid exposing customer code to unapproved model variants and must track provenance and drift.\",\n    \"Availability constraints: platform must provide SLAs for availability and define maintenance windows, with options for higher availability in enterprise plans.\",\n    \"Compliance constraints: audit log retention periods, reporting formats, and evidence packages must satisfy multiple regulatory regimes and be configurable.\"\n  ]\n}",
+      "pydantic": {
+        "application_summary": "An AI-powered code review and security analysis platform that integrates with Git repositories to automatically analyze commits and codebases (via LLM and static analysis), identify security vulnerabilities and secrets, score and explain risks, propose and optionally create fixes (PRs), support team collaboration and CI/CD integration, manage and serve models (inference and training) securely, and provide compliance reporting and audit logging while protecting sensitive source code, tokens, and configuration data.",
+        "high_level_requirements": [
+          "Repository integration with GitHub, GitLab, and Bitbucket (OAuth + webhooks) and support for real-time commit monitoring",
+          "Multi-language source code analysis (Python, Java, JavaScript, Go, etc.)",
+          "LLM-based code review engine (inference API) with fine-tuned models and model versioning",
+          "Static code analysis and pattern recognition for security anti-patterns",
+          "Dependency scanning for known CVEs and supply-chain vulnerabilities",
+          "Secret detection in code and configuration files",
+          "AI-generated remediation suggestions including code snippets and contextual explanations",
+          "Automatic pull request creation and optional auto-apply fixes with approval workflows",
+          "Severity scoring, risk assessment, and contextual prioritization",
+          "Developer dashboards with personalized security metrics and trend analysis",
+          "Issue comment threads, collaboration features, and integration with Slack/Teams notifications",
+          "Integration with CI/CD pipelines for pre-merge and post-merge scanning",
+          "OWASP Top 10 and custom security policy enforcement with customizable rules",
+          "Audit logging and immutable records of findings, decisions, and remediation history",
+          "Exportable compliance reports and evidence packages",
+          "Model management: inference API endpoints, versioning, A/B testing, performance monitoring, and drift detection",
+          "Custom model training on organization codebases with privacy-preserving controls",
+          "Secure storage and handling of code snippets, tokens, keys, and analysis results (encryption, retention, redaction)",
+          "Vulnerability database management and mapping to CVE/NVD feeds",
+          "Caching of analysis results for performance with cache invalidation policies",
+          "Access control and RBAC for repo access, model access, and UI/API operations",
+          "Rate limiting, abuse prevention, and API authentication/authorization",
+          "Support for on-premises or isolated VPC/SaaS deployment models and data residency controls",
+          "Consent, data usage policies, and ability to opt-in/opt-out model training on customer code",
+          "Monitoring, alerting, and incident response for platform security (SIEM integration)"
+        ],
+        "detailed_requirements": [
+          {
+            "requirement_id": "REQ-001",
+            "requirement_text": "Repository integration with GitHub, GitLab, and Bitbucket using OAuth-based authentication, webhook registration for real-time commit events, and granular repo-scoped permissions.",
+            "business_category": "Repository Integration / Authentication",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "The platform must access source code and commit data securely and only with explicit organizational consent. OAuth with least-privilege scopes and webhooks enable real-time analysis while minimizing credential exposure."
+          },
+          {
+            "requirement_id": "REQ-002",
+            "requirement_text": "Support multi-language parsing and analysis for Python, Java, JavaScript/TypeScript, Go, and an extensible plugin system to add languages and frameworks.",
+            "business_category": "Analysis Engine",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Accurate scanning requires language-aware parsing. Extensibility ensures the platform supports customers' diverse tech stacks and future languages."
+          },
+          {
+            "requirement_id": "REQ-003",
+            "requirement_text": "Provide an LLM-based code review engine exposed via secure API endpoints for inference, supporting fine-tuned models (e.g., GPT-4, CodeLlama, custom models) with authentication and access controls.",
+            "business_category": "Model Management / Inference",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "LLM inference produces remediation suggestions and must be protected to prevent leakage of proprietary code and to control who can query models and under what conditions."
+          },
+          {
+            "requirement_id": "REQ-004",
+            "requirement_text": "Perform static code analysis (SAST) and pattern recognition to detect insecure coding patterns, misconfigurations, and known security anti-patterns integrated with LLM outputs.",
+            "business_category": "Analysis Engine / Security Testing",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Combining deterministic SAST with LLM insights increases detection coverage and reduces false positives for actionable security findings."
+          },
+          {
+            "requirement_id": "REQ-005",
+            "requirement_text": "Dependency scanning that identifies libraries, versions, and maps to known CVEs (NVD/CVE feeds), with alerts for transitive dependency issues and suggested remediation versions.",
+            "business_category": "Dependency Management / Vulnerability Management",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Supply-chain vulnerabilities are common and require automated detection and prioritized remediation guidance to reduce exposure."
+          },
+          {
+            "requirement_id": "REQ-006",
+            "requirement_text": "Secret detection across code, config files, and commits using pattern detection, entropy checks, and known secret repository scanning with redaction and secure handling of detected secrets.",
+            "business_category": "Secret Management / Data Protection",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Secrets (tokens, keys, certificates) are highly sensitive; detection, secure storage, and immediate remediation actions reduce risk of credential compromise."
+          },
+          {
+            "requirement_id": "REQ-007",
+            "requirement_text": "Generate AI remediation suggestions with code snippets, unit/regression test suggestions, and contextual explanation including root cause and confidence scores.",
+            "business_category": "Remediation / Developer Productivity",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Developers need actionable fixes with context and confidence to efficiently remediate vulnerabilities and maintain code quality."
+          },
+          {
+            "requirement_id": "REQ-008",
+            "requirement_text": "Support automatic pull request creation with proposed fixes, configurable auto-apply actions, and an approval workflow that enforces human review for high-risk changes.",
+            "business_category": "Automation / CI/CD Integration",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Automating PR creation speeds remediation but must include controls to prevent unsafe automatic changes to production code without appropriate approvals."
+          },
+          {
+            "requirement_id": "REQ-009",
+            "requirement_text": "Provide severity scoring and risk assessment that combines CVSS, exploitability, code context (usage, exposure), and business impact tags to prioritize findings.",
+            "business_category": "Risk Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Prioritization is essential to direct developer attention and align remediation with business risk and SLAs."
+          },
+          {
+            "requirement_id": "REQ-010",
+            "requirement_text": "Context-aware explanations for each finding, including code locations, stack traces, reproduction steps, and links to relevant security guidance or standards.",
+            "business_category": "Reporting / Developer Support",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Explanations reduce cognitive load and increase remediation velocity; linking to standards (OWASP) aids compliance and developer education."
+          },
+          {
+            "requirement_id": "REQ-011",
+            "requirement_text": "Developer dashboards displaying personalized security metrics, team-level metrics, live issue queues, SLA tracking, and historical trend analysis of security posture.",
+            "business_category": "Team Collaboration / Analytics",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Dashboards provide visibility, accountability, and operational metrics to improve security outcomes over time."
+          },
+          {
+            "requirement_id": "REQ-012",
+            "requirement_text": "Support comment threads on identified issues, assignment workflows, and integrations that allow developers to acknowledge, triage, and resolve findings collaboratively.",
+            "business_category": "Collaboration / Workflow",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Collaboration features are needed to coordinate remediation and maintain an audit trail of decisions and communications."
+          },
+          {
+            "requirement_id": "REQ-013",
+            "requirement_text": "Integrate with CI/CD pipelines (e.g., GitHub Actions, GitLab CI, Jenkins) to run pre-merge and post-merge scans, block merges on policy violations, and surface findings in pipeline logs.",
+            "business_category": "CI/CD Integration",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Embedding checks in CI/CD enforces security gates early in the development lifecycle and prevents insecure code from reaching production."
+          },
+          {
+            "requirement_id": "REQ-014",
+            "requirement_text": "Send configurable notifications for critical findings to Slack and Microsoft Teams with secure links to the platform and role-based visibility filters.",
+            "business_category": "Notifications / Collaboration",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Real-time alerting ensures critical issues are seen promptly by the right teams, improving response time without leaking sensitive code in notifications."
+          },
+          {
+            "requirement_id": "REQ-015",
+            "requirement_text": "Provide OWASP Top 10 checks and allow creation/enforcement of custom security policies and rule sets per organization or team.",
+            "business_category": "Compliance / Policy Enforcement",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Mapping findings to recognized standards and allowing custom policy enforcement enables compliance posture and specific organizational controls."
+          },
+          {
+            "requirement_id": "REQ-016",
+            "requirement_text": "Maintain immutable audit logs of all analyses, findings, remediation actions, approvals, and access to source artifacts with tamper-evidence and configurable retention.",
+            "business_category": "Audit / Compliance",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Audits are required for compliance, investigations, and demonstrating due diligence; tamper-evidence preserves trustworthiness of records."
+          },
+          {
+            "requirement_id": "REQ-017",
+            "requirement_text": "Exportable compliance reports and evidence packages (PDF/CSV/JSON) covering findings, remediation history, policy compliance, and trend data for audits and regulatory purposes.",
+            "business_category": "Reporting / Compliance",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Organizations must produce documentation to satisfy auditors and regulators; exportable evidence simplifies compliance workflows."
+          },
+          {
+            "requirement_id": "REQ-018",
+            "requirement_text": "Model management features including model versioning, A/B testing frameworks, staged rollouts, and labeling of models with provenance and training dataset metadata.",
+            "business_category": "Model Management / Governance",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Controlling which model version is used for inference, understanding training provenance, and testing changes mitigates risk from model regressions and data leakage."
+          },
+          {
+            "requirement_id": "REQ-019",
+            "requirement_text": "Enable custom model training on customers' codebase with controls: opt-in consent, isolated training environments, optional on-prem training, data minimization, and privacy-preserving techniques (e.g., differential privacy, prompt filtering).",
+            "business_category": "Model Training / Data Privacy",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Customer code may be proprietary; training on it requires strict controls to prevent model memorization and leakage and to satisfy legal/data residency constraints."
+          },
+          {
+            "requirement_id": "REQ-020",
+            "requirement_text": "Model performance monitoring and drift detection with alerts, metrics (precision/recall/false positive rates), and retraining triggers while maintaining labeled ground-truth datasets.",
+            "business_category": "Model Monitoring / Quality",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Models must remain accurate over time; monitoring prevents degradation that would cause missed vulnerabilities or noisy alerts."
+          },
+          {
+            "requirement_id": "REQ-021",
+            "requirement_text": "Secure processing and storage of code snippets, analysis artifacts, remediation history, and vulnerability database entries with encryption at rest and in transit, key management, and access controls.",
+            "business_category": "Data Handling / Security",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Source code and secrets are highly sensitive and require strong cryptographic protections and strict access control to prevent unauthorized disclosure."
+          },
+          {
+            "requirement_id": "REQ-022",
+            "requirement_text": "Maintain and update a vulnerability database mapped to CVE/NVD feeds, with metadata about exploitation, fix guidance, and confidence scoring.",
+            "business_category": "Vulnerability Management / Threat Intelligence",
+            "security_sensitivity": "Medium",
+            "data_classification": "Internal",
+            "rationale": "Accurate vulnerability metadata improves scan results and remediation suggestions and needs to be kept current for relevance."
+          },
+          {
+            "requirement_id": "REQ-023",
+            "requirement_text": "Cache analysis results for performance with secure caching layers, cache invalidation policies tied to code changes, and TTL configuration per repository or organization.",
+            "business_category": "Performance / Data Management",
+            "security_sensitivity": "Medium",
+            "data_classification": "Confidential",
+            "rationale": "Caching reduces compute and latency but must ensure stale results are not presented after code changes and caches must be protected from unauthorized access."
+          },
+          {
+            "requirement_id": "REQ-024",
+            "requirement_text": "Implement fine-grained access control and RBAC for platform UI, API, model endpoints, and repository integrations; include SSO (SAML/OIDC), MFA, and organization/team scoping.",
+            "business_category": "Authentication / Authorization",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Least-privilege access is essential to limit who can view or change sensitive code, secrets, and model training settings and to support enterprise security policies."
+          },
+          {
+            "requirement_id": "REQ-025",
+            "requirement_text": "API gateway protections: API key management, OAuth2 scopes, JWT validation, rate limiting, quotas, request logging, and abuse detection.",
+            "business_category": "API Security / Operational Security",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "APIs expose model inference and data; they must be protected to prevent exfiltration, brute-force attacks, or excessive usage that could lead to data exposure or denial of service."
+          },
+          {
+            "requirement_id": "REQ-026",
+            "requirement_text": "Support deployment options: SaaS with VPC peering, private SaaS deployments, and on-premises/self-hosted versions to meet customer data residency and isolation requirements.",
+            "business_category": "Deployment / Infrastructure",
+            "security_sensitivity": "High",
+            "data_classification": "Confidential",
+            "rationale": "Customers with strict regulatory or IP concerns require deployment options that keep code and models within their control and jurisdiction."
+          },
+          {
+            "requirement_id": "REQ-027",
+            "requirement_text": "Data usage and consent controls including the ability to opt out of sharing code for global model training, to delete stored code/artifacts, and to manage retention/archival policies.",
+            "business_category": "Privacy / Data Governance",
+            "security_sensitivity": "High",
+            "data_classification": "Restricted",
+            "rationale": "Customers must control how their proprietary code is used to train models and how long artifacts are retained to meet privacy and contractual obligations."
+          },
+          {
+            "requirement_id": "REQ-028",
+            "requirement_text": "Integrate platform monitoring with SIEM/SOAR for security alerts, platform incident detection, operational health metrics, and provide runbooks for incident response.",
+            "business_category": "Monitoring / Incident Response",
+            "security_sensitivity": "High",
+            "data_classification": "Internal",
+            "rationale": "Active monitoring and integration with enterprise detection systems allow timely detection and response to security incidents affecting the platform or customer data."
+          }
+        ],
+        "security_context": "Applicable regulations and frameworks include: GDPR (personal data processing and cross-border data transfers) and national data protection laws for EU customers; CCPA/CPRA for California residents; SOC 2 Type II controls and ISO 27001 for information security management; NIST SP 800-53 / NIST CSF for federal or enterprise customers; OWASP Application Security standards (including OWASP Top 10) for web and API security; CWE/CVE/NVD for vulnerability classification; export control restrictions for cryptographic technologies; and industry-specific regulations as applicable (e.g., HIPAA if platform processes healthcare-related code containing PHI, PCI-DSS if code or artifacts contain payment card data). Legal obligations around intellectual property, contractual non-disclosure agreements, and customer-specific data residency or sovereignty requirements must be observed. Where models are trained on customer data, intellectual property and confidentiality clauses govern permissible use. Privacy expectations necessitate data minimization, consent, and the ability to erase or export customer data on request.",
+        "assumptions": [
+          "Platform is primarily cloud-hosted but must offer private SaaS/VPC or on-premises deployment options for customers with stricter controls.",
+          "Customers will provide OAuth consent and necessary repository scopes for analysis and webhook registration.",
+          "Users have internet access and modern browsers for the UI; CI/CD systems can reach the platform API endpoints.",
+          "Customers will provide clear authority to analyze and (optionally) train models on their codebases; legal contracts will define usage rights.",
+          "Encryption key management will be possible either via platform-managed KMS or customer-managed keys (BYOK) for enterprise customers.",
+          "Customers will classify their own data sensitivity; platform will annotate but not automatically override customer classification.",
+          "Real-time analysis is expected for commits via webhooks, while deeper analysis of full repositories can be scheduled asynchronously.",
+          "Third-party services (e.g., Slack, Teams, model hosting providers) used by the platform will meet security integration requirements (e.g., support for secure webhooks, tokens)."
+        ],
+        "constraints": [
+          "Must support multiple Git providers (GitHub/GitLab/Bitbucket) and their differing OAuth/webhook APIs and permission models.",
+          "Must respect data residency and sovereignty constraints; some customers will require on-prem or single-tenant deployments.",
+          "Performance constraints: inference latency and scalability for LLMs are bounded by available compute and cost; caching and async workflows needed to meet SLAs.",
+          "Legal/contractual constraints: cannot use customer code for global model training without explicit opt-in and must provide deletion/export mechanisms.",
+          "Operational constraints: must maintain timely CVE feed updates and vulnerability intelligence; third-party feed outages must be handled gracefully.",
+          "Security constraints: all sensitive data must be encrypted in transit and at rest; support BYOK for enterprise customers and hardened secrets management.",
+          "Integration constraints: must integrate with diverse CI/CD tools and enterprise SSO systems (SAML/OIDC) with varying configuration complexity.",
+          "Model governance constraints: A/B testing and model rollouts must avoid exposing customer code to unapproved model variants and must track provenance and drift.",
+          "Availability constraints: platform must provide SLAs for availability and define maintenance windows, with options for higher availability in enterprise plans.",
+          "Compliance constraints: audit log retention periods, reporting formats, and evidence packages must satisfy multiple regulatory regimes and be configurable."
+        ]
+      }
+    },
+    {
+      "name": "analyze_architecture",
+      "raw": "{\n  \"architecture_summary\": \"The platform is a cloud-first, optionally private/SaaS system composed of a secure edge/API gateway and frontend for developers and CI/CD, core application services that orchestrate analysis workflows, an AI-powered analysis engine (LLM inference + SAST + dependency/secret scanning), a model management plane for training/versioning/inference, and a data layer that securely stores code artifacts, vulnerability data, audit logs, caches, and models. External integrations include Git providers (OAuth/webhooks), CVE/NVD feeds, notification systems (Slack/Teams), CI/CD pipelines, SSO providers, managed model hosts/GPUs, and SIEM. Components communicate via authenticated HTTPS APIs and message queues for async processing; sensitive artifacts and keys are encrypted and access-controlled via RBAC and KMS/BYOK.\",\n  \"architecture_diagram\": \"%%{init: {'theme':'dark'}}%%\\ngraph TB\\n  subgraph \\\"Edge Layer\\\"\\n    Users[Developers CI-CD Agents] --> API[API Gateway & Auth]\\n  end\\n\\n  subgraph \\\"Frontend Layer\\\"\\n    API --> FE[Web App SPA & Dashboards]\\n  end\\n\\n  subgraph \\\"Application Services\\\"\\n    API --> Orch[Orchestration & Core App Services]\\n    Orch --> Analysis[AI Analysis Engine LLM+SAST]\\n    Orch --> ModelMgmt[Model Management & Inference API]\\n    Orch --> Collab[Collaboration, Comments & Notifications]\\n    Orch --> CICD[CI/CD Integration & Webhook Handler]\\n  end\\n\\n  subgraph \\\"Data Layer\\\"\\n    Analysis --> Cache[Secure Cache Results]\\n    Analysis --> Artifacts[Encrypted Code Artifacts Storage]\\n    ModelMgmt --> ModelStore[Model Store & Versioning]\\n    Orch --> VDB[Vulnerability DB & CVE Metadata]\\n    Orch --> Audit[Immutable Audit Logs & Reports]\\n    KMS[KMS & Secrets Manager]\\n  end\\n\\n  subgraph \\\"External Services\\\"\\n    Users --> Git[GitHub GitLab Bitbucket]\\n    Orch --> Slack[Slack & Microsoft Teams]\\n    VDB --> CVE[NVD CVE Feeds]\\n    ModelStore --> GPU[Managed GPU / Model Host]\\n    API --> SSO[SSO SAML/OIDC]\\n    Audit --> SIEM[SIEM / SOAR]\\n  end\\n\\n  Artifacts --> Git\\n  KMS --> Artifacts\\n  KMS --> ModelStore\\n  Orch --> SIEM\\n\",\n  \"components\": [\n    {\n      \"name\": \"Edge/API Gateway\",\n      \"responsibility\": \"Handle ingress traffic, OAuth flows, JWT validation, rate limiting, request routing to backend services, and initial authz/authn enforcement.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"SSO SAML/OIDC providers\",\n        \"WAF / DDoS protection\",\n        \"Identity Providers\"\n      ],\n      \"data_handled\": [\n        \"Auth tokens\",\n        \"API requests/metadata\",\n        \"User session data\"\n      ]\n    },\n    {\n      \"name\": \"Frontend Layer\",\n      \"responsibility\": \"Web SPA and dashboards for developers and managers to view findings, collaborate, manage repos, and configure policies and model settings.\",\n      \"security_criticality\": \"Medium\",\n      \"external_dependencies\": [\n        \"Browser clients\",\n        \"API Gateway\"\n      ],\n      \"data_handled\": [\n        \"UI session data\",\n        \"Aggregated scan results and metrics\",\n        \"User preferences\"\n      ]\n    },\n    {\n      \"name\": \"Application Services\",\n      \"responsibility\": \"Core orchestration, business logic, workflows for scans, PR creation, notifications, RBAC enforcement, and integrations with CI/CD and collaboration tools.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"GitHub/GitLab/Bitbucket APIs\",\n        \"CI/CD systems (GitHub Actions, Jenkins)\",\n        \"Slack/Teams\"\n      ],\n      \"data_handled\": [\n        \"Repository metadata\",\n        \"Scan job metadata\",\n        \"Notification payloads\",\n        \"Audit events\"\n      ]\n    },\n    {\n      \"name\": \"AI Analysis Engine\",\n      \"responsibility\": \"Perform LLM-based code review, static analysis (SAST), pattern recognition, dependency scanning, and secret detection; produce findings with severity and remediation suggestions.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"Managed model hosts / GPU providers\",\n        \"Local/on-prem model infra (for private deployments)\",\n        \"Vulnerability feeds\"\n      ],\n      \"data_handled\": [\n        \"Code snippets and diffs\",\n        \"Analysis artifacts\",\n        \"Generated remediation suggestions\"\n      ]\n    },\n    {\n      \"name\": \"Model Management\",\n      \"responsibility\": \"Host inference APIs, version models, manage A/B testing and staged rollouts, enable isolated/custom training workflows and monitor model performance and drift.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"GPU/Model hosting providers\",\n        \"Model training pipelines\",\n        \"Customer-provided training environments (on-prem/VPC)\"\n      ],\n      \"data_handled\": [\n        \"Model binaries and metadata\",\n        \"Training artifacts\",\n        \"Inference logs (sanitized)\"\n      ]\n    },\n    {\n      \"name\": \"Data Storage & Persistence\",\n      \"responsibility\": \"Securely store code artifacts, vulnerability DB, audit logs, caches, remediation history, and configuration; enforce encryption, retention, and immutability where required.\",\n      \"security_criticality\": \"Critical\",\n      \"external_dependencies\": [\n        \"KMS / BYOK providers\",\n        \"Immutable storage providers (WORM/append-only)\",\n        \"Backup/archival services\"\n      ],\n      \"data_handled\": [\n        \"Encrypted code artifacts and snippets\",\n        \"Vulnerability/CVE metadata\",\n        \"Audit logs and reports\",\n        \"Cached analysis results\"\n      ]\n    },\n    {\n      \"name\": \"External Integrations\",\n      \"responsibility\": \"Connectors to third-party systems: Git providers (OAuth/webhooks), CVE/NVD feeds, CI/CD, Slack/Teams, SIEM, and identity providers.\",\n      \"security_criticality\": \"High\",\n      \"external_dependencies\": [\n        \"GitHub GitLab Bitbucket APIs\",\n        \"NVD/CVE feeds\",\n        \"Slack Microsoft Teams\",\n        \"SIEM services\"\n      ],\n      \"data_handled\": [\n        \"Webhook events\",\n        \"CVE feed data\",\n        \"Notification metadata\",\n        \"Integration tokens (encrypted)\"\n      ]\n    }\n  ],\n  \"data_flow_description\": \"Developers or CI/CD send commits/webhook events to the Edge/API Gateway which authenticates requests and forwards them to Orchestration. Orchestration fetches code via repository APIs (OAuth-scoped), stores encrypted artifacts, and enqueues analysis tasks. The AI Analysis Engine runs LLM inference and SAST, consults the Vulnerability DB, and writes findings to Audit Logs and Data Storage; remediation suggestions are generated and optionally open PRs back to the Git provider. Model Management serves inference endpoints and may receive opt-in training data in isolated environments. Results are cached for performance; dashboards and notifications surface findings. Sensitive data (code, tokens, secrets) are encrypted at rest and in transit; audit logs and exports are produced on demand.\",\n  \"trust_boundaries\": [\n    {\n      \"name\": \"Internet\",\n      \"components\": [\n        \"Users\",\n        \"CI/CD Agents\",\n        \"Git Providers\"\n      ],\n      \"boundary_type\": \"Untrusted\",\n      \"security_controls\": [\n        \"TLS only endpoints\",\n        \"WAF and DDoS protection\",\n        \"Strong OAuth flows and webhook validation\",\n        \"Rate limiting and IP allowlists for enterprise customers\"\n      ]\n    },\n    {\n      \"name\": \"Edge/API Gateway (DMZ)\",\n      \"components\": [\n        \"API Gateway\",\n        \"Auth/Token Validation\",\n        \"Ingress Rate Limiting\"\n      ],\n      \"boundary_type\": \"Semi-Trusted\",\n      \"security_controls\": [\n        \"JWT/OAuth validation\",\n        \"Request signing and webhook verification\",\n        \"WAF rules\",\n        \"Anomaly detection and abuse prevention\"\n      ]\n    },\n    {\n      \"name\": \"Internal Application Network\",\n      \"components\": [\n        \"Orchestration\",\n        \"Analysis Engine\",\n        \"Model Management\",\n        \"Collaboration Services\"\n      ],\n      \"boundary_type\": \"Trusted/Internal\",\n      \"security_controls\": [\n        \"Mutual TLS between services\",\n        \"RBAC and least-privilege service accounts\",\n        \"Network segmentation and VPCs\",\n        \"SIEM logging and IDS/IPS\"\n      ]\n    },\n    {\n      \"name\": \"Data/Storage Tier\",\n      \"components\": [\n        \"Encrypted Artifact Storage\",\n        \"Vulnerability DB\",\n        \"Audit Logs\",\n        \"Cache\",\n        \"KMS\"\n      ],\n      \"boundary_type\": \"Highly Trusted/Protected\",\n      \"security_controls\": [\n        \"Encryption at rest with KMS/BYOK\",\n        \"Access control lists and IAM policies\",\n        \"Immutable logging (WORM) for audit logs\",\n        \"Separation of duties and key rotation\"\n      ]\n    },\n    {\n      \"name\": \"Model Training/Hosting Isolation\",\n      \"components\": [\n        \"ModelStore\",\n        \"GPU/Model Hosts\",\n        \"Customer Isolated Training Envs\"\n      ],\n      \"boundary_type\": \"Isolated/Controlled\",\n      \"security_controls\": [\n        \"Tenant isolation (VPC, namespaces)\",\n        \"Consent and opt-in controls for training\",\n        \"Data minimization and privacy-preserving techniques\",\n        \"Provenance tracking and model signing\"\n      ]\n    },\n    {\n      \"name\": \"Customer On-Prem/VPC\",\n      \"components\": [\n        \"On-prem Deployments\",\n        \"Private SaaS VPC Peering\"\n      ],\n      \"boundary_type\": \"Customer Controlled\",\n      \"security_controls\": [\n        \"Network peering with strict routing\",\n        \"Customer-managed KMS/BYOK\",\n        \"Local audit and compliance controls\",\n        \"Restricted outbound access\"\n      ]\n    }\n  ],\n  \"attack_surface_analysis\": \"Primary entry points: API Gateway endpoints (inference APIs, REST APIs), OAuth webhook endpoints from Git providers, and the Web UI. These are high-risk and require strong authn/authz, rate limiting, WAF, and webhook signature validation. Integration points with Git providers and CI/CD are exposed via OAuth tokens and webhooks; compromised tokens can expose code\u2014mitigate with least-privilege scopes, token rotation, and monitoring. Model inference endpoints are sensitive (risk of data exfiltration and prompt injection) and should enforce input sanitization, access controls, rate limits, and logging; A/B testing and training endpoints add risk for model leakage and must be isolated and opt-in. Data storage endpoints (artifact stores, caches, vulnerability DB, audit logs) represent a critical defensive boundary\u2014protect with encryption, KMS, and strict IAM. Notification integrations (Slack/Teams) risk accidental exposure of secrets; notifications must redact code and include role-based visibility. Administrative interfaces and model management UIs need MFA and SSO enforcement. Overall risk priorities: OAuth/webhook integrations (High), Inference APIs and model training surfaces (High), Data stores and audit logs (Critical), Web UI and API Gateway (High), External feeds and notifications (Medium). Continuous monitoring, SIEM integration, automated anomaly detection, and incident response play a central role in reducing residual risk.\"\n}",
+      "pydantic": {
+        "architecture_summary": "The platform is a cloud-first, optionally private/SaaS system composed of a secure edge/API gateway and frontend for developers and CI/CD, core application services that orchestrate analysis workflows, an AI-powered analysis engine (LLM inference + SAST + dependency/secret scanning), a model management plane for training/versioning/inference, and a data layer that securely stores code artifacts, vulnerability data, audit logs, caches, and models. External integrations include Git providers (OAuth/webhooks), CVE/NVD feeds, notification systems (Slack/Teams), CI/CD pipelines, SSO providers, managed model hosts/GPUs, and SIEM. Components communicate via authenticated HTTPS APIs and message queues for async processing; sensitive artifacts and keys are encrypted and access-controlled via RBAC and KMS/BYOK.",
+        "architecture_diagram": "%%{init: {'theme':'dark'}}%%\ngraph TB\n  subgraph \"Edge Layer\"\n    Users[Developers CI-CD Agents] --> API[API Gateway & Auth]\n  end\n\n  subgraph \"Frontend Layer\"\n    API --> FE[Web App SPA & Dashboards]\n  end\n\n  subgraph \"Application Services\"\n    API --> Orch[Orchestration & Core App Services]\n    Orch --> Analysis[AI Analysis Engine LLM+SAST]\n    Orch --> ModelMgmt[Model Management & Inference API]\n    Orch --> Collab[Collaboration, Comments & Notifications]\n    Orch --> CICD[CI/CD Integration & Webhook Handler]\n  end\n\n  subgraph \"Data Layer\"\n    Analysis --> Cache[Secure Cache Results]\n    Analysis --> Artifacts[Encrypted Code Artifacts Storage]\n    ModelMgmt --> ModelStore[Model Store & Versioning]\n    Orch --> VDB[Vulnerability DB & CVE Metadata]\n    Orch --> Audit[Immutable Audit Logs & Reports]\n    KMS[KMS & Secrets Manager]\n  end\n\n  subgraph \"External Services\"\n    Users --> Git[GitHub GitLab Bitbucket]\n    Orch --> Slack[Slack & Microsoft Teams]\n    VDB --> CVE[NVD CVE Feeds]\n    ModelStore --> GPU[Managed GPU / Model Host]\n    API --> SSO[SSO SAML/OIDC]\n    Audit --> SIEM[SIEM / SOAR]\n  end\n\n  Artifacts --> Git\n  KMS --> Artifacts\n  KMS --> ModelStore\n  Orch --> SIEM\n",
+        "components": [
+          {
+            "name": "Edge/API Gateway",
+            "responsibility": "Handle ingress traffic, OAuth flows, JWT validation, rate limiting, request routing to backend services, and initial authz/authn enforcement.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "SSO SAML/OIDC providers",
+              "WAF / DDoS protection",
+              "Identity Providers"
+            ],
+            "data_handled": [
+              "Auth tokens",
+              "API requests/metadata",
+              "User session data"
+            ]
+          },
+          {
+            "name": "Frontend Layer",
+            "responsibility": "Web SPA and dashboards for developers and managers to view findings, collaborate, manage repos, and configure policies and model settings.",
+            "security_criticality": "Medium",
+            "external_dependencies": [
+              "Browser clients",
+              "API Gateway"
+            ],
+            "data_handled": [
+              "UI session data",
+              "Aggregated scan results and metrics",
+              "User preferences"
+            ]
+          },
+          {
+            "name": "Application Services",
+            "responsibility": "Core orchestration, business logic, workflows for scans, PR creation, notifications, RBAC enforcement, and integrations with CI/CD and collaboration tools.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "GitHub/GitLab/Bitbucket APIs",
+              "CI/CD systems (GitHub Actions, Jenkins)",
+              "Slack/Teams"
+            ],
+            "data_handled": [
+              "Repository metadata",
+              "Scan job metadata",
+              "Notification payloads",
+              "Audit events"
+            ]
+          },
+          {
+            "name": "AI Analysis Engine",
+            "responsibility": "Perform LLM-based code review, static analysis (SAST), pattern recognition, dependency scanning, and secret detection; produce findings with severity and remediation suggestions.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "Managed model hosts / GPU providers",
+              "Local/on-prem model infra (for private deployments)",
+              "Vulnerability feeds"
+            ],
+            "data_handled": [
+              "Code snippets and diffs",
+              "Analysis artifacts",
+              "Generated remediation suggestions"
+            ]
+          },
+          {
+            "name": "Model Management",
+            "responsibility": "Host inference APIs, version models, manage A/B testing and staged rollouts, enable isolated/custom training workflows and monitor model performance and drift.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "GPU/Model hosting providers",
+              "Model training pipelines",
+              "Customer-provided training environments (on-prem/VPC)"
+            ],
+            "data_handled": [
+              "Model binaries and metadata",
+              "Training artifacts",
+              "Inference logs (sanitized)"
+            ]
+          },
+          {
+            "name": "Data Storage & Persistence",
+            "responsibility": "Securely store code artifacts, vulnerability DB, audit logs, caches, remediation history, and configuration; enforce encryption, retention, and immutability where required.",
+            "security_criticality": "Critical",
+            "external_dependencies": [
+              "KMS / BYOK providers",
+              "Immutable storage providers (WORM/append-only)",
+              "Backup/archival services"
+            ],
+            "data_handled": [
+              "Encrypted code artifacts and snippets",
+              "Vulnerability/CVE metadata",
+              "Audit logs and reports",
+              "Cached analysis results"
+            ]
+          },
+          {
+            "name": "External Integrations",
+            "responsibility": "Connectors to third-party systems: Git providers (OAuth/webhooks), CVE/NVD feeds, CI/CD, Slack/Teams, SIEM, and identity providers.",
+            "security_criticality": "High",
+            "external_dependencies": [
+              "GitHub GitLab Bitbucket APIs",
+              "NVD/CVE feeds",
+              "Slack Microsoft Teams",
+              "SIEM services"
+            ],
+            "data_handled": [
+              "Webhook events",
+              "CVE feed data",
+              "Notification metadata",
+              "Integration tokens (encrypted)"
+            ]
+          }
+        ],
+        "data_flow_description": "Developers or CI/CD send commits/webhook events to the Edge/API Gateway which authenticates requests and forwards them to Orchestration. Orchestration fetches code via repository APIs (OAuth-scoped), stores encrypted artifacts, and enqueues analysis tasks. The AI Analysis Engine runs LLM inference and SAST, consults the Vulnerability DB, and writes findings to Audit Logs and Data Storage; remediation suggestions are generated and optionally open PRs back to the Git provider. Model Management serves inference endpoints and may receive opt-in training data in isolated environments. Results are cached for performance; dashboards and notifications surface findings. Sensitive data (code, tokens, secrets) are encrypted at rest and in transit; audit logs and exports are produced on demand.",
+        "trust_boundaries": [
+          {
+            "name": "Internet",
+            "components": [
+              "Users",
+              "CI/CD Agents",
+              "Git Providers"
+            ],
+            "boundary_type": "Untrusted",
+            "security_controls": [
+              "TLS only endpoints",
+              "WAF and DDoS protection",
+              "Strong OAuth flows and webhook validation",
+              "Rate limiting and IP allowlists for enterprise customers"
+            ]
+          },
+          {
+            "name": "Edge/API Gateway (DMZ)",
+            "components": [
+              "API Gateway",
+              "Auth/Token Validation",
+              "Ingress Rate Limiting"
+            ],
+            "boundary_type": "Semi-Trusted",
+            "security_controls": [
+              "JWT/OAuth validation",
+              "Request signing and webhook verification",
+              "WAF rules",
+              "Anomaly detection and abuse prevention"
+            ]
+          },
+          {
+            "name": "Internal Application Network",
+            "components": [
+              "Orchestration",
+              "Analysis Engine",
+              "Model Management",
+              "Collaboration Services"
+            ],
+            "boundary_type": "Trusted/Internal",
+            "security_controls": [
+              "Mutual TLS between services",
+              "RBAC and least-privilege service accounts",
+              "Network segmentation and VPCs",
+              "SIEM logging and IDS/IPS"
+            ]
+          },
+          {
+            "name": "Data/Storage Tier",
+            "components": [
+              "Encrypted Artifact Storage",
+              "Vulnerability DB",
+              "Audit Logs",
+              "Cache",
+              "KMS"
+            ],
+            "boundary_type": "Highly Trusted/Protected",
+            "security_controls": [
+              "Encryption at rest with KMS/BYOK",
+              "Access control lists and IAM policies",
+              "Immutable logging (WORM) for audit logs",
+              "Separation of duties and key rotation"
+            ]
+          },
+          {
+            "name": "Model Training/Hosting Isolation",
+            "components": [
+              "ModelStore",
+              "GPU/Model Hosts",
+              "Customer Isolated Training Envs"
+            ],
+            "boundary_type": "Isolated/Controlled",
+            "security_controls": [
+              "Tenant isolation (VPC, namespaces)",
+              "Consent and opt-in controls for training",
+              "Data minimization and privacy-preserving techniques",
+              "Provenance tracking and model signing"
+            ]
+          },
+          {
+            "name": "Customer On-Prem/VPC",
+            "components": [
+              "On-prem Deployments",
+              "Private SaaS VPC Peering"
+            ],
+            "boundary_type": "Customer Controlled",
+            "security_controls": [
+              "Network peering with strict routing",
+              "Customer-managed KMS/BYOK",
+              "Local audit and compliance controls",
+              "Restricted outbound access"
+            ]
+          }
+        ],
+        "attack_surface_analysis": "Primary entry points: API Gateway endpoints (inference APIs, REST APIs), OAuth webhook endpoints from Git providers, and the Web UI. These are high-risk and require strong authn/authz, rate limiting, WAF, and webhook signature validation. Integration points with Git providers and CI/CD are exposed via OAuth tokens and webhooks; compromised tokens can expose code\u2014mitigate with least-privilege scopes, token rotation, and monitoring. Model inference endpoints are sensitive (risk of data exfiltration and prompt injection) and should enforce input sanitization, access controls, rate limits, and logging; A/B testing and training endpoints add risk for model leakage and must be isolated and opt-in. Data storage endpoints (artifact stores, caches, vulnerability DB, audit logs) represent a critical defensive boundary\u2014protect with encryption, KMS, and strict IAM. Notification integrations (Slack/Teams) risk accidental exposure of secrets; notifications must redact code and include role-based visibility. Administrative interfaces and model management UIs need MFA and SSO enforcement. Overall risk priorities: OAuth/webhook integrations (High), Inference APIs and model training surfaces (High), Data stores and audit logs (Critical), Web UI and API Gateway (High), External feeds and notifications (Medium). Continuous monitoring, SIEM integration, automated anomaly detection, and incident response play a central role in reducing residual risk."
+      }
+    }
+  ]
+}

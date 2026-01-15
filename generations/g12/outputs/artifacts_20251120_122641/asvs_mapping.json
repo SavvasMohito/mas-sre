@@ -1,0 +1,1010 @@
+[
+  {
+    "control_id": "V2.1",
+    "standard": "OWASP",
+    "v_category": "Authentication and Session Management",
+    "requirement_id": "R1",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that authentication mechanisms use secure, industry standard protocols (e.g., SAML, OAuth2, O"
+  },
+  {
+    "control_id": "IA-2",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication",
+    "requirement_id": "R1",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Identify and authenticate users. The information system uniquely identifies and authenticates organi"
+  },
+  {
+    "control_id": "A.9.4.2",
+    "standard": "ISO27001",
+    "v_category": "Access Control",
+    "requirement_id": "R1",
+    "level": null,
+    "priority": "High",
+    "requirement": "Secure log-on procedures. Where required, users shall be provided with a secure log-on procedure."
+  },
+  {
+    "control_id": "V2.2",
+    "standard": "OWASP",
+    "v_category": "Authentication and Session Management",
+    "requirement_id": "R1",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Session management must protect session tokens (use secure cookies, HttpOnly, SameSite, and consider"
+  },
+  {
+    "control_id": "AC-2",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R2",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Account management. The organization manages information system accounts, including establishing, ac"
+  },
+  {
+    "control_id": "A.9.1.2",
+    "standard": "ISO27001",
+    "v_category": "Access Control",
+    "requirement_id": "R2",
+    "level": null,
+    "priority": "High",
+    "requirement": "Access to networks and network services shall be controlled."
+  },
+  {
+    "control_id": "V4.1",
+    "standard": "OWASP",
+    "v_category": "Access Control",
+    "requirement_id": "R2",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify role-based access control is enforced server-side and default-deny is applied for all REST en"
+  },
+  {
+    "control_id": "A.9.2.3",
+    "standard": "ISO27001",
+    "v_category": "User access management",
+    "requirement_id": "R2",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Users shall follow secure use of authentication information and manage their credentials safely."
+  },
+  {
+    "control_id": "V14.1",
+    "standard": "OWASP",
+    "v_category": "API and Web Services",
+    "requirement_id": "R3",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Verify web application is resilient to XSS and that output encoding is used on all UI elements inclu"
+  },
+  {
+    "control_id": "SC-7",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R3",
+    "level": null,
+    "priority": "High",
+    "requirement": "Boundary protection. Monitor and control communications at external and internal boundaries of the i"
+  },
+  {
+    "control_id": "A.12.1.1",
+    "standard": "ISO27001",
+    "v_category": "Operational security",
+    "requirement_id": "R3",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Operating procedures should be documented for system operation including monitoring interfaces and d"
+  },
+  {
+    "control_id": "V14.3",
+    "standard": "OWASP",
+    "v_category": "API and Web Services",
+    "requirement_id": "R3",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Ensure secure configuration of UI frameworks and third-party components used in dashboards (no insec"
+  },
+  {
+    "control_id": "V5.2",
+    "standard": "OWASP",
+    "v_category": "Communication and API Security",
+    "requirement_id": "R4",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Ensure that WebSocket connections use TLS, validate origin headers, and implement proper authenticat"
+  },
+  {
+    "control_id": "SC-8",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R4",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Transmission confidentiality and integrity. Protect the confidentiality and integrity of transmitted"
+  },
+  {
+    "control_id": "A.10.1.1",
+    "standard": "ISO27001",
+    "v_category": "Cryptographic controls",
+    "requirement_id": "R4",
+    "level": null,
+    "priority": "High",
+    "requirement": "Policy on the use of cryptographic controls shall be developed and implemented to protect informatio"
+  },
+  {
+    "control_id": "V10.1",
+    "standard": "OWASP",
+    "v_category": "Network, Infrastructure and Resilience",
+    "requirement_id": "R4",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Real-time features must implement authorization checks server-side and validate messages to prevent "
+  },
+  {
+    "control_id": "V13.3",
+    "standard": "OWASP",
+    "v_category": "Files and Resource Handling",
+    "requirement_id": "R5",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Validate and sanitize uploaded files. Enforce allow-listing of content types, scan for malware and s"
+  },
+  {
+    "control_id": "SI-3",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "R5",
+    "level": null,
+    "priority": "High",
+    "requirement": "Malicious code protection. Employ anti-malware tools and scanning to detect and respond to malicious"
+  },
+  {
+    "control_id": "A.13.2.1",
+    "standard": "ISO27001",
+    "v_category": "Communications security",
+    "requirement_id": "R5",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information transfer policies should include controls for transfer of information and files includin"
+  },
+  {
+    "control_id": "V13.1",
+    "standard": "OWASP",
+    "v_category": "Files and Resource Handling",
+    "requirement_id": "R5",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Implement secure file storage and access controls including versioning metadata and integrity checks"
+  },
+  {
+    "control_id": "V13.5",
+    "standard": "OWASP",
+    "v_category": "Files and Resource Handling",
+    "requirement_id": "R6",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "For large uploads implement chunking, resumable upload protocols with integrity checks and server-si"
+  },
+  {
+    "control_id": "SC-5",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R6",
+    "level": null,
+    "priority": "High",
+    "requirement": "Denial of service protection. Protect against resource depletion via throttling and quotas."
+  },
+  {
+    "control_id": "A.12.6.1",
+    "standard": "ISO27001",
+    "v_category": "Technical vulnerability management",
+    "requirement_id": "R6",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Ensure that external facing services implementing large file handling are managed and patched and th"
+  },
+  {
+    "control_id": "V5.1",
+    "standard": "OWASP",
+    "v_category": "Communication and API Security",
+    "requirement_id": "R6",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Implement rate-limiting and quotas on upload APIs and provide resumable upload integrity via checksu"
+  },
+  {
+    "control_id": "V4.2",
+    "standard": "OWASP",
+    "v_category": "Access Control",
+    "requirement_id": "R7",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Ensure all task CRUD operations enforce authorization server-side and validate input to prevent inje"
+  },
+  {
+    "control_id": "AC-6",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R7",
+    "level": null,
+    "priority": "High",
+    "requirement": "Least privilege. The organization employs the principle of least privilege for users and processes."
+  },
+  {
+    "control_id": "A.14.2.5",
+    "standard": "ISO27001",
+    "v_category": "System acquisition, development and maintenance",
+    "requirement_id": "R7",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Applications accessible from public networks shall be secured to protect data and services."
+  },
+  {
+    "control_id": "V14.2",
+    "standard": "OWASP",
+    "v_category": "API and Web Services",
+    "requirement_id": "R7",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Implement strong input validation and parameterized queries for APIs that modify tasks (no direct ob"
+  },
+  {
+    "control_id": "PL-8",
+    "standard": "NIST",
+    "v_category": "Planning",
+    "requirement_id": "R8",
+    "level": null,
+    "priority": "High",
+    "requirement": "Information security architecture. Develop and maintain an architecture for the system including int"
+  },
+  {
+    "control_id": "V8.3",
+    "standard": "OWASP",
+    "v_category": "Business Logic and Workflow",
+    "requirement_id": "R8",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Ensure job submission APIs enforce authorization, quotas, priority controls and validate job paramet"
+  },
+  {
+    "control_id": "A.12.1.2",
+    "standard": "ISO27001",
+    "v_category": "Operational security",
+    "requirement_id": "R8",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Change management procedures shall be followed for system changes including job scheduling interface"
+  },
+  {
+    "control_id": "CP-2",
+    "standard": "NIST",
+    "v_category": "Contingency Planning",
+    "requirement_id": "R8",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Contingency plan. Develop contingency plans for essential business functions including job processin"
+  },
+  {
+    "control_id": "SC-12",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R9",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Cryptographic protection. The system protects the confidentiality and integrity of remote communicat"
+  },
+  {
+    "control_id": "V10.2",
+    "standard": "OWASP",
+    "v_category": "Network, Infrastructure and Resilience",
+    "requirement_id": "R9",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Background services should authenticate to backend systems using managed credentials and use encrypt"
+  },
+  {
+    "control_id": "A.9.4.1",
+    "standard": "ISO27001",
+    "v_category": "Access Control",
+    "requirement_id": "R9",
+    "level": null,
+    "priority": "High",
+    "requirement": "Access to systems and services shall be restricted based on business and security requirements."
+  },
+  {
+    "control_id": "AU-12",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R9",
+    "level": null,
+    "priority": "High",
+    "requirement": "Audit generation. The information system can produce audit records for defined events including job "
+  },
+  {
+    "control_id": "V5.1",
+    "standard": "OWASP",
+    "v_category": "Communication and API Security",
+    "requirement_id": "R10",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Use strong authentication and authorization for API endpoints; protect APIs with TLS and ensure prop"
+  },
+  {
+    "control_id": "AC-3",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R10",
+    "level": null,
+    "priority": "High",
+    "requirement": "Access enforcement. The information system enforces access restrictions for users and processes to o"
+  },
+  {
+    "control_id": "A.14.2.1",
+    "standard": "ISO27001",
+    "v_category": "System acquisition, development and maintenance",
+    "requirement_id": "R10",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Security requirements of information systems shall be specified and implemented for APIs including t"
+  },
+  {
+    "control_id": "SI-10",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "R10",
+    "level": null,
+    "priority": "High",
+    "requirement": "Information input validation. The system checks the validity of inputs to interfaces."
+  },
+  {
+    "control_id": "V12.1",
+    "standard": "OWASP",
+    "v_category": "Hardware and Platform Security",
+    "requirement_id": "R11",
+    "level": "L3",
+    "priority": "Critical",
+    "requirement": "APIs that control hardware must enforce strict authentication, authorization and non-repudiation; en"
+  },
+  {
+    "control_id": "CM-3",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "R11",
+    "level": null,
+    "priority": "High",
+    "requirement": "Baseline configuration. Establish and maintain baseline configurations and inventories for hardware "
+  },
+  {
+    "control_id": "A.9.2.6",
+    "standard": "ISO27001",
+    "v_category": "User access management",
+    "requirement_id": "R11",
+    "level": null,
+    "priority": "High",
+    "requirement": "Access rights shall be reviewed when job roles change, especially for hardware controllers."
+  },
+  {
+    "control_id": "MP-6",
+    "standard": "NIST",
+    "v_category": "Media Protection",
+    "requirement_id": "R11",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Media sanitization and protection for removable media and firmware images."
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R12",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Audit events. Determine and document auditable events including system and user actions and ensure l"
+  },
+  {
+    "control_id": "V11.2",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "R12",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Ensure logs are captured securely, transmitted with integrity protection, and that streaming of logs"
+  },
+  {
+    "control_id": "A.12.4.1",
+    "standard": "ISO27001",
+    "v_category": "Logging and monitoring",
+    "requirement_id": "R12",
+    "level": null,
+    "priority": "High",
+    "requirement": "Event logs recording user activities, exceptions and information security events shall be produced a"
+  },
+  {
+    "control_id": "AU-9",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R12",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Protection of audit information. Protect audit records from unauthorized access, modification, and d"
+  },
+  {
+    "control_id": "V2.1",
+    "standard": "OWASP",
+    "v_category": "Authentication and Session Management",
+    "requirement_id": "R13",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Verify that authentication mechanisms use secure, industry standard protocols (e.g., SAML, OAuth2, O"
+  },
+  {
+    "control_id": "SA-9",
+    "standard": "NIST",
+    "v_category": "System and Services Acquisition",
+    "requirement_id": "R13",
+    "level": null,
+    "priority": "High",
+    "requirement": "External systems and services shall be documented and security controls validated when integrating t"
+  },
+  {
+    "control_id": "A.15.1.1",
+    "standard": "ISO27001",
+    "v_category": "Supplier relationships",
+    "requirement_id": "R13",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information security requirements for mitigating risks from supplier access, including third-party c"
+  },
+  {
+    "control_id": "V10.3",
+    "standard": "OWASP",
+    "v_category": "Network, Infrastructure and Resilience",
+    "requirement_id": "R13",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Validate and authorize incoming webhook requests (verify signatures), and ensure build triggers are "
+  },
+  {
+    "control_id": "CM-8",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "R14",
+    "level": null,
+    "priority": "High",
+    "requirement": "System component inventory. Track and maintain information on components including versions and chan"
+  },
+  {
+    "control_id": "V11.1",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "R14",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Capture sufficient metadata for build provenance (commit SHA, author, timestamp) and ensure integrit"
+  },
+  {
+    "control_id": "A.12.2.1",
+    "standard": "ISO27001",
+    "v_category": "Operational procedures and responsibilities",
+    "requirement_id": "R14",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Control changes to systems and maintain records of changes including version details and responsible"
+  },
+  {
+    "control_id": "SI-7",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "R14",
+    "level": null,
+    "priority": "High",
+    "requirement": "Software, firmware, and information integrity checks to ensure authenticity and integrity."
+  },
+  {
+    "control_id": "A.18.1.4",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "R15",
+    "level": null,
+    "priority": "High",
+    "requirement": "Ensure compliance with data protection laws and user preferences for notifications and communication"
+  },
+  {
+    "control_id": "PL-8",
+    "standard": "NIST",
+    "v_category": "Planning",
+    "requirement_id": "R15",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information security architecture. Plan for privacy and notification channels in system architecture"
+  },
+  {
+    "control_id": "V13.4",
+    "standard": "OWASP",
+    "v_category": "Files and Resource Handling",
+    "requirement_id": "R15",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Protect personal data in notifications and ensure opt-in/opt-out preferences are persisted and enfor"
+  },
+  {
+    "control_id": "AC-14",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R15",
+    "level": null,
+    "priority": "High",
+    "requirement": "Permitted actions without identification or authentication. The system restricts actions that unauth"
+  },
+  {
+    "control_id": "A.18.1.3",
+    "standard": "ISO27001",
+    "v_category": "Compliance",
+    "requirement_id": "R16",
+    "level": null,
+    "priority": "High",
+    "requirement": "Records shall be protected from loss, destruction and falsification and shall be retained as require"
+  },
+  {
+    "control_id": "AU-6",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R16",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Audit review, analysis, and reporting. Regularly review and analyze audit records for indications of"
+  },
+  {
+    "control_id": "V11.3",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "R16",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Ensure analytics pipelines protect confidentiality of sensitive data, apply aggregation/anonymizatio"
+  },
+  {
+    "control_id": "A.8.2.3",
+    "standard": "ISO27001",
+    "v_category": "Asset management",
+    "requirement_id": "R16",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information shall be classified to indicate the value, sensitivity and criticality of the informatio"
+  },
+  {
+    "control_id": "V13.1",
+    "standard": "OWASP",
+    "v_category": "Files and Resource Handling",
+    "requirement_id": "R17",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Implement secure file storage and access controls including versioning metadata and integrity checks"
+  },
+  {
+    "control_id": "MP-4",
+    "standard": "NIST",
+    "v_category": "Media Protection",
+    "requirement_id": "R17",
+    "level": null,
+    "priority": "High",
+    "requirement": "Media storage. Protect stored information system media; sanitize, store and transport media securely"
+  },
+  {
+    "control_id": "A.11.2.2",
+    "standard": "ISO27001",
+    "v_category": "Physical and environmental security",
+    "requirement_id": "R17",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Security controls for equipment and storage to prevent unauthorized access to information."
+  },
+  {
+    "control_id": "CP-9",
+    "standard": "NIST",
+    "v_category": "Contingency Planning",
+    "requirement_id": "R17",
+    "level": null,
+    "priority": "High",
+    "requirement": "Information system backup. Conduct backups of user-level and system-level information to support rec"
+  },
+  {
+    "control_id": "AU-2",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R18",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Audit events. Determine and document auditable events including system and user actions and ensure l"
+  },
+  {
+    "control_id": "V11.4",
+    "standard": "OWASP",
+    "v_category": "Logging and Monitoring",
+    "requirement_id": "R18",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Ensure audit trails are tamper-evident, searchable and contain sufficient context for forensics and "
+  },
+  {
+    "control_id": "A.12.4.3",
+    "standard": "ISO27001",
+    "v_category": "Logging and monitoring",
+    "requirement_id": "R18",
+    "level": null,
+    "priority": "High",
+    "requirement": "Administrator and operator activities shall be logged and monitored to support investigations and ac"
+  },
+  {
+    "control_id": "AU-6",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R18",
+    "level": null,
+    "priority": "High",
+    "requirement": "Audit review, analysis, and reporting. Regularly review and analyze audit records for indications of"
+  },
+  {
+    "control_id": "V4.3",
+    "standard": "OWASP",
+    "v_category": "Access Control",
+    "requirement_id": "R19",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Administrative interfaces must be protected with multi-factor authentication, strict RBAC, and audit"
+  },
+  {
+    "control_id": "AC-17",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R19",
+    "level": null,
+    "priority": "High",
+    "requirement": "Remote access. The organization authorizes, monitors, and controls remote access methods including a"
+  },
+  {
+    "control_id": "A.9.4.3",
+    "standard": "ISO27001",
+    "v_category": "Access Control",
+    "requirement_id": "R19",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Where password management systems are used, secure procedures shall be implemented."
+  },
+  {
+    "control_id": "SI-4",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "R19",
+    "level": null,
+    "priority": "High",
+    "requirement": "Information system monitoring. The system monitors events and notifications for indications of attac"
+  },
+  {
+    "control_id": "CM-2",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "R20",
+    "level": null,
+    "priority": "High",
+    "requirement": "Baseline configuration. Develop and maintain baseline configurations and inventories for systems and"
+  },
+  {
+    "control_id": "V10.4",
+    "standard": "OWASP",
+    "v_category": "Network, Infrastructure and Resilience",
+    "requirement_id": "R20",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Ensure container images are built from trusted sources, scanned for vulnerabilities, and runtime con"
+  },
+  {
+    "control_id": "A.12.6.1",
+    "standard": "ISO27001",
+    "v_category": "Technical vulnerability management",
+    "requirement_id": "R20",
+    "level": null,
+    "priority": "High",
+    "requirement": "Ensure that vulnerabilities in software and containers are tracked and remediated in a timely manner"
+  },
+  {
+    "control_id": "SA-8",
+    "standard": "NIST",
+    "v_category": "System and Services Acquisition",
+    "requirement_id": "R20",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Security engineering principles shall be integrated into system acquisition and development, includi"
+  },
+  {
+    "control_id": "CP-9",
+    "standard": "NIST",
+    "v_category": "Contingency Planning",
+    "requirement_id": "R21",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Information system backup. Conduct backups of user-level and system-level information to support rec"
+  },
+  {
+    "control_id": "V10.5",
+    "standard": "OWASP",
+    "v_category": "Network, Infrastructure and Resilience",
+    "requirement_id": "R21",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Health endpoints and admin interfaces should require authentication, return minimal information and "
+  },
+  {
+    "control_id": "A.17.1.2",
+    "standard": "ISO27001",
+    "v_category": "Information security aspects of business continuity management",
+    "requirement_id": "R21",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Information security continuity should be embedded in business continuity management and include bac"
+  },
+  {
+    "control_id": "AU-8",
+    "standard": "NIST",
+    "v_category": "Audit and Accountability",
+    "requirement_id": "R21",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Time stamps. Use internal system clocks to provide reliable time stamps for audit records (important"
+  },
+  {
+    "control_id": "V2.2",
+    "standard": "OWASP",
+    "v_category": "Authentication and Session Management",
+    "requirement_id": "R22",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Session management must protect session tokens (use secure cookies, HttpOnly, SameSite, and consider"
+  },
+  {
+    "control_id": "V14.1",
+    "standard": "OWASP",
+    "v_category": "API and Web Services",
+    "requirement_id": "R22",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Verify web application is resilient to XSS and that output encoding is used on all UI elements inclu"
+  },
+  {
+    "control_id": "IA-5",
+    "standard": "NIST",
+    "v_category": "Identification and Authentication",
+    "requirement_id": "R22",
+    "level": null,
+    "priority": "High",
+    "requirement": "Authenticator management. Policies for secure management of authentication mechanisms including sess"
+  },
+  {
+    "control_id": "V14.2",
+    "standard": "OWASP",
+    "v_category": "API and Web Services",
+    "requirement_id": "R22",
+    "level": "L1",
+    "priority": "Critical",
+    "requirement": "Implement strong input validation and parameterized queries for APIs that modify tasks (no direct ob"
+  },
+  {
+    "control_id": "MP-6",
+    "standard": "NIST",
+    "v_category": "Media Protection",
+    "requirement_id": "R23",
+    "level": null,
+    "priority": "High",
+    "requirement": "Media sanitization and protection for removable media and firmware images."
+  },
+  {
+    "control_id": "V6.3",
+    "standard": "OWASP",
+    "v_category": "Configuration and Secret Management",
+    "requirement_id": "R23",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Secrets (API keys, credentials) must be stored encrypted, not in source code, and access controlled "
+  },
+  {
+    "control_id": "SC-12",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R23",
+    "level": null,
+    "priority": "High",
+    "requirement": "Cryptographic protection. The system protects the confidentiality and integrity of remote communicat"
+  },
+  {
+    "control_id": "A.10.1.1",
+    "standard": "ISO27001",
+    "v_category": "Cryptographic controls",
+    "requirement_id": "R23",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Policy on the use of cryptographic controls shall be developed and implemented to protect informatio"
+  },
+  {
+    "control_id": "AC-4",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R24",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Information flow enforcement. The system enforces approved authorizations for controlling informatio"
+  },
+  {
+    "control_id": "V12.2",
+    "standard": "OWASP",
+    "v_category": "Hardware and Platform Security",
+    "requirement_id": "R24",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Physical and logical isolation must be applied to hardware like FPGAs and HPC resources; ensure RBAC"
+  },
+  {
+    "control_id": "A.11.1.1",
+    "standard": "ISO27001",
+    "v_category": "Physical and environmental security",
+    "requirement_id": "R24",
+    "level": null,
+    "priority": "High",
+    "requirement": "Physical security perimeters shall be defined and used to protect information processing facilities "
+  },
+  {
+    "control_id": "CM-2",
+    "standard": "NIST",
+    "v_category": "Configuration Management",
+    "requirement_id": "R24",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Baseline configuration. Develop and maintain baseline configurations including device-level access p"
+  },
+  {
+    "control_id": "V10.1",
+    "standard": "OWASP",
+    "v_category": "Network, Infrastructure and Resilience",
+    "requirement_id": "R25",
+    "level": "L2",
+    "priority": "High",
+    "requirement": "Real-time features must implement authorization checks server-side and validate messages to prevent "
+  },
+  {
+    "control_id": "SC-5",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R25",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Denial of service protection. Protect against resource depletion via throttling and quotas."
+  },
+  {
+    "control_id": "A.12.1.1",
+    "standard": "ISO27001",
+    "v_category": "Operational security",
+    "requirement_id": "R25",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Operating procedures should be documented for system operation including monitoring interfaces and d"
+  },
+  {
+    "control_id": "CP-10",
+    "standard": "NIST",
+    "v_category": "Contingency Planning",
+    "requirement_id": "R25",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "System recovery and reconstitution. Ensure systems can recover from disruptions and scale to meet de"
+  },
+  {
+    "control_id": "V14.1",
+    "standard": "OWASP",
+    "v_category": "API and Web Services",
+    "requirement_id": "R26",
+    "level": "L1",
+    "priority": "High",
+    "requirement": "Verify web application is resilient to XSS and that output encoding is used on all UI elements inclu"
+  },
+  {
+    "control_id": "A.12.6.2",
+    "standard": "ISO27001",
+    "v_category": "Technical vulnerability management",
+    "requirement_id": "R26",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Maintain secure configuration of third-party components including those used for mobile/responsive U"
+  },
+  {
+    "control_id": "SA-11",
+    "standard": "NIST",
+    "v_category": "System and Services Acquisition",
+    "requirement_id": "R26",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Developer security testing and evaluation to ensure applications operate securely across devices."
+  },
+  {
+    "control_id": "V14.3",
+    "standard": "OWASP",
+    "v_category": "API and Web Services",
+    "requirement_id": "R26",
+    "level": "L1",
+    "priority": "Medium",
+    "requirement": "Ensure secure configuration of UI frameworks and third-party components used in dashboards (no insec"
+  },
+  {
+    "control_id": "V5.1",
+    "standard": "OWASP",
+    "v_category": "Communication and API Security",
+    "requirement_id": "R27",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Implement rate limiting and quotas on APIs and upload endpoints to protect against abuse and resourc"
+  },
+  {
+    "control_id": "SC-5",
+    "standard": "NIST",
+    "v_category": "System and Communications Protection",
+    "requirement_id": "R27",
+    "level": null,
+    "priority": "High",
+    "requirement": "Denial of service protection. Protect against resource depletion via throttling and quotas."
+  },
+  {
+    "control_id": "A.12.1.3",
+    "standard": "ISO27001",
+    "v_category": "Operational security",
+    "requirement_id": "R27",
+    "level": null,
+    "priority": "Medium",
+    "requirement": "Capacity requirements and planning shall be performed to ensure availability and performance."
+  },
+  {
+    "control_id": "AC-17",
+    "standard": "NIST",
+    "v_category": "Access Control",
+    "requirement_id": "R27",
+    "level": null,
+    "priority": "High",
+    "requirement": "Remote access. The organization authorizes, monitors, and controls remote access methods including A"
+  },
+  {
+    "control_id": "SI-2",
+    "standard": "NIST",
+    "v_category": "System and Information Integrity",
+    "requirement_id": "R28",
+    "level": null,
+    "priority": "Critical",
+    "requirement": "Flaw remediation. Identify, report, and correct information system flaws in a timely manner."
+  },
+  {
+    "control_id": "V10.6",
+    "standard": "OWASP",
+    "v_category": "Network, Infrastructure and Resilience",
+    "requirement_id": "R28",
+    "level": "L2",
+    "priority": "Critical",
+    "requirement": "Establish monitoring, alerting and patch management processes to detect and remediate vulnerabilitie"
+  },
+  {
+    "control_id": "A.12.6.1",
+    "standard": "ISO27001",
+    "v_category": "Technical vulnerability management",
+    "requirement_id": "R28",
+    "level": null,
+    "priority": "High",
+    "requirement": "Ensure that vulnerabilities are identified and timely remediation occurs."
+  },
+  {
+    "control_id": "CA-7",
+    "standard": "NIST",
+    "v_category": "Security Assessment and Authorization",
+    "requirement_id": "R28",
+    "level": null,
+    "priority": "High",
+    "requirement": "Continuous monitoring. Implement ongoing assessment and monitoring to ensure security posture remain"
+  }
+]

@@ -1,0 +1,254 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Edge/API Gateway",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Compromise or forging of OAuth tokens/JWTs (stolen tokens, replayed tokens, unsigned/weakly-signed tokens) allowing an attacker to impersonate users or service accounts and access repositories, create"
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge/API Gateway",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Manipulation of inbound API requests or webhook payloads en route to backend (e.g., altering scan parameters, redirecting callbacks, or injecting malicious fields) to change scan behavior or escalate "
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge/API Gateway",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "API gateway or edge infrastructure overwhelmed by high request volume or crafted requests (flooding, slowloris, large payloads) causing availability loss for scanning and developer access."
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Cross-site scripting (XSS) or unsafe rendering in the SPA leaks code snippets, findings or tokens to other users or remote hosts; stored XSS in comment threads revealing sensitive diffs."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer",
+    "risk_level": "Medium",
+    "category": "Spoofing",
+    "description": "Cross-Site Request Forgery (CSRF) causing unauthorized actions (e.g., creating PRs with suggested fixes) performed by authenticated users without their knowledge."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Forged repository webhook events or API calls cause the application to perform unauthorized actions such as merging PRs, applying fixes, or changing RBAC settings."
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Insufficient or tamperable audit logs enabling actors to deny actions (e.g., who initiated a scan, who created/approved a PR), complicating incident response and compliance."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Broken access control leading to unauthorized users (or tenants) reading repository metadata, scan results, vulnerability details, or remediation suggestions."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "AI Analysis Engine",
+    "risk_level": "Critical",
+    "category": "Information Disclosure",
+    "description": "Sensitive source code or secrets are transmitted to or stored on external managed model hosts (SaaS model providers) where tenant separation, contractual protections, or inadvertent logging could lead"
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "AI Analysis Engine",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Poisoning of training data or prompt injection via crafted code causing models to generate insecure or malicious remediation suggestions (e.g., suggesting credential exfiltration or insecure configura"
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "AI Analysis Engine",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "LLM-generated remediation automatically introduces code that elevates privileges (e.g., creating backdoor admin endpoints or insecurely setting permissions) and is merged without adequate review."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "AI Analysis Engine",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Excessive inference requests (automated or malicious) saturate model hosting or GPU capacity, causing analysis delays or denial of analysis service to other tenants."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "AI Analysis Engine / Vulnerability Feeds",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Poisoned or tampered CVE/NVD feeds deliver incorrect or malicious vulnerability metadata causing false positives/negatives or incorrect remediation advice."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Secret Detection / Data Storage",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Secrets (API keys, tokens, private keys) stored in persistent storage, caches, backups, logs, or remediation history in plaintext or weakly encrypted form leading to leak and unauthorized access to th"
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Model Management",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Unauthorized modification or replacement of model binaries or metadata (model poisoning or substitution) causing compromised inference results across tenants."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Model Management",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Leakage of model binaries or customer-specific training data/artifacts used for fine-tuning (e.g., code used in training accessible to other customers or leaked externally)."
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage & Persistence",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Public exposure of backups, snapshots, or misconfigured storage buckets containing code artifacts, vulnerability DB, or audit logs (e.g., publicly accessible S3 bucket)."
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage & Persistence",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Unauthorized modification or deletion of audit logs, remediation history, or vulnerability records to erase evidence or alter findings."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Integrations",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromised third-party system (e.g., CI/CD provider or Git host) sends spoofed events or uses stolen integration credentials to manipulate the platform (trigger scans, inject malicious webhooks)."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Integrations",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Integration tokens, API keys, or credentials logged in plain-text (application logs, access logs, stack traces) or included in notifications (Slack/Teams) leading to compromise of third-party services"
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "External Integrations",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Flooding of webhook endpoints or continuous integration triggers to consume resources (e.g., force repeated scanning or push heavy workloads) causing degraded service."
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Repository Integration (OAuth)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "OAuth application granted excessive scopes or abused consent to gain broad repository access; attacker leverages app to exfiltrate code or create/merge PRs."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "CI/CD Integrations",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Malicious pipeline step or compromised CI runner introduced via a PR allows execution of malicious code with elevated privileges (e.g., pushing to production or accessing secrets), especially when aut"
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 2,
+    "impact": 3,
+    "component": "Compliance and Reporting",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Tampering with compliance reports or trend analysis dashboards (intentional or accidental) to hide vulnerabilities, creating false compliance posture."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Team Collaboration",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Comment threads or dashboards inadvertently exposing sensitive code, PII, or secrets to unauthorized team members or external collaborators."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Handling / Caching",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Cache poisoning or tenant key collisions cause cached analysis results, diffs, or findings to be returned to the wrong tenant or user, exposing proprietary code or vulnerability data."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / APIs",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Classic injection attacks (SQL injection, command injection) or unsafe deserialization in API endpoints exposing back-end data stores or enabling remote code execution within application services."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Edge/API Gateway",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Misconfiguration in gateway RBAC or routing allows privilege escalation to administrative APIs (e.g., a normal user can access management endpoints or modify ACLs)."
+  }
+]

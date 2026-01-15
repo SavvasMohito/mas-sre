@@ -1,0 +1,254 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "User Management / Frontend / Application Services",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Credential stuffing, password reuse, or credential theft (phished credentials) allows attackers to authenticate as legitimate users and access accounts, saved payment methods, order history, and perfo"
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Social Login / External Services / Application Services",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromise or misuse of social OAuth tokens or flawed OAuth integration (missing state/redirect validation, incorrect client secrets) allows attacker impersonation or account takeover."
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend / Operations & Security",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Secrets, API keys, or credentials embedded in frontend code, public repositories, or third-party bundles can be discovered and used to access internal APIs or third-party services."
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Product Catalog / Frontend",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Stored XSS through product reviews or user-generated content allows attackers to execute scripts in other users' browsers, steal session tokens, manipulate UI, or perform actions on behalf of users."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Shopping Cart & Checkout / Application Services",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "CSRF or forged checkout requests cause unauthorized orders, coupon manipulation, or changes to cart state leading to financial loss or inventory issues."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Data Layer",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "SQL injection or other injection attacks against APIs or administration interfaces allow attackers to read, modify or delete database records including PII and order data."
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Admin Dashboard",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Broken access control (missing object-level authorization) allows attackers or low-privileged users to access or modify other users' orders, payment info, or administrative functions."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Admin Dashboard / Operations & Security",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Admin account takeover via weak credentials, default accounts, lack of MFA, or stolen administrative tokens leads to full control over product/catalog, orders, refunds, and PII."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Operations & Security / Data Layer",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Sensitive customer data (PII, addresses, partially masked payment info) ends up in logs, debug dumps, or backups which are accessible to unauthorized personnel or leaked."
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer (Object Store)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Publicly accessible object store buckets (product images or backups) expose product assets or PII stored in objects (e.g., unprotected customer-uploaded files or debug dumps)."
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Payment Processing / Application Services / External Services",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Manipulated or replayed payment tokens, or weak validation of payment webhooks, could allow fraudulent charges, refunds, or mismatched order/payment state."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "External Services (Shipping/Carriers) / Application Services",
+    "risk_level": "Medium",
+    "category": "Spoofing",
+    "description": "Spoofed or forged webhooks/notifications from shipping carriers or third-party integrations result in incorrect order status updates, triggering refunds or revealing tracking/addresses."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer (CDN/WAF)",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "DDoS or application-layer floods overwhelm the CDN or origin, causing outages and degraded user experience for customers in EU/US markets."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "API Gateway / Application Services",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "API abuse via brute-force, credential stuffing, or excessive automated requests to search, checkout or recommendation APIs leads to performance degradation or resource exhaustion."
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Edge Layer / Data Layer (Search Index)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Cache or index poisoning (e.g., tainted search results or malicious cached content) can serve malicious or misleading content to users."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Frontend / External Services (3rd-party JS vendors)",
+    "risk_level": "Critical",
+    "category": "Information Disclosure",
+    "description": "Third-party JavaScript (analytics, widgets, chatbots) compromises can exfiltrate cookies, credentials or capture PII and behavioral data; supply-chain compromises of third-party vendors lead to widesp"
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "AI Features / Data Layer",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Poisoning of training data or manipulation of analytics inputs for recommendation models causes biased or malicious product recommendations, potentially leading to fraud, poor UX, or reputational dama"
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Chatbot / AI Features / External Services",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Chatbot or AI integrations inadvertently send or reveal PII (order numbers, addresses, payment metadata) to external model providers or third-parties, violating GDPR/PCI and exposing customer data."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Payment Processing / Admin Dashboard",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Fraudulent refunds, chargeback fraud, or disputes engineered by attackers (or colluding insiders) cause financial loss and operational overhead."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend / Application Services (Session Management)",
+    "risk_level": "Medium",
+    "category": "Spoofing",
+    "description": "Improper session handling (session fixation, missing rotation at login, insecure cookie flags) allows attackers to hijack sessions and impersonate users."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Admin Dashboard",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "CSRF or forged requests targeting administrative actions (e.g., price changes, inventory changes, refunds) executed without proper anti-CSRF protections."
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer / Operations & Security",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Insider threats: privileged DB users or operations personnel intentionally or accidentally access or exfiltrate PII, order or payment data."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Cloud Infrastructure / Data Layer",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Misconfigured cloud IAM policies or overly permissive roles allow attackers or compromised service accounts to access databases, storage, or change configuration."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Authentication / Application Services",
+    "risk_level": "Medium",
+    "category": "Spoofing",
+    "description": "Open redirect or unvalidated redirect URIs in OAuth flows enable phishing or token-stealing redirects, allowing attackers to capture authorization codes or tokens."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer / Operations & Security",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Weak or misconfigured encryption (at rest or in transit) or poor key management leads to unauthorized data access or decryption of backups and stored data."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Operations & Security",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Gaps in logging, monitoring and alerting enable attackers to operate for long periods without detection, increasing scope and impact of breaches."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Layer (Search Index)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Search index or analytics stores inadvertently index PII or sensitive fields and expose them via search APIs or dashboards."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Shopping Cart & Checkout / Frontend",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Guest checkout correlates device/user behavior causing privacy leakage or unintended linking of user profiles across sessions (tracking), or allows attackers to exploit guest flows for fraud."
+  }
+]

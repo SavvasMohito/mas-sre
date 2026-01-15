@@ -1,0 +1,272 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Integration & External Services / Frontend / Application Services (Azure AD SSO tokens)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "An attacker obtains or reuses Azure AD access/refresh tokens (via phishing, token theft, or compromised device) and impersonates employees/managers to submit or approve timesheets, view other users' d"
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer / Application Services (JWT/session handling)",
+    "risk_level": "Medium",
+    "category": "Spoofing",
+    "description": "Session fixation or manipulation of client-side tokens (JWT tampering) leading to unauthorized access if signatures aren't verified or token claims aren't validated server-side."
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Timesheet Entry / Frontend & API",
+    "risk_level": "Critical",
+    "category": "Tampering",
+    "description": "A malicious user manipulates client-side data (e.g., via browser devtools, intercepted requests, or a scripted client) to submit falsified timesheet hours, change project/task codes, or bypass require"
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (Approval API)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "An attacker modifies API requests (parameter tampering) to set approval fields (e.g., approved=true) or change timesheet status without proper authorization checks, enabling unauthorized approvals or "
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage / Operational Services (Audit logs)",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Insufficient or modifiable audit logging allows users (or attackers) to deny actions or to remove traces of malicious changes (e.g., approvals, delegation changes) so incidents cannot be proven."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Integration & External Services (Email notifications)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Sensitive timesheet or personnel data is leaked via email notifications (e.g., detailed timesheet contents, manager comments), exposing PII or other sensitive information to unintended recipients or t"
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage (Relational DB / Blobs)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Data stored without proper encryption or network isolation is exposed via cloud console compromise, misconfigured storage ACLs, or stolen backups leading to leakage of user profiles, timesheets, and b"
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (APIs enforcing team hierarchy)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Broken access control or misapplied team hierarchy rules cause the API to return timesheet or holiday data to unauthorized users (e.g., employees viewing other teams' data)."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Operational Services (Administrator accounts)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Administrator (or admin API credential) compromise permits system-wide configuration changes (workweek rules, audit log deletion or view), user management abuse, or backdoor creation."
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer (CDN/WAF/DDoS)",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Volumetric or application-layer DDoS against the CDN/WAF or API gateway causes service disruption preventing users from submitting/approving timesheets or accessing holiday requests."
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services / Message Queue",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "API abuse or lack of rate limiting causes queue/backlog storm (notification/reporting jobs), exhausting resources and delaying critical approval or reporting operations."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Integration & External Services (Email)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Attackers send spoofed emails resembling system notifications (approval requests or delegation changes) to trick users into clicking malicious links or divulging credentials."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer (SPA) / Application Services (API responses)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Stored or reflected XSS in the SPA exposes authentication cookies, tokens, or visible sensitive data, allowing account takeover or data leakage."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 2,
+    "impact": 3,
+    "component": "Data Storage (Blob attachments)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "An attacker replaces or tampers with uploaded attachments (e.g., receipts, evidence) stored in blob storage, undermining audit integrity or providing falsified evidence."
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services / Operational Services (Audit & Approval)",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Manager or delegate claims they did not approve/reject a timesheet because audit trails lack signed identity/timestamp or the system allows anonymous approvals via email links."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Manager Delegation (Application Services)",
+    "risk_level": "Medium",
+    "category": "Elevation of Privilege",
+    "description": "A delegate uses delegated permissions beyond the defined scope or after the delegation expiry (e.g., approving for the wrong team or outside date range)."
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services (Business rules engine)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Misconfiguration or unauthorized modification of business rules (e.g., min/max hours, public holidays) leads to incorrect enforcement, allowing overworked/underworked entries or bypassing holiday appl"
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Operational Services (Monitoring & Logs)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Debug or verbose logs in production include tokens, PII, or timesheet content which are accessible to engineering or third-party monitoring tools, leading to data exposure or leakage."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Manager Delegation / Data Storage",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "An attacker modifies delegation records (direct DB write or API tampering) to make themselves or a malicious user a delegate, allowing approvals and access to team timesheets."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 2,
+    "impact": 2,
+    "component": "Integration & External Services (Public holiday feeds)",
+    "risk_level": "Low",
+    "category": "Information Disclosure",
+    "description": "A malicious or compromised public holiday feed provides malformed or malicious data, or leaks organization-specific mappings causing incorrect holiday application or confusion in timesheets."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (API/DB)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "SQL injection or other injection vulnerabilities in APIs allow attackers to modify or view database entries including timesheets, user data, or audit records."
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage (Backups / Cloud storage)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Misconfigured backups or snapshots (publicly accessible storage or weak ACLs) expose complete datasets including PII and payroll-relevant timesheet records."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services / Notifications (Message Queue)",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Maliciously or accidentally triggering large-scale notifications (e.g., mass delegation or submission events) overwhelms the notification service or queue, delaying or dropping critical messages."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (Authorization / RBAC)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Broken access control (e.g., insecure direct object references or missing checks) allows regular employees to view or approve timesheets for other teams, leading to fraud and privacy breach."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer / Application Services (CSRF vector)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Cross-Site Request Forgery (CSRF) allows a remote site to trigger manager actions (e.g., approve a timesheet) if the app relies solely on cookies without CSRF protections."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer / Frontend (CDN delivered JS)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Compromise of CDN or supply chain leads to malicious JavaScript being served to clients, enabling credential theft, XSS, or DOM-based manipulation of timesheet data."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Edge Layer / Application Services (TLS termination)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Weak or misconfigured TLS (old ciphers, expired certs, no HSTS) allows man-in-the-middle attacks to intercept tokens or timesheet data in transit."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 2,
+    "impact": 3,
+    "component": "Integration & External Services (Transactional Email provider)",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Transactional email provider fails to provide reliable delivery receipts or manipulates logs, creating gaps that make it difficult to prove notifications were sent or received."
+  },
+  {
+    "id": "THR-029",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Operational Services / Data Storage (Insider threat)",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Insider (malicious or compromised admin) deletes or rolls back audit logs, backups, or critical configuration leading to loss of integrity or availability of forensic evidence."
+  },
+  {
+    "id": "THR-030",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Integration & Data Storage (Cloud IAM & managed identities)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Misconfigured cloud IAM roles or overly-permissive managed identities allow services or users to gain higher privileges (e.g., DB admin), leading to data exfiltration or system takeover."
+  }
+]

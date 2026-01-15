@@ -1,0 +1,272 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "User Management / Frontend Layer / Edge Layer (SSO)",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Credential theft or SSO token replay allows an attacker to impersonate a legitimate user and access company-scoped data (e.g., via phishing, stolen refresh tokens, or misused OAuth tokens)."
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Frontend Layer",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Client-side manipulation of UI or upload flows (e.g., changing file metadata, bypassing client-side validation to mark files as signed or modify company ID before upload)."
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer / API Gateway",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Insufficient request logging and non-repudiation controls allow an attacker or malicious insider to deny having performed actions (create/edit/delete/sign), undermining audit and compliance."
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage / Object Storage",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Unauthorized access to file blobs (object store) due to misconfigured ACLs, public buckets, signed URL leakage, or maker errors exposing company documents to other tenants or public internet."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / RBAC/Permissions",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Broken access control or RBAC misconfiguration allows a user to escalate privileges or access files across company boundaries (e.g., attribute tampering to change company_id or role change via replica"
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Application Services / Core API",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Server-side metadata tampering: attacker with compromised service credentials modifies file metadata, version history, or signature metadata to hide malicious changes or forge audit trails."
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Cross-Site Scripting (XSS) in previews, document metadata fields, or collaborative comments exposes tokens, session cookies, or allows action on behalf of users accessing company files."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer / API Gateway",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Cross-Site Request Forgery (CSRF) leading to unauthorized file actions (share, delete, sign) when the browser session is active."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Core API / DB",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Injection attacks (SQL/NoSQL/command injection) via file metadata, search queries, or admin UI lead to data modification or retrieval across tenants."
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "File & Versioning Service / Data Storage",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Race conditions or TOCTOU during file versioning allow an attacker to overwrite or revert versions, hide malicious edits, or replay old signed versions."
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Electronic Signature Management / Application Services",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Forgery of electronic signatures or reuse of signatures without proper signer consent (e.g., attacker manipulates signature metadata, or private signing keys are compromised)."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Key Management",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Compromise or theft of encryption keys (KMS/HSM) leads to decryption of all stored blobs and metadata across companies."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Integrations (Third-party e-sign & Email)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Data leakage via third-party providers (email bodies with file links, e-sign provider storing documents, search/index vendor capturing metadata) exposing company data externally."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Edge Layer / CDN/WAF",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Application layer DoS (large uploads, resource exhaustion, or API abuse) degrades service availability for tenants or overwhelms backend services."
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer / API Gateway",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "API key/service account compromise enables attackers to call internal service APIs bypassing tenant checks or impersonating services."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Notifications / Email Integrations",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Notifications or emails contain sensitive links or file contents that can be intercepted (email in transit) or sent to incorrect recipients due to sharing misconfiguration."
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Data Storage / Backups",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Backups or archives containing encrypted blobs and metadata are accessed or stolen due to weak access controls or misconfigured backup provider, exposing historical versions and audit logs."
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Search/Indexing Integration",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Indexing service leaks metadata or content snippets to other tenants or third parties due to incorrect scoping or insufficient encryption of indexes."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Audit / Reporting",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Insufficiently protected audit logs allow a malicious insider or compromised service to alter logs to hide activity (audit tampering)."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer / Web SPA",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Client-side leakage of sensitive data via browser storage (localStorage/sessionStorage) or caches causing tokens or file previews to be exposed to other applications or users on shared devices."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services / Permissions Engine",
+    "risk_level": "Medium",
+    "category": "Spoofing",
+    "description": "Delegation abuse: users with delegation rights grant excessive permissions incorrectly (accidental or malicious), enabling lateral access within a company or to sensitive files."
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Edge Layer / WAF / CDN",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Layer 7 amplification or Distributed DoS using upload endpoints (e.g., abusing chunked uploads to open many concurrent connections) causing service degradation or cost spikes."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "External Integrations / Third-party e-sign",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Third-party e-sign provider denies or cannot prove signer authenticity because of inadequate signature binding or provider outage causing loss of proof of signature timing/identity."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage / DB",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Sensitive metadata exposure via mis-scoped queries, e.g., search endpoints returning metadata across companies due to missing company_id filters."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Key Management / Application Services",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "A compromised service or administrator with KMS permissions uses keys to decrypt other tenant data or re-encrypt data under attacker-controlled keys."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer / File Uploads",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Malicious files (malware/embedded scripts in documents or images) are uploaded and later downloaded/previewed causing client-side compromise of user machines or stealing credentials."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services / Notification",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Notifications are not consistently logged or tied to authoritative events, enabling users to claim they didn't receive critical sign or sharing notifications (impacting compliance workflows)."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 3,
+    "impact": 2,
+    "component": "Edge Layer / API Gateway",
+    "risk_level": "Medium",
+    "category": "Spoofing",
+    "description": "IP or header spoofing to bypass rate-limits, impersonate trusted proxies, or confuse auditing/forensics."
+  },
+  {
+    "id": "THR-029",
+    "likelihood": 2,
+    "impact": 3,
+    "component": "Data Storage / Audit Store",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Audit logs containing PII or sensitive metadata are exposed to unauthorized viewers (insiders or via misconfigured dashboards)."
+  },
+  {
+    "id": "THR-030",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Admin UI",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Compromise or misuse of administrative UI (weak admin authentication or over-permissive admin roles) allows mass access to customer data, permission changes, or deletion."
+  }
+]

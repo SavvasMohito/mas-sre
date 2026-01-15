@@ -1,0 +1,254 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Frontend Layer - Authentication & Password Recovery",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Credential theft via phishing, reuse, or compromised local storage leading to account takeover (including abuse of password reset flows). Attackers may spoof legitimate users to access PHI and analysi"
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer - Web SPA / Mobile App",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Client-side script manipulation (malicious browser extensions, XSS, or compromised bundle serving) that modifies UI to exfiltrate input data or change upload metadata before submission."
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Frontend Layer - File Uploads (mobile camera)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Sensitive PHI embedded in image EXIF metadata (location, device info) or auto-filled captions being uploaded and stored unintentionally, exposing PII/PHI."
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Edge Layer - API Gateway/WAF",
+    "risk_level": "Critical",
+    "category": "Denial of Service",
+    "description": "Upload flood or large-file upload spikes (accidental or malicious) causing bandwidth exhaustion or queue/backlog saturation, impacting OCR/AI worker availability and overall service."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge Layer - TLS Termination / Gateway",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "TLS termination misconfiguration or acceptance of weak ciphers allows man-in-the-middle (MITM) attacks that can intercept authentication tokens or PHI in transit."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Application Services - Authentication & RBAC",
+    "risk_level": "Critical",
+    "category": "Elevation of Privilege",
+    "description": "Broken access control where users can access or modify other users' blood test data (IDOR), or escalate to admin functions via insufficient authorization checks."
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services - Input Handling and OCR Pipeline",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Maliciously crafted files (images, PDFs) containing embedded scripts, malformed fonts, or OCI payloads exploit parsing libraries causing arbitrary code execution or tampering with processing results."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services - OCR/AI Integration (Third-party)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Sensitive PHI sent to third-party AI/OCR providers without sufficient minimization or redaction leads to data exposure, provider misuse, or non-compliant processing."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services - Analysis Results & Summaries",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Attackers modify stored analysis results or summaries (either in transit or at rest) to change medical interpretations, causing user harm or misleading clinicians."
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services - Message Queue / Job Orchestration",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Job queue exhaustion or poisoning via crafted messages causing worker crashes or processing of malicious tasks, interrupting AI pipelines and delaying analyses."
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage - Object Store (encrypted files)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Misconfigured object storage ACLs or public buckets accidentally expose raw PHI (images/PDFs) to the internet or other tenants."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage - Relational Database",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Unauthorized modification of structured lab results, user profiles, or retention settings via SQL injection or improper DB permissions altering PHI or audit records."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage - Backups & Archives",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Backups containing PHI are retained beyond policy or stored unencrypted offsite, leading to data leaks during breach or vendor failure."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Identity & Security Services - External IdP",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Compromise or misconfiguration of a federated identity provider leads to spoofed tokens, allowing unauthorized access to user accounts and PHI."
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "Identity & Security Services - Key Management Service (KMS)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Compromise or mismanagement of encryption keys leads to decryption of PHI at rest and exposure of historical records and backups."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Application Services - Notifications & Email/SMS Gateways",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Notification payloads (email/SMS) contain PHI or links that leak PHI via insecure channels, interception, or if phone/email is compromised; SMS phishing risk increases if content is not carefully desi"
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 2,
+    "impact": 4,
+    "component": "External Services - AI/OCR Provider",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Malicious or compromised third-party model alters extracted lab values or reference ranges, resulting in incorrect analysis or false alerts."
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "External Services - Email/SMS Provider",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Insufficient logging or proof of delivery leading to disputes about whether a user was notified about critical abnormal results (non-repudiation failure)."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Application Services - APIs",
+    "risk_level": "Critical",
+    "category": "Information Disclosure",
+    "description": "APIs exposing excessive data via verbose endpoints or misconfigured filters allow attackers to enumerate or bulk-download user PHI (insecure direct object references, over-permissive list endpoints)."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services - Input Validation (Web APIs)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Injection attacks (SQL, NoSQL, OS, command) via unvalidated fields (e.g., lab names, date fields, file metadata) enabling data compromise or lateral movement."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend & Edge - CSRF & XSS",
+    "risk_level": "Medium",
+    "category": "Tampering/Information Disclosure",
+    "description": "Cross-site scripting allows attackers to capture session tokens or perform actions on behalf of users; CSRF causes unauthorized actions (e.g., changing notification preferences or uploading malicious "
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services - Audit Logging & Monitoring",
+    "risk_level": "High",
+    "category": "Repudiation",
+    "description": "Insufficient, mutable, or incomplete audit logs prevent detection of malicious actions or deny accountability (e.g., missing log entries for data exports, consent changes)."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services - Export (PDF/CSV) Generation",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Exports containing PHI are generated with insecure filenames or stored in locations with weak permissions, or links are shared without authentication, enabling data leakage."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "External Services - Telemetry & Vendor Logs",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Debugging logs, telemetry or metrics sent to third-party analytics vendors inadvertently contain PHI (e.g., test values, user IDs) and are retained by vendors."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Cloud Infrastructure - IAM & Misconfiguration",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Over-permissive IAM roles or misconfigured cloud services permit lateral movement, privilege escalation, or data access across resources (e.g., storage read access by compute instances that shouldn't "
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services - SSRF and SSRF to Internal Services (AI Vendor endpoints)",
+    "risk_level": "High",
+    "category": "Tampering/Information Disclosure",
+    "description": "Server-side request forgery where attackers induce the backend to make requests to internal metadata, KMS endpoints, or vendor APIs to leak sensitive data or access internal services."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 2,
+    "impact": 3,
+    "component": "Application Services - Model & Data Poisoning",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Attackers submit crafted reports to poison training or model adaptation pipelines (if models re-train on user data), degrading model accuracy or causing harmful inferences."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services / Data Storage - Consent & Privacy Preferences",
+    "risk_level": "High",
+    "category": "Repudiation/Information Disclosure",
+    "description": "Failure to correctly enforce user consent and privacy preferences (e.g., continued sharing to vendors after revocation) leads to non-compliant data processing and legal exposure."
+  }
+]

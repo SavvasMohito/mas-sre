@@ -1,0 +1,989 @@
+{
+  "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"User Management / Frontend Layer / Edge Layer (SSO)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Credential theft or SSO token replay allows an attacker to impersonate a legitimate user and access company-scoped data (e.g., via phishing, stolen refresh tokens, or misused OAuth tokens).\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce MFA (phishing-resistant where possible, e.g., FIDO2), short-lived access tokens and short refresh lifetimes, PKCE for public clients, rotate refresh tokens on reuse, secure cookie flags (HttpOnly, Secure, SameSite), device fingerprinting, detect anomalous logins (geo/IP), session revocation API, continuous token introspection at gateway.\",\n      \"applicable_controls\": [\n        \"V2.1.1\",\n        \"V3.2.3\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Client-side manipulation of UI or upload flows (e.g., changing file metadata, bypassing client-side validation to mark files as signed or modify company ID before upload).\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Treat client inputs as untrusted: enforce server-side validation and canonicalization. Validate and normalize company IDs from authoritative sources, sign metadata server-side, use server-side counters for versioning, and apply strict API schema validation at gateway.\",\n      \"applicable_controls\": [\n        \"V3.1.2\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"Edge Layer / API Gateway\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient request logging and non-repudiation controls allow an attacker or malicious insider to deny having performed actions (create/edit/delete/sign), undermining audit and compliance.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Ensure immutable, append-only audit store with server-signed events, cryptographic integrity (hash chaining, Merkle trees), store contextual metadata (requestor, tokens, IP, user-agent), replicate audit logs to WORM storage and separate tenancy, restrict audit log deletion/alteration to out-of-band governed processes.\",\n      \"applicable_controls\": [\n        \"V4.5.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Data Storage / Object Storage\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Unauthorized access to file blobs (object store) due to misconfigured ACLs, public buckets, signed URL leakage, or maker errors exposing company documents to other tenants or public internet.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce block public access at storage provider level, bucket/object policies scoped by company ID, use short-lived pre-signed URLs with strict permissions, audit object ACLs, implement server-side encryption with per-company keys, and IAM least privilege for service accounts.\",\n      \"applicable_controls\": [\n        \"V5.2.1\",\n        \"V6.1.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Application Services / RBAC/Permissions\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken access control or RBAC misconfiguration allows a user to escalate privileges or access files across company boundaries (e.g., attribute tampering to change company_id or role change via replication errors).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce server-side authorization for every operation using strong attribute-based checks (company_id must be authoritative and immutable in server context), implement policy engine (OPA) with unit tests and policy-as-code, regular policy change reviews, separation of duties, and deny-by-default stance.\",\n      \"applicable_controls\": [\n        \"V3.2.3\",\n        \"V3.2.4\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Application Services / Core API\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Server-side metadata tampering: attacker with compromised service credentials modifies file metadata, version history, or signature metadata to hide malicious changes or forge audit trails.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce service account least privilege, signed and versioned metadata with integrity checks, use HMACs or digital signatures for metadata records, separate services for writing audit events with independent credentials, monitor for anomalous service behaviors.\",\n      \"applicable_controls\": [\n        \"V4.2.2\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Cross-Site Scripting (XSS) in previews, document metadata fields, or collaborative comments exposes tokens, session cookies, or allows action on behalf of users accessing company files.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Contextual output encoding on all UI outputs, Content Security Policy (CSP) with strict script-src, sanitize file metadata and user-generated content server-side, HttpOnly cookies, and regular DOM XSS testing.\",\n      \"applicable_controls\": [\n        \"V1.3.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"Frontend Layer / API Gateway\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Cross-Site Request Forgery (CSRF) leading to unauthorized file actions (share, delete, sign) when the browser session is active.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use same-site cookies, anti-CSRF tokens for state-changing actions, require re-authentication or step-up authentication for sensitive operations like signing or permission changes, validate Origin/Referrer headers at gateway.\",\n      \"applicable_controls\": [\n        \"V1.2.2\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"Application Services / Core API / DB\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Injection attacks (SQL/NoSQL/command injection) via file metadata, search queries, or admin UI lead to data modification or retrieval across tenants.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries/ORM with prepared statements, input validation, least privilege DB accounts, WAF tuned for injection patterns, code reviews and automated SAST/DAST, limit dynamic query construction and use typed query builders.\",\n      \"applicable_controls\": [\n        \"V2.3.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"File & Versioning Service / Data Storage\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Race conditions or TOCTOU during file versioning allow an attacker to overwrite or revert versions, hide malicious edits, or replay old signed versions.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement optimistic concurrency control with version tokens, atomic operations, server-side append-only version store, apply write locks where necessary, include cryptographic hashes of content in version records.\",\n      \"applicable_controls\": [\n        \"V5.3.2\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Electronic Signature Management / Application Services\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Forgery of electronic signatures or reuse of signatures without proper signer consent (e.g., attacker manipulates signature metadata, or private signing keys are compromised).\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use strong cryptographic signatures (asymmetric keys), bind signer identity via SSO+MFA, create tamper-evident signed artifacts (signed manifest + timestamping), support third-party certificate validation, maintain signer audit trail, separate signing service with HSM-backed keys and strict access controls.\",\n      \"applicable_controls\": [\n        \"V6.2.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"Key Management\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Compromise or theft of encryption keys (KMS/HSM) leads to decryption of all stored blobs and metadata across companies.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use cloud KMS or customer-managed HSMs with strict IAM, separation of duties, key rotation, key usage logging, split knowledge for key material, protect key access with dedicated auditing and alerting, encrypt keys at rest and in transit, require BYOK for sensitive tenants.\",\n      \"applicable_controls\": [\n        \"V7.1.1\",\n        \"V7.1.2\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"External Integrations (Third-party e-sign & Email)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Data leakage via third-party providers (email bodies with file links, e-sign provider storing documents, search/index vendor capturing metadata) exposing company data externally.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Minimize PII/shared content sent to providers, use ephemeral links with strict scope, encrypt payloads end-to-end where supported, contractually enforce data handling and breach notification, restrict providers to minimal scopes, monitor and audit third-party API interactions.\",\n      \"applicable_controls\": [\n        \"V8.1.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"Edge Layer / CDN/WAF\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Application layer DoS (large uploads, resource exhaustion, or API abuse) degrades service availability for tenants or overwhelms backend services.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce rate limiting per IP and per account, upload size quotas, chunked uploads with quotas, autoscaling with protective throttling, WAF with tuned rules, abuse detection and automated blacklisting, isolate noisy tenants, billing/alerting on anomalous usage.\",\n      \"applicable_controls\": [\n        \"V9.1.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"Edge Layer / API Gateway\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"API key/service account compromise enables attackers to call internal service APIs bypassing tenant checks or impersonating services.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Rotate service credentials regularly, use short-lived service tokens, mutual TLS between services, restrict scopes/allowed endpoints for service accounts, monitor service account activity, and require MFA for credential issuance.\",\n      \"applicable_controls\": [\n        \"V2.4.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"Notifications / Email Integrations\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Notifications or emails contain sensitive links or file contents that can be intercepted (email in transit) or sent to incorrect recipients due to sharing misconfiguration.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Do not include file content in emails; use expiring, single-use links; encrypt links and require authentication before access; let users set notification scopes; implement address validation for sharing and confirm external shares; provide DMARC/SPF/DKIM and TLS for email delivery.\",\n      \"applicable_controls\": [\n        \"V8.2.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"Data Storage / Backups\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Backups or archives containing encrypted blobs and metadata are accessed or stolen due to weak access controls or misconfigured backup provider, exposing historical versions and audit logs.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt backups with separate backup keys (KMS), enforce IAM least privilege for backup access, store backups in isolated accounts, ensure backup integrity checks, implement backup retention policies and legal-hold mechanisms, and monitor backup access logs.\",\n      \"applicable_controls\": [\n        \"V5.4.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"Search/Indexing Integration\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Indexing service leaks metadata or content snippets to other tenants or third parties due to incorrect scoping or insufficient encryption of indexes.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Index only necessary metadata, anonymize or tokenize sensitive fields, apply per-company index partitions with access controls, encrypt indexes at rest, regularly audit index access and query logs.\",\n      \"applicable_controls\": [\n        \"V8.3.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Audit / Reporting\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Insufficiently protected audit logs allow a malicious insider or compromised service to alter logs to hide activity (audit tampering).\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Write audit events to an immutable append-only store, apply cryptographic chaining, replicate logs to separate accounts/regions, restrict write/delete access, provide tamper-evidence and alerts on any access attempts.\",\n      \"applicable_controls\": [\n        \"V4.5.2\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"Frontend Layer / Web SPA\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Client-side leakage of sensitive data via browser storage (localStorage/sessionStorage) or caches causing tokens or file previews to be exposed to other applications or users on shared devices.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Avoid storing long-lived tokens in localStorage; use HttpOnly, secure cookies for auth tokens; clear sensitive UI state on logout; do not cache full file previews in insecure storage; educate users for shared device usage and provide remote session termination.\",\n      \"applicable_controls\": [\n        \"V1.1.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"Application Services / Permissions Engine\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Delegation abuse: users with delegation rights grant excessive permissions incorrectly (accidental or malicious), enabling lateral access within a company or to sensitive files.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement delegation with fine-grained audit trails, limit delegation scopes and durations, require validation and two-person approval for high-sensitivity grants, provide UI warnings for broad permissions, and periodic reviews of delegated permissions.\",\n      \"applicable_controls\": [\n        \"V3.3.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Edge Layer / WAF / CDN\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Layer 7 amplification or Distributed DoS using upload endpoints (e.g., abusing chunked uploads to open many concurrent connections) causing service degradation or cost spikes.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Rate limit per-account and per-IP, require authenticated uploads with quotas, use CDN edge caching and connection limits, validate chunk flows and timeouts, maintain cost-monitoring and auto-mitigation runbooks.\",\n      \"applicable_controls\": [\n        \"V9.1.2\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"External Integrations / Third-party e-sign\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Third-party e-sign provider denies or cannot prove signer authenticity because of inadequate signature binding or provider outage causing loss of proof of signature timing/identity.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Prefer provider support for cryptographic timestamping and certificate-based signatures, store signed artifact snapshots locally with provider-signed receipts, maintain fallback verification data, and log provider interactions with signatures and timestamps.\",\n      \"applicable_controls\": [\n        \"V6.3.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"Data Storage / DB\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive metadata exposure via mis-scoped queries, e.g., search endpoints returning metadata across companies due to missing company_id filters.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce mandatory tenant scoping at query layer, integrate policy engine that injects company_id constraints, implement automated tests to validate multi-tenancy isolation, and perform regular data-access reviews.\",\n      \"applicable_controls\": [\n        \"V5.1.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Key Management / Application Services\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"A compromised service or administrator with KMS permissions uses keys to decrypt other tenant data or re-encrypt data under attacker-controlled keys.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement least privilege on KMS IAM policies, use customer-managed keys per-tenant when required, use key access logging with WORM retention, require multi-party approval for key rotation/deletion, and use key access contextual restrictions (e.g., IP, service).\",\n      \"applicable_controls\": [\n        \"V7.2.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Frontend Layer / File Uploads\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Malicious files (malware/embedded scripts in documents or images) are uploaded and later downloaded/previewed causing client-side compromise of user machines or stealing credentials.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Perform server-side scanning for malware/PII, sanitize or render previews in isolated environments (e.g., preview service in sandbox), restrict executable content, strip macros from office docs or convert to safe preview formats, and warn users on downloads.\",\n      \"applicable_controls\": [\n        \"V5.5.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"Application Services / Notification\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Notifications are not consistently logged or tied to authoritative events, enabling users to claim they didn't receive critical sign or sharing notifications (impacting compliance workflows).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Log all notification attempts and outcomes in audit store, provide delivery receipts, implement retry logic, provide in-app notification history, and require acknowledgement for critical actions.\",\n      \"applicable_controls\": [\n        \"V4.3.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Edge Layer / API Gateway\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"IP or header spoofing to bypass rate-limits, impersonate trusted proxies, or confuse auditing/forensics.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Low\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Terminate TLS at trusted edge, use authenticated mutual TLS between components, strip or validate X-Forwarded-* headers at edge, only trust headers from known proxies, and record client IPs at edge with signed metadata.\",\n      \"applicable_controls\": [\n        \"V9.2.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-029\",\n      \"component\": \"Data Storage / Audit Store\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Audit logs containing PII or sensitive metadata are exposed to unauthorized viewers (insiders or via misconfigured dashboards).\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Redact or encrypt sensitive fields in audit logs, apply RBAC to audit access, keep minimal necessary context in dashboards, and restrict export capabilities. Monitor and alert on unusual audit access patterns.\",\n      \"applicable_controls\": [\n        \"V4.6.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-030\",\n      \"component\": \"Application Services / Admin UI\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Compromise or misuse of administrative UI (weak admin authentication or over-permissive admin roles) allows mass access to customer data, permission changes, or deletion.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Harden admin portal with MFA (hardware tokens), IP allowlists, separate admin-only infrastructure and accounts, implement JIT privileged access, audit and alert admin actions, require approval workflows for destructive operations and emergency access.\",\n      \"applicable_controls\": [\n        \"V3.4.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    }\n  ],\n  \"risk_summary\": \"The most critical threats center on authentication/authorization failures (credential theft, SSO token misuse, broken RBAC), key management compromise, data exposure via storage or third-party integrations, and insufficient tamper-resistant audit trails. Attack vectors with highest priority are compromised user or service credentials, misconfigured object storage or third-party vendors, and logic flaws that allow cross-tenant access. The overall posture is moderate-to-high risk without strong controls: many threats can yield high impact even with medium likelihood. Priority controls: enforce strong authentication (phishing-resistant MFA, short-lived tokens), robust server-side authorization with a policy engine and mandatory tenant scoping, hardened KMS practices with per-tenant keys where needed, immutable and cryptographically verifiable audit logs, storage ACL hardening and short-lived URLs, and strict third-party data handling restrictions. Operational priorities include implementing rate-limiting and DoS protections at the edge, automated testing (SAST/DAST and multi-tenant isolation tests), monitoring/alerting for anomalous access, and a secure admin/JIT access model. Addressing these areas will materially reduce Critical/High risks; remaining risks should be tracked with compensating controls and regular review.\"\n}",
+  "pydantic": {
+    "methodology": "STRIDE",
+    "threats": [
+      {
+        "threat_id": "THR-001",
+        "component": "User Management / Frontend Layer / Edge Layer (SSO)",
+        "threat_category": "Spoofing",
+        "description": "Credential theft or SSO token replay allows an attacker to impersonate a legitimate user and access company-scoped data (e.g., via phishing, stolen refresh tokens, or misused OAuth tokens).",
+        "likelihood": "High",
+        "impact": "High",
+        "risk_level": "Critical",
+        "mitigation_strategy": "Enforce MFA (phishing-resistant where possible, e.g., FIDO2), short-lived access tokens and short refresh lifetimes, PKCE for public clients, rotate refresh tokens on reuse, secure cookie flags (HttpOnly, Secure, SameSite), device fingerprinting, detect anomalous logins (geo/IP), session revocation API, continuous token introspection at gateway.",
+        "applicable_controls": [
+          "V2.1.1",
+          "V3.2.3"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-002",
+        "component": "Frontend Layer",
+        "threat_category": "Tampering",
+        "description": "Client-side manipulation of UI or upload flows (e.g., changing file metadata, bypassing client-side validation to mark files as signed or modify company ID before upload).",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Treat client inputs as untrusted: enforce server-side validation and canonicalization. Validate and normalize company IDs from authoritative sources, sign metadata server-side, use server-side counters for versioning, and apply strict API schema validation at gateway.",
+        "applicable_controls": [
+          "V3.1.2"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-003",
+        "component": "Edge Layer / API Gateway",
+        "threat_category": "Repudiation",
+        "description": "Insufficient request logging and non-repudiation controls allow an attacker or malicious insider to deny having performed actions (create/edit/delete/sign), undermining audit and compliance.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Ensure immutable, append-only audit store with server-signed events, cryptographic integrity (hash chaining, Merkle trees), store contextual metadata (requestor, tokens, IP, user-agent), replicate audit logs to WORM storage and separate tenancy, restrict audit log deletion/alteration to out-of-band governed processes.",
+        "applicable_controls": [
+          "V4.5.1"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-004",
+        "component": "Data Storage / Object Storage",
+        "threat_category": "Information Disclosure",
+        "description": "Unauthorized access to file blobs (object store) due to misconfigured ACLs, public buckets, signed URL leakage, or maker errors exposing company documents to other tenants or public internet.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce block public access at storage provider level, bucket/object policies scoped by company ID, use short-lived pre-signed URLs with strict permissions, audit object ACLs, implement server-side encryption with per-company keys, and IAM least privilege for service accounts.",
+        "applicable_controls": [
+          "V5.2.1",
+          "V6.1.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-005",
+        "component": "Application Services / RBAC/Permissions",
+        "threat_category": "Elevation of Privilege",
+        "description": "Broken access control or RBAC misconfiguration allows a user to escalate privileges or access files across company boundaries (e.g., attribute tampering to change company_id or role change via replication errors).",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce server-side authorization for every operation using strong attribute-based checks (company_id must be authoritative and immutable in server context), implement policy engine (OPA) with unit tests and policy-as-code, regular policy change reviews, separation of duties, and deny-by-default stance.",
+        "applicable_controls": [
+          "V3.2.3",
+          "V3.2.4"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-006",
+        "component": "Application Services / Core API",
+        "threat_category": "Tampering",
+        "description": "Server-side metadata tampering: attacker with compromised service credentials modifies file metadata, version history, or signature metadata to hide malicious changes or forge audit trails.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce service account least privilege, signed and versioned metadata with integrity checks, use HMACs or digital signatures for metadata records, separate services for writing audit events with independent credentials, monitor for anomalous service behaviors.",
+        "applicable_controls": [
+          "V4.2.2"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-007",
+        "component": "Frontend Layer",
+        "threat_category": "Information Disclosure",
+        "description": "Cross-Site Scripting (XSS) in previews, document metadata fields, or collaborative comments exposes tokens, session cookies, or allows action on behalf of users accessing company files.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Contextual output encoding on all UI outputs, Content Security Policy (CSP) with strict script-src, sanitize file metadata and user-generated content server-side, HttpOnly cookies, and regular DOM XSS testing.",
+        "applicable_controls": [
+          "V1.3.1"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-008",
+        "component": "Frontend Layer / API Gateway",
+        "threat_category": "Tampering",
+        "description": "Cross-Site Request Forgery (CSRF) leading to unauthorized file actions (share, delete, sign) when the browser session is active.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Use same-site cookies, anti-CSRF tokens for state-changing actions, require re-authentication or step-up authentication for sensitive operations like signing or permission changes, validate Origin/Referrer headers at gateway.",
+        "applicable_controls": [
+          "V1.2.2"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-009",
+        "component": "Application Services / Core API / DB",
+        "threat_category": "Tampering",
+        "description": "Injection attacks (SQL/NoSQL/command injection) via file metadata, search queries, or admin UI lead to data modification or retrieval across tenants.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use parameterized queries/ORM with prepared statements, input validation, least privilege DB accounts, WAF tuned for injection patterns, code reviews and automated SAST/DAST, limit dynamic query construction and use typed query builders.",
+        "applicable_controls": [
+          "V2.3.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-010",
+        "component": "File & Versioning Service / Data Storage",
+        "threat_category": "Tampering",
+        "description": "Race conditions or TOCTOU during file versioning allow an attacker to overwrite or revert versions, hide malicious edits, or replay old signed versions.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Implement optimistic concurrency control with version tokens, atomic operations, server-side append-only version store, apply write locks where necessary, include cryptographic hashes of content in version records.",
+        "applicable_controls": [
+          "V5.3.2"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-011",
+        "component": "Electronic Signature Management / Application Services",
+        "threat_category": "Spoofing",
+        "description": "Forgery of electronic signatures or reuse of signatures without proper signer consent (e.g., attacker manipulates signature metadata, or private signing keys are compromised).",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use strong cryptographic signatures (asymmetric keys), bind signer identity via SSO+MFA, create tamper-evident signed artifacts (signed manifest + timestamping), support third-party certificate validation, maintain signer audit trail, separate signing service with HSM-backed keys and strict access controls.",
+        "applicable_controls": [
+          "V6.2.1"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-012",
+        "component": "Key Management",
+        "threat_category": "Information Disclosure",
+        "description": "Compromise or theft of encryption keys (KMS/HSM) leads to decryption of all stored blobs and metadata across companies.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Use cloud KMS or customer-managed HSMs with strict IAM, separation of duties, key rotation, key usage logging, split knowledge for key material, protect key access with dedicated auditing and alerting, encrypt keys at rest and in transit, require BYOK for sensitive tenants.",
+        "applicable_controls": [
+          "V7.1.1",
+          "V7.1.2"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-013",
+        "component": "External Integrations (Third-party e-sign & Email)",
+        "threat_category": "Information Disclosure",
+        "description": "Data leakage via third-party providers (email bodies with file links, e-sign provider storing documents, search/index vendor capturing metadata) exposing company data externally.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Minimize PII/shared content sent to providers, use ephemeral links with strict scope, encrypt payloads end-to-end where supported, contractually enforce data handling and breach notification, restrict providers to minimal scopes, monitor and audit third-party API interactions.",
+        "applicable_controls": [
+          "V8.1.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-014",
+        "component": "Edge Layer / CDN/WAF",
+        "threat_category": "Denial of Service",
+        "description": "Application layer DoS (large uploads, resource exhaustion, or API abuse) degrades service availability for tenants or overwhelms backend services.",
+        "likelihood": "High",
+        "impact": "Medium",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce rate limiting per IP and per account, upload size quotas, chunked uploads with quotas, autoscaling with protective throttling, WAF with tuned rules, abuse detection and automated blacklisting, isolate noisy tenants, billing/alerting on anomalous usage.",
+        "applicable_controls": [
+          "V9.1.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-015",
+        "component": "Edge Layer / API Gateway",
+        "threat_category": "Spoofing",
+        "description": "API key/service account compromise enables attackers to call internal service APIs bypassing tenant checks or impersonating services.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Rotate service credentials regularly, use short-lived service tokens, mutual TLS between services, restrict scopes/allowed endpoints for service accounts, monitor service account activity, and require MFA for credential issuance.",
+        "applicable_controls": [
+          "V2.4.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-016",
+        "component": "Notifications / Email Integrations",
+        "threat_category": "Information Disclosure",
+        "description": "Notifications or emails contain sensitive links or file contents that can be intercepted (email in transit) or sent to incorrect recipients due to sharing misconfiguration.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Do not include file content in emails; use expiring, single-use links; encrypt links and require authentication before access; let users set notification scopes; implement address validation for sharing and confirm external shares; provide DMARC/SPF/DKIM and TLS for email delivery.",
+        "applicable_controls": [
+          "V8.2.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-017",
+        "component": "Data Storage / Backups",
+        "threat_category": "Information Disclosure",
+        "description": "Backups or archives containing encrypted blobs and metadata are accessed or stolen due to weak access controls or misconfigured backup provider, exposing historical versions and audit logs.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Encrypt backups with separate backup keys (KMS), enforce IAM least privilege for backup access, store backups in isolated accounts, ensure backup integrity checks, implement backup retention policies and legal-hold mechanisms, and monitor backup access logs.",
+        "applicable_controls": [
+          "V5.4.1"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-018",
+        "component": "Search/Indexing Integration",
+        "threat_category": "Information Disclosure",
+        "description": "Indexing service leaks metadata or content snippets to other tenants or third parties due to incorrect scoping or insufficient encryption of indexes.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Index only necessary metadata, anonymize or tokenize sensitive fields, apply per-company index partitions with access controls, encrypt indexes at rest, regularly audit index access and query logs.",
+        "applicable_controls": [
+          "V8.3.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-019",
+        "component": "Audit / Reporting",
+        "threat_category": "Tampering",
+        "description": "Insufficiently protected audit logs allow a malicious insider or compromised service to alter logs to hide activity (audit tampering).",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Write audit events to an immutable append-only store, apply cryptographic chaining, replicate logs to separate accounts/regions, restrict write/delete access, provide tamper-evidence and alerts on any access attempts.",
+        "applicable_controls": [
+          "V4.5.2"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-020",
+        "component": "Frontend Layer / Web SPA",
+        "threat_category": "Information Disclosure",
+        "description": "Client-side leakage of sensitive data via browser storage (localStorage/sessionStorage) or caches causing tokens or file previews to be exposed to other applications or users on shared devices.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Avoid storing long-lived tokens in localStorage; use HttpOnly, secure cookies for auth tokens; clear sensitive UI state on logout; do not cache full file previews in insecure storage; educate users for shared device usage and provide remote session termination.",
+        "applicable_controls": [
+          "V1.1.1"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-021",
+        "component": "Application Services / Permissions Engine",
+        "threat_category": "Spoofing",
+        "description": "Delegation abuse: users with delegation rights grant excessive permissions incorrectly (accidental or malicious), enabling lateral access within a company or to sensitive files.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Implement delegation with fine-grained audit trails, limit delegation scopes and durations, require validation and two-person approval for high-sensitivity grants, provide UI warnings for broad permissions, and periodic reviews of delegated permissions.",
+        "applicable_controls": [
+          "V3.3.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-022",
+        "component": "Edge Layer / WAF / CDN",
+        "threat_category": "Denial of Service",
+        "description": "Layer 7 amplification or Distributed DoS using upload endpoints (e.g., abusing chunked uploads to open many concurrent connections) causing service degradation or cost spikes.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Rate limit per-account and per-IP, require authenticated uploads with quotas, use CDN edge caching and connection limits, validate chunk flows and timeouts, maintain cost-monitoring and auto-mitigation runbooks.",
+        "applicable_controls": [
+          "V9.1.2"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-023",
+        "component": "External Integrations / Third-party e-sign",
+        "threat_category": "Repudiation",
+        "description": "Third-party e-sign provider denies or cannot prove signer authenticity because of inadequate signature binding or provider outage causing loss of proof of signature timing/identity.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Prefer provider support for cryptographic timestamping and certificate-based signatures, store signed artifact snapshots locally with provider-signed receipts, maintain fallback verification data, and log provider interactions with signatures and timestamps.",
+        "applicable_controls": [
+          "V6.3.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-024",
+        "component": "Data Storage / DB",
+        "threat_category": "Information Disclosure",
+        "description": "Sensitive metadata exposure via mis-scoped queries, e.g., search endpoints returning metadata across companies due to missing company_id filters.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Enforce mandatory tenant scoping at query layer, integrate policy engine that injects company_id constraints, implement automated tests to validate multi-tenancy isolation, and perform regular data-access reviews.",
+        "applicable_controls": [
+          "V5.1.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-025",
+        "component": "Key Management / Application Services",
+        "threat_category": "Elevation of Privilege",
+        "description": "A compromised service or administrator with KMS permissions uses keys to decrypt other tenant data or re-encrypt data under attacker-controlled keys.",
+        "likelihood": "Low",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Implement least privilege on KMS IAM policies, use customer-managed keys per-tenant when required, use key access logging with WORM retention, require multi-party approval for key rotation/deletion, and use key access contextual restrictions (e.g., IP, service).",
+        "applicable_controls": [
+          "V7.2.1"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-026",
+        "component": "Frontend Layer / File Uploads",
+        "threat_category": "Tampering",
+        "description": "Malicious files (malware/embedded scripts in documents or images) are uploaded and later downloaded/previewed causing client-side compromise of user machines or stealing credentials.",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Perform server-side scanning for malware/PII, sanitize or render previews in isolated environments (e.g., preview service in sandbox), restrict executable content, strip macros from office docs or convert to safe preview formats, and warn users on downloads.",
+        "applicable_controls": [
+          "V5.5.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-027",
+        "component": "Application Services / Notification",
+        "threat_category": "Repudiation",
+        "description": "Notifications are not consistently logged or tied to authoritative events, enabling users to claim they didn't receive critical sign or sharing notifications (impacting compliance workflows).",
+        "likelihood": "Medium",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Log all notification attempts and outcomes in audit store, provide delivery receipts, implement retry logic, provide in-app notification history, and require acknowledgement for critical actions.",
+        "applicable_controls": [
+          "V4.3.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-028",
+        "component": "Edge Layer / API Gateway",
+        "threat_category": "Spoofing",
+        "description": "IP or header spoofing to bypass rate-limits, impersonate trusted proxies, or confuse auditing/forensics.",
+        "likelihood": "Medium",
+        "impact": "Low",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Terminate TLS at trusted edge, use authenticated mutual TLS between components, strip or validate X-Forwarded-* headers at edge, only trust headers from known proxies, and record client IPs at edge with signed metadata.",
+        "applicable_controls": [
+          "V9.2.1"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-029",
+        "component": "Data Storage / Audit Store",
+        "threat_category": "Information Disclosure",
+        "description": "Audit logs containing PII or sensitive metadata are exposed to unauthorized viewers (insiders or via misconfigured dashboards).",
+        "likelihood": "Low",
+        "impact": "Medium",
+        "risk_level": "Medium",
+        "mitigation_strategy": "Redact or encrypt sensitive fields in audit logs, apply RBAC to audit access, keep minimal necessary context in dashboards, and restrict export capabilities. Monitor and alert on unusual audit access patterns.",
+        "applicable_controls": [
+          "V4.6.1"
+        ],
+        "control_effectiveness": "Medium",
+        "residual_risk_level": "Low",
+        "residual_risk_acceptance": "Requires Review"
+      },
+      {
+        "threat_id": "THR-030",
+        "component": "Application Services / Admin UI",
+        "threat_category": "Elevation of Privilege",
+        "description": "Compromise or misuse of administrative UI (weak admin authentication or over-permissive admin roles) allows mass access to customer data, permission changes, or deletion.",
+        "likelihood": "Medium",
+        "impact": "High",
+        "risk_level": "High",
+        "mitigation_strategy": "Harden admin portal with MFA (hardware tokens), IP allowlists, separate admin-only infrastructure and accounts, implement JIT privileged access, audit and alert admin actions, require approval workflows for destructive operations and emergency access.",
+        "applicable_controls": [
+          "V3.4.1"
+        ],
+        "control_effectiveness": "High",
+        "residual_risk_level": "Medium",
+        "residual_risk_acceptance": "Requires Review"
+      }
+    ],
+    "risk_summary": "The most critical threats center on authentication/authorization failures (credential theft, SSO token misuse, broken RBAC), key management compromise, data exposure via storage or third-party integrations, and insufficient tamper-resistant audit trails. Attack vectors with highest priority are compromised user or service credentials, misconfigured object storage or third-party vendors, and logic flaws that allow cross-tenant access. The overall posture is moderate-to-high risk without strong controls: many threats can yield high impact even with medium likelihood. Priority controls: enforce strong authentication (phishing-resistant MFA, short-lived tokens), robust server-side authorization with a policy engine and mandatory tenant scoping, hardened KMS practices with per-tenant keys where needed, immutable and cryptographically verifiable audit logs, storage ACL hardening and short-lived URLs, and strict third-party data handling restrictions. Operational priorities include implementing rate-limiting and DoS protections at the edge, automated testing (SAST/DAST and multi-tenant isolation tests), monitoring/alerting for anomalous access, and a secure admin/JIT access model. Addressing these areas will materially reduce Critical/High risks; remaining risks should be tracked with compensating controls and regular review."
+  },
+  "tasks": [
+    {
+      "name": "perform_threat_modeling",
+      "raw": "{\n  \"methodology\": \"STRIDE\",\n  \"threats\": [\n    {\n      \"threat_id\": \"THR-001\",\n      \"component\": \"User Management / Frontend Layer / Edge Layer (SSO)\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Credential theft or SSO token replay allows an attacker to impersonate a legitimate user and access company-scoped data (e.g., via phishing, stolen refresh tokens, or misused OAuth tokens).\",\n      \"likelihood\": \"High\",\n      \"impact\": \"High\",\n      \"risk_level\": \"Critical\",\n      \"mitigation_strategy\": \"Enforce MFA (phishing-resistant where possible, e.g., FIDO2), short-lived access tokens and short refresh lifetimes, PKCE for public clients, rotate refresh tokens on reuse, secure cookie flags (HttpOnly, Secure, SameSite), device fingerprinting, detect anomalous logins (geo/IP), session revocation API, continuous token introspection at gateway.\",\n      \"applicable_controls\": [\n        \"V2.1.1\",\n        \"V3.2.3\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-002\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Client-side manipulation of UI or upload flows (e.g., changing file metadata, bypassing client-side validation to mark files as signed or modify company ID before upload).\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Treat client inputs as untrusted: enforce server-side validation and canonicalization. Validate and normalize company IDs from authoritative sources, sign metadata server-side, use server-side counters for versioning, and apply strict API schema validation at gateway.\",\n      \"applicable_controls\": [\n        \"V3.1.2\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-003\",\n      \"component\": \"Edge Layer / API Gateway\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Insufficient request logging and non-repudiation controls allow an attacker or malicious insider to deny having performed actions (create/edit/delete/sign), undermining audit and compliance.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Ensure immutable, append-only audit store with server-signed events, cryptographic integrity (hash chaining, Merkle trees), store contextual metadata (requestor, tokens, IP, user-agent), replicate audit logs to WORM storage and separate tenancy, restrict audit log deletion/alteration to out-of-band governed processes.\",\n      \"applicable_controls\": [\n        \"V4.5.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-004\",\n      \"component\": \"Data Storage / Object Storage\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Unauthorized access to file blobs (object store) due to misconfigured ACLs, public buckets, signed URL leakage, or maker errors exposing company documents to other tenants or public internet.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce block public access at storage provider level, bucket/object policies scoped by company ID, use short-lived pre-signed URLs with strict permissions, audit object ACLs, implement server-side encryption with per-company keys, and IAM least privilege for service accounts.\",\n      \"applicable_controls\": [\n        \"V5.2.1\",\n        \"V6.1.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-005\",\n      \"component\": \"Application Services / RBAC/Permissions\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Broken access control or RBAC misconfiguration allows a user to escalate privileges or access files across company boundaries (e.g., attribute tampering to change company_id or role change via replication errors).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce server-side authorization for every operation using strong attribute-based checks (company_id must be authoritative and immutable in server context), implement policy engine (OPA) with unit tests and policy-as-code, regular policy change reviews, separation of duties, and deny-by-default stance.\",\n      \"applicable_controls\": [\n        \"V3.2.3\",\n        \"V3.2.4\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-006\",\n      \"component\": \"Application Services / Core API\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Server-side metadata tampering: attacker with compromised service credentials modifies file metadata, version history, or signature metadata to hide malicious changes or forge audit trails.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce service account least privilege, signed and versioned metadata with integrity checks, use HMACs or digital signatures for metadata records, separate services for writing audit events with independent credentials, monitor for anomalous service behaviors.\",\n      \"applicable_controls\": [\n        \"V4.2.2\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-007\",\n      \"component\": \"Frontend Layer\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Cross-Site Scripting (XSS) in previews, document metadata fields, or collaborative comments exposes tokens, session cookies, or allows action on behalf of users accessing company files.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Contextual output encoding on all UI outputs, Content Security Policy (CSP) with strict script-src, sanitize file metadata and user-generated content server-side, HttpOnly cookies, and regular DOM XSS testing.\",\n      \"applicable_controls\": [\n        \"V1.3.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-008\",\n      \"component\": \"Frontend Layer / API Gateway\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Cross-Site Request Forgery (CSRF) leading to unauthorized file actions (share, delete, sign) when the browser session is active.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Use same-site cookies, anti-CSRF tokens for state-changing actions, require re-authentication or step-up authentication for sensitive operations like signing or permission changes, validate Origin/Referrer headers at gateway.\",\n      \"applicable_controls\": [\n        \"V1.2.2\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-009\",\n      \"component\": \"Application Services / Core API / DB\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Injection attacks (SQL/NoSQL/command injection) via file metadata, search queries, or admin UI lead to data modification or retrieval across tenants.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use parameterized queries/ORM with prepared statements, input validation, least privilege DB accounts, WAF tuned for injection patterns, code reviews and automated SAST/DAST, limit dynamic query construction and use typed query builders.\",\n      \"applicable_controls\": [\n        \"V2.3.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-010\",\n      \"component\": \"File & Versioning Service / Data Storage\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Race conditions or TOCTOU during file versioning allow an attacker to overwrite or revert versions, hide malicious edits, or replay old signed versions.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement optimistic concurrency control with version tokens, atomic operations, server-side append-only version store, apply write locks where necessary, include cryptographic hashes of content in version records.\",\n      \"applicable_controls\": [\n        \"V5.3.2\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-011\",\n      \"component\": \"Electronic Signature Management / Application Services\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Forgery of electronic signatures or reuse of signatures without proper signer consent (e.g., attacker manipulates signature metadata, or private signing keys are compromised).\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use strong cryptographic signatures (asymmetric keys), bind signer identity via SSO+MFA, create tamper-evident signed artifacts (signed manifest + timestamping), support third-party certificate validation, maintain signer audit trail, separate signing service with HSM-backed keys and strict access controls.\",\n      \"applicable_controls\": [\n        \"V6.2.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-012\",\n      \"component\": \"Key Management\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Compromise or theft of encryption keys (KMS/HSM) leads to decryption of all stored blobs and metadata across companies.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Use cloud KMS or customer-managed HSMs with strict IAM, separation of duties, key rotation, key usage logging, split knowledge for key material, protect key access with dedicated auditing and alerting, encrypt keys at rest and in transit, require BYOK for sensitive tenants.\",\n      \"applicable_controls\": [\n        \"V7.1.1\",\n        \"V7.1.2\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-013\",\n      \"component\": \"External Integrations (Third-party e-sign & Email)\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Data leakage via third-party providers (email bodies with file links, e-sign provider storing documents, search/index vendor capturing metadata) exposing company data externally.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Minimize PII/shared content sent to providers, use ephemeral links with strict scope, encrypt payloads end-to-end where supported, contractually enforce data handling and breach notification, restrict providers to minimal scopes, monitor and audit third-party API interactions.\",\n      \"applicable_controls\": [\n        \"V8.1.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-014\",\n      \"component\": \"Edge Layer / CDN/WAF\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Application layer DoS (large uploads, resource exhaustion, or API abuse) degrades service availability for tenants or overwhelms backend services.\",\n      \"likelihood\": \"High\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce rate limiting per IP and per account, upload size quotas, chunked uploads with quotas, autoscaling with protective throttling, WAF with tuned rules, abuse detection and automated blacklisting, isolate noisy tenants, billing/alerting on anomalous usage.\",\n      \"applicable_controls\": [\n        \"V9.1.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-015\",\n      \"component\": \"Edge Layer / API Gateway\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"API key/service account compromise enables attackers to call internal service APIs bypassing tenant checks or impersonating services.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Rotate service credentials regularly, use short-lived service tokens, mutual TLS between services, restrict scopes/allowed endpoints for service accounts, monitor service account activity, and require MFA for credential issuance.\",\n      \"applicable_controls\": [\n        \"V2.4.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-016\",\n      \"component\": \"Notifications / Email Integrations\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Notifications or emails contain sensitive links or file contents that can be intercepted (email in transit) or sent to incorrect recipients due to sharing misconfiguration.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Do not include file content in emails; use expiring, single-use links; encrypt links and require authentication before access; let users set notification scopes; implement address validation for sharing and confirm external shares; provide DMARC/SPF/DKIM and TLS for email delivery.\",\n      \"applicable_controls\": [\n        \"V8.2.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-017\",\n      \"component\": \"Data Storage / Backups\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Backups or archives containing encrypted blobs and metadata are accessed or stolen due to weak access controls or misconfigured backup provider, exposing historical versions and audit logs.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Encrypt backups with separate backup keys (KMS), enforce IAM least privilege for backup access, store backups in isolated accounts, ensure backup integrity checks, implement backup retention policies and legal-hold mechanisms, and monitor backup access logs.\",\n      \"applicable_controls\": [\n        \"V5.4.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-018\",\n      \"component\": \"Search/Indexing Integration\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Indexing service leaks metadata or content snippets to other tenants or third parties due to incorrect scoping or insufficient encryption of indexes.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Index only necessary metadata, anonymize or tokenize sensitive fields, apply per-company index partitions with access controls, encrypt indexes at rest, regularly audit index access and query logs.\",\n      \"applicable_controls\": [\n        \"V8.3.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-019\",\n      \"component\": \"Audit / Reporting\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Insufficiently protected audit logs allow a malicious insider or compromised service to alter logs to hide activity (audit tampering).\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Write audit events to an immutable append-only store, apply cryptographic chaining, replicate logs to separate accounts/regions, restrict write/delete access, provide tamper-evidence and alerts on any access attempts.\",\n      \"applicable_controls\": [\n        \"V4.5.2\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-020\",\n      \"component\": \"Frontend Layer / Web SPA\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Client-side leakage of sensitive data via browser storage (localStorage/sessionStorage) or caches causing tokens or file previews to be exposed to other applications or users on shared devices.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Avoid storing long-lived tokens in localStorage; use HttpOnly, secure cookies for auth tokens; clear sensitive UI state on logout; do not cache full file previews in insecure storage; educate users for shared device usage and provide remote session termination.\",\n      \"applicable_controls\": [\n        \"V1.1.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-021\",\n      \"component\": \"Application Services / Permissions Engine\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"Delegation abuse: users with delegation rights grant excessive permissions incorrectly (accidental or malicious), enabling lateral access within a company or to sensitive files.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Implement delegation with fine-grained audit trails, limit delegation scopes and durations, require validation and two-person approval for high-sensitivity grants, provide UI warnings for broad permissions, and periodic reviews of delegated permissions.\",\n      \"applicable_controls\": [\n        \"V3.3.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-022\",\n      \"component\": \"Edge Layer / WAF / CDN\",\n      \"threat_category\": \"Denial of Service\",\n      \"description\": \"Layer 7 amplification or Distributed DoS using upload endpoints (e.g., abusing chunked uploads to open many concurrent connections) causing service degradation or cost spikes.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Rate limit per-account and per-IP, require authenticated uploads with quotas, use CDN edge caching and connection limits, validate chunk flows and timeouts, maintain cost-monitoring and auto-mitigation runbooks.\",\n      \"applicable_controls\": [\n        \"V9.1.2\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-023\",\n      \"component\": \"External Integrations / Third-party e-sign\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Third-party e-sign provider denies or cannot prove signer authenticity because of inadequate signature binding or provider outage causing loss of proof of signature timing/identity.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Prefer provider support for cryptographic timestamping and certificate-based signatures, store signed artifact snapshots locally with provider-signed receipts, maintain fallback verification data, and log provider interactions with signatures and timestamps.\",\n      \"applicable_controls\": [\n        \"V6.3.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-024\",\n      \"component\": \"Data Storage / DB\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Sensitive metadata exposure via mis-scoped queries, e.g., search endpoints returning metadata across companies due to missing company_id filters.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Enforce mandatory tenant scoping at query layer, integrate policy engine that injects company_id constraints, implement automated tests to validate multi-tenancy isolation, and perform regular data-access reviews.\",\n      \"applicable_controls\": [\n        \"V5.1.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-025\",\n      \"component\": \"Key Management / Application Services\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"A compromised service or administrator with KMS permissions uses keys to decrypt other tenant data or re-encrypt data under attacker-controlled keys.\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Implement least privilege on KMS IAM policies, use customer-managed keys per-tenant when required, use key access logging with WORM retention, require multi-party approval for key rotation/deletion, and use key access contextual restrictions (e.g., IP, service).\",\n      \"applicable_controls\": [\n        \"V7.2.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-026\",\n      \"component\": \"Frontend Layer / File Uploads\",\n      \"threat_category\": \"Tampering\",\n      \"description\": \"Malicious files (malware/embedded scripts in documents or images) are uploaded and later downloaded/previewed causing client-side compromise of user machines or stealing credentials.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Perform server-side scanning for malware/PII, sanitize or render previews in isolated environments (e.g., preview service in sandbox), restrict executable content, strip macros from office docs or convert to safe preview formats, and warn users on downloads.\",\n      \"applicable_controls\": [\n        \"V5.5.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-027\",\n      \"component\": \"Application Services / Notification\",\n      \"threat_category\": \"Repudiation\",\n      \"description\": \"Notifications are not consistently logged or tied to authoritative events, enabling users to claim they didn't receive critical sign or sharing notifications (impacting compliance workflows).\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Log all notification attempts and outcomes in audit store, provide delivery receipts, implement retry logic, provide in-app notification history, and require acknowledgement for critical actions.\",\n      \"applicable_controls\": [\n        \"V4.3.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-028\",\n      \"component\": \"Edge Layer / API Gateway\",\n      \"threat_category\": \"Spoofing\",\n      \"description\": \"IP or header spoofing to bypass rate-limits, impersonate trusted proxies, or confuse auditing/forensics.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"Low\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Terminate TLS at trusted edge, use authenticated mutual TLS between components, strip or validate X-Forwarded-* headers at edge, only trust headers from known proxies, and record client IPs at edge with signed metadata.\",\n      \"applicable_controls\": [\n        \"V9.2.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-029\",\n      \"component\": \"Data Storage / Audit Store\",\n      \"threat_category\": \"Information Disclosure\",\n      \"description\": \"Audit logs containing PII or sensitive metadata are exposed to unauthorized viewers (insiders or via misconfigured dashboards).\",\n      \"likelihood\": \"Low\",\n      \"impact\": \"Medium\",\n      \"risk_level\": \"Medium\",\n      \"mitigation_strategy\": \"Redact or encrypt sensitive fields in audit logs, apply RBAC to audit access, keep minimal necessary context in dashboards, and restrict export capabilities. Monitor and alert on unusual audit access patterns.\",\n      \"applicable_controls\": [\n        \"V4.6.1\"\n      ],\n      \"control_effectiveness\": \"Medium\",\n      \"residual_risk_level\": \"Low\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    },\n    {\n      \"threat_id\": \"THR-030\",\n      \"component\": \"Application Services / Admin UI\",\n      \"threat_category\": \"Elevation of Privilege\",\n      \"description\": \"Compromise or misuse of administrative UI (weak admin authentication or over-permissive admin roles) allows mass access to customer data, permission changes, or deletion.\",\n      \"likelihood\": \"Medium\",\n      \"impact\": \"High\",\n      \"risk_level\": \"High\",\n      \"mitigation_strategy\": \"Harden admin portal with MFA (hardware tokens), IP allowlists, separate admin-only infrastructure and accounts, implement JIT privileged access, audit and alert admin actions, require approval workflows for destructive operations and emergency access.\",\n      \"applicable_controls\": [\n        \"V3.4.1\"\n      ],\n      \"control_effectiveness\": \"High\",\n      \"residual_risk_level\": \"Medium\",\n      \"residual_risk_acceptance\": \"Requires Review\"\n    }\n  ],\n  \"risk_summary\": \"The most critical threats center on authentication/authorization failures (credential theft, SSO token misuse, broken RBAC), key management compromise, data exposure via storage or third-party integrations, and insufficient tamper-resistant audit trails. Attack vectors with highest priority are compromised user or service credentials, misconfigured object storage or third-party vendors, and logic flaws that allow cross-tenant access. The overall posture is moderate-to-high risk without strong controls: many threats can yield high impact even with medium likelihood. Priority controls: enforce strong authentication (phishing-resistant MFA, short-lived tokens), robust server-side authorization with a policy engine and mandatory tenant scoping, hardened KMS practices with per-tenant keys where needed, immutable and cryptographically verifiable audit logs, storage ACL hardening and short-lived URLs, and strict third-party data handling restrictions. Operational priorities include implementing rate-limiting and DoS protections at the edge, automated testing (SAST/DAST and multi-tenant isolation tests), monitoring/alerting for anomalous access, and a secure admin/JIT access model. Addressing these areas will materially reduce Critical/High risks; remaining risks should be tracked with compensating controls and regular review.\"\n}",
+      "pydantic": {
+        "methodology": "STRIDE",
+        "threats": [
+          {
+            "threat_id": "THR-001",
+            "component": "User Management / Frontend Layer / Edge Layer (SSO)",
+            "threat_category": "Spoofing",
+            "description": "Credential theft or SSO token replay allows an attacker to impersonate a legitimate user and access company-scoped data (e.g., via phishing, stolen refresh tokens, or misused OAuth tokens).",
+            "likelihood": "High",
+            "impact": "High",
+            "risk_level": "Critical",
+            "mitigation_strategy": "Enforce MFA (phishing-resistant where possible, e.g., FIDO2), short-lived access tokens and short refresh lifetimes, PKCE for public clients, rotate refresh tokens on reuse, secure cookie flags (HttpOnly, Secure, SameSite), device fingerprinting, detect anomalous logins (geo/IP), session revocation API, continuous token introspection at gateway.",
+            "applicable_controls": [
+              "V2.1.1",
+              "V3.2.3"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-002",
+            "component": "Frontend Layer",
+            "threat_category": "Tampering",
+            "description": "Client-side manipulation of UI or upload flows (e.g., changing file metadata, bypassing client-side validation to mark files as signed or modify company ID before upload).",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Treat client inputs as untrusted: enforce server-side validation and canonicalization. Validate and normalize company IDs from authoritative sources, sign metadata server-side, use server-side counters for versioning, and apply strict API schema validation at gateway.",
+            "applicable_controls": [
+              "V3.1.2"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-003",
+            "component": "Edge Layer / API Gateway",
+            "threat_category": "Repudiation",
+            "description": "Insufficient request logging and non-repudiation controls allow an attacker or malicious insider to deny having performed actions (create/edit/delete/sign), undermining audit and compliance.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Ensure immutable, append-only audit store with server-signed events, cryptographic integrity (hash chaining, Merkle trees), store contextual metadata (requestor, tokens, IP, user-agent), replicate audit logs to WORM storage and separate tenancy, restrict audit log deletion/alteration to out-of-band governed processes.",
+            "applicable_controls": [
+              "V4.5.1"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-004",
+            "component": "Data Storage / Object Storage",
+            "threat_category": "Information Disclosure",
+            "description": "Unauthorized access to file blobs (object store) due to misconfigured ACLs, public buckets, signed URL leakage, or maker errors exposing company documents to other tenants or public internet.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce block public access at storage provider level, bucket/object policies scoped by company ID, use short-lived pre-signed URLs with strict permissions, audit object ACLs, implement server-side encryption with per-company keys, and IAM least privilege for service accounts.",
+            "applicable_controls": [
+              "V5.2.1",
+              "V6.1.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-005",
+            "component": "Application Services / RBAC/Permissions",
+            "threat_category": "Elevation of Privilege",
+            "description": "Broken access control or RBAC misconfiguration allows a user to escalate privileges or access files across company boundaries (e.g., attribute tampering to change company_id or role change via replication errors).",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce server-side authorization for every operation using strong attribute-based checks (company_id must be authoritative and immutable in server context), implement policy engine (OPA) with unit tests and policy-as-code, regular policy change reviews, separation of duties, and deny-by-default stance.",
+            "applicable_controls": [
+              "V3.2.3",
+              "V3.2.4"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-006",
+            "component": "Application Services / Core API",
+            "threat_category": "Tampering",
+            "description": "Server-side metadata tampering: attacker with compromised service credentials modifies file metadata, version history, or signature metadata to hide malicious changes or forge audit trails.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce service account least privilege, signed and versioned metadata with integrity checks, use HMACs or digital signatures for metadata records, separate services for writing audit events with independent credentials, monitor for anomalous service behaviors.",
+            "applicable_controls": [
+              "V4.2.2"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-007",
+            "component": "Frontend Layer",
+            "threat_category": "Information Disclosure",
+            "description": "Cross-Site Scripting (XSS) in previews, document metadata fields, or collaborative comments exposes tokens, session cookies, or allows action on behalf of users accessing company files.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Contextual output encoding on all UI outputs, Content Security Policy (CSP) with strict script-src, sanitize file metadata and user-generated content server-side, HttpOnly cookies, and regular DOM XSS testing.",
+            "applicable_controls": [
+              "V1.3.1"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-008",
+            "component": "Frontend Layer / API Gateway",
+            "threat_category": "Tampering",
+            "description": "Cross-Site Request Forgery (CSRF) leading to unauthorized file actions (share, delete, sign) when the browser session is active.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Use same-site cookies, anti-CSRF tokens for state-changing actions, require re-authentication or step-up authentication for sensitive operations like signing or permission changes, validate Origin/Referrer headers at gateway.",
+            "applicable_controls": [
+              "V1.2.2"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-009",
+            "component": "Application Services / Core API / DB",
+            "threat_category": "Tampering",
+            "description": "Injection attacks (SQL/NoSQL/command injection) via file metadata, search queries, or admin UI lead to data modification or retrieval across tenants.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use parameterized queries/ORM with prepared statements, input validation, least privilege DB accounts, WAF tuned for injection patterns, code reviews and automated SAST/DAST, limit dynamic query construction and use typed query builders.",
+            "applicable_controls": [
+              "V2.3.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-010",
+            "component": "File & Versioning Service / Data Storage",
+            "threat_category": "Tampering",
+            "description": "Race conditions or TOCTOU during file versioning allow an attacker to overwrite or revert versions, hide malicious edits, or replay old signed versions.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Implement optimistic concurrency control with version tokens, atomic operations, server-side append-only version store, apply write locks where necessary, include cryptographic hashes of content in version records.",
+            "applicable_controls": [
+              "V5.3.2"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-011",
+            "component": "Electronic Signature Management / Application Services",
+            "threat_category": "Spoofing",
+            "description": "Forgery of electronic signatures or reuse of signatures without proper signer consent (e.g., attacker manipulates signature metadata, or private signing keys are compromised).",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use strong cryptographic signatures (asymmetric keys), bind signer identity via SSO+MFA, create tamper-evident signed artifacts (signed manifest + timestamping), support third-party certificate validation, maintain signer audit trail, separate signing service with HSM-backed keys and strict access controls.",
+            "applicable_controls": [
+              "V6.2.1"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-012",
+            "component": "Key Management",
+            "threat_category": "Information Disclosure",
+            "description": "Compromise or theft of encryption keys (KMS/HSM) leads to decryption of all stored blobs and metadata across companies.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Use cloud KMS or customer-managed HSMs with strict IAM, separation of duties, key rotation, key usage logging, split knowledge for key material, protect key access with dedicated auditing and alerting, encrypt keys at rest and in transit, require BYOK for sensitive tenants.",
+            "applicable_controls": [
+              "V7.1.1",
+              "V7.1.2"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-013",
+            "component": "External Integrations (Third-party e-sign & Email)",
+            "threat_category": "Information Disclosure",
+            "description": "Data leakage via third-party providers (email bodies with file links, e-sign provider storing documents, search/index vendor capturing metadata) exposing company data externally.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Minimize PII/shared content sent to providers, use ephemeral links with strict scope, encrypt payloads end-to-end where supported, contractually enforce data handling and breach notification, restrict providers to minimal scopes, monitor and audit third-party API interactions.",
+            "applicable_controls": [
+              "V8.1.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-014",
+            "component": "Edge Layer / CDN/WAF",
+            "threat_category": "Denial of Service",
+            "description": "Application layer DoS (large uploads, resource exhaustion, or API abuse) degrades service availability for tenants or overwhelms backend services.",
+            "likelihood": "High",
+            "impact": "Medium",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce rate limiting per IP and per account, upload size quotas, chunked uploads with quotas, autoscaling with protective throttling, WAF with tuned rules, abuse detection and automated blacklisting, isolate noisy tenants, billing/alerting on anomalous usage.",
+            "applicable_controls": [
+              "V9.1.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-015",
+            "component": "Edge Layer / API Gateway",
+            "threat_category": "Spoofing",
+            "description": "API key/service account compromise enables attackers to call internal service APIs bypassing tenant checks or impersonating services.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Rotate service credentials regularly, use short-lived service tokens, mutual TLS between services, restrict scopes/allowed endpoints for service accounts, monitor service account activity, and require MFA for credential issuance.",
+            "applicable_controls": [
+              "V2.4.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-016",
+            "component": "Notifications / Email Integrations",
+            "threat_category": "Information Disclosure",
+            "description": "Notifications or emails contain sensitive links or file contents that can be intercepted (email in transit) or sent to incorrect recipients due to sharing misconfiguration.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Do not include file content in emails; use expiring, single-use links; encrypt links and require authentication before access; let users set notification scopes; implement address validation for sharing and confirm external shares; provide DMARC/SPF/DKIM and TLS for email delivery.",
+            "applicable_controls": [
+              "V8.2.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-017",
+            "component": "Data Storage / Backups",
+            "threat_category": "Information Disclosure",
+            "description": "Backups or archives containing encrypted blobs and metadata are accessed or stolen due to weak access controls or misconfigured backup provider, exposing historical versions and audit logs.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Encrypt backups with separate backup keys (KMS), enforce IAM least privilege for backup access, store backups in isolated accounts, ensure backup integrity checks, implement backup retention policies and legal-hold mechanisms, and monitor backup access logs.",
+            "applicable_controls": [
+              "V5.4.1"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-018",
+            "component": "Search/Indexing Integration",
+            "threat_category": "Information Disclosure",
+            "description": "Indexing service leaks metadata or content snippets to other tenants or third parties due to incorrect scoping or insufficient encryption of indexes.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Index only necessary metadata, anonymize or tokenize sensitive fields, apply per-company index partitions with access controls, encrypt indexes at rest, regularly audit index access and query logs.",
+            "applicable_controls": [
+              "V8.3.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-019",
+            "component": "Audit / Reporting",
+            "threat_category": "Tampering",
+            "description": "Insufficiently protected audit logs allow a malicious insider or compromised service to alter logs to hide activity (audit tampering).",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Write audit events to an immutable append-only store, apply cryptographic chaining, replicate logs to separate accounts/regions, restrict write/delete access, provide tamper-evidence and alerts on any access attempts.",
+            "applicable_controls": [
+              "V4.5.2"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-020",
+            "component": "Frontend Layer / Web SPA",
+            "threat_category": "Information Disclosure",
+            "description": "Client-side leakage of sensitive data via browser storage (localStorage/sessionStorage) or caches causing tokens or file previews to be exposed to other applications or users on shared devices.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Avoid storing long-lived tokens in localStorage; use HttpOnly, secure cookies for auth tokens; clear sensitive UI state on logout; do not cache full file previews in insecure storage; educate users for shared device usage and provide remote session termination.",
+            "applicable_controls": [
+              "V1.1.1"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-021",
+            "component": "Application Services / Permissions Engine",
+            "threat_category": "Spoofing",
+            "description": "Delegation abuse: users with delegation rights grant excessive permissions incorrectly (accidental or malicious), enabling lateral access within a company or to sensitive files.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Implement delegation with fine-grained audit trails, limit delegation scopes and durations, require validation and two-person approval for high-sensitivity grants, provide UI warnings for broad permissions, and periodic reviews of delegated permissions.",
+            "applicable_controls": [
+              "V3.3.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-022",
+            "component": "Edge Layer / WAF / CDN",
+            "threat_category": "Denial of Service",
+            "description": "Layer 7 amplification or Distributed DoS using upload endpoints (e.g., abusing chunked uploads to open many concurrent connections) causing service degradation or cost spikes.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Rate limit per-account and per-IP, require authenticated uploads with quotas, use CDN edge caching and connection limits, validate chunk flows and timeouts, maintain cost-monitoring and auto-mitigation runbooks.",
+            "applicable_controls": [
+              "V9.1.2"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-023",
+            "component": "External Integrations / Third-party e-sign",
+            "threat_category": "Repudiation",
+            "description": "Third-party e-sign provider denies or cannot prove signer authenticity because of inadequate signature binding or provider outage causing loss of proof of signature timing/identity.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Prefer provider support for cryptographic timestamping and certificate-based signatures, store signed artifact snapshots locally with provider-signed receipts, maintain fallback verification data, and log provider interactions with signatures and timestamps.",
+            "applicable_controls": [
+              "V6.3.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-024",
+            "component": "Data Storage / DB",
+            "threat_category": "Information Disclosure",
+            "description": "Sensitive metadata exposure via mis-scoped queries, e.g., search endpoints returning metadata across companies due to missing company_id filters.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Enforce mandatory tenant scoping at query layer, integrate policy engine that injects company_id constraints, implement automated tests to validate multi-tenancy isolation, and perform regular data-access reviews.",
+            "applicable_controls": [
+              "V5.1.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-025",
+            "component": "Key Management / Application Services",
+            "threat_category": "Elevation of Privilege",
+            "description": "A compromised service or administrator with KMS permissions uses keys to decrypt other tenant data or re-encrypt data under attacker-controlled keys.",
+            "likelihood": "Low",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Implement least privilege on KMS IAM policies, use customer-managed keys per-tenant when required, use key access logging with WORM retention, require multi-party approval for key rotation/deletion, and use key access contextual restrictions (e.g., IP, service).",
+            "applicable_controls": [
+              "V7.2.1"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-026",
+            "component": "Frontend Layer / File Uploads",
+            "threat_category": "Tampering",
+            "description": "Malicious files (malware/embedded scripts in documents or images) are uploaded and later downloaded/previewed causing client-side compromise of user machines or stealing credentials.",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Perform server-side scanning for malware/PII, sanitize or render previews in isolated environments (e.g., preview service in sandbox), restrict executable content, strip macros from office docs or convert to safe preview formats, and warn users on downloads.",
+            "applicable_controls": [
+              "V5.5.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-027",
+            "component": "Application Services / Notification",
+            "threat_category": "Repudiation",
+            "description": "Notifications are not consistently logged or tied to authoritative events, enabling users to claim they didn't receive critical sign or sharing notifications (impacting compliance workflows).",
+            "likelihood": "Medium",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Log all notification attempts and outcomes in audit store, provide delivery receipts, implement retry logic, provide in-app notification history, and require acknowledgement for critical actions.",
+            "applicable_controls": [
+              "V4.3.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-028",
+            "component": "Edge Layer / API Gateway",
+            "threat_category": "Spoofing",
+            "description": "IP or header spoofing to bypass rate-limits, impersonate trusted proxies, or confuse auditing/forensics.",
+            "likelihood": "Medium",
+            "impact": "Low",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Terminate TLS at trusted edge, use authenticated mutual TLS between components, strip or validate X-Forwarded-* headers at edge, only trust headers from known proxies, and record client IPs at edge with signed metadata.",
+            "applicable_controls": [
+              "V9.2.1"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-029",
+            "component": "Data Storage / Audit Store",
+            "threat_category": "Information Disclosure",
+            "description": "Audit logs containing PII or sensitive metadata are exposed to unauthorized viewers (insiders or via misconfigured dashboards).",
+            "likelihood": "Low",
+            "impact": "Medium",
+            "risk_level": "Medium",
+            "mitigation_strategy": "Redact or encrypt sensitive fields in audit logs, apply RBAC to audit access, keep minimal necessary context in dashboards, and restrict export capabilities. Monitor and alert on unusual audit access patterns.",
+            "applicable_controls": [
+              "V4.6.1"
+            ],
+            "control_effectiveness": "Medium",
+            "residual_risk_level": "Low",
+            "residual_risk_acceptance": "Requires Review"
+          },
+          {
+            "threat_id": "THR-030",
+            "component": "Application Services / Admin UI",
+            "threat_category": "Elevation of Privilege",
+            "description": "Compromise or misuse of administrative UI (weak admin authentication or over-permissive admin roles) allows mass access to customer data, permission changes, or deletion.",
+            "likelihood": "Medium",
+            "impact": "High",
+            "risk_level": "High",
+            "mitigation_strategy": "Harden admin portal with MFA (hardware tokens), IP allowlists, separate admin-only infrastructure and accounts, implement JIT privileged access, audit and alert admin actions, require approval workflows for destructive operations and emergency access.",
+            "applicable_controls": [
+              "V3.4.1"
+            ],
+            "control_effectiveness": "High",
+            "residual_risk_level": "Medium",
+            "residual_risk_acceptance": "Requires Review"
+          }
+        ],
+        "risk_summary": "The most critical threats center on authentication/authorization failures (credential theft, SSO token misuse, broken RBAC), key management compromise, data exposure via storage or third-party integrations, and insufficient tamper-resistant audit trails. Attack vectors with highest priority are compromised user or service credentials, misconfigured object storage or third-party vendors, and logic flaws that allow cross-tenant access. The overall posture is moderate-to-high risk without strong controls: many threats can yield high impact even with medium likelihood. Priority controls: enforce strong authentication (phishing-resistant MFA, short-lived tokens), robust server-side authorization with a policy engine and mandatory tenant scoping, hardened KMS practices with per-tenant keys where needed, immutable and cryptographically verifiable audit logs, storage ACL hardening and short-lived URLs, and strict third-party data handling restrictions. Operational priorities include implementing rate-limiting and DoS protections at the edge, automated testing (SAST/DAST and multi-tenant isolation tests), monitoring/alerting for anomalous access, and a secure admin/JIT access model. Addressing these areas will materially reduce Critical/High risks; remaining risks should be tracked with compensating controls and regular review."
+      }
+    }
+  ]
+}

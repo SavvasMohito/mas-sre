@@ -1,0 +1,272 @@
+[
+  {
+    "id": "THR-001",
+    "likelihood": 4,
+    "impact": 4,
+    "component": "Edge & Auth (AD SSO, session management)",
+    "risk_level": "Critical",
+    "category": "Spoofing",
+    "description": "Compromise or theft of AD credentials or SSO tokens (phishing, token theft, replay) allowing an attacker to impersonate a legitimate user and access the web application and APIs."
+  },
+  {
+    "id": "THR-002",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Edge & Auth (GitHub OAuth & Webhooks)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Theft or misuse of GitHub OAuth tokens or forging of webhook requests to trigger unauthorized builds or access repository metadata."
+  },
+  {
+    "id": "THR-003",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Frontend Layer (session & cookies)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "Session hijacking via stolen session cookies (e.g., through XSS or network interception) allowing impersonation of authenticated users."
+  },
+  {
+    "id": "THR-004",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Frontend Layer (log viewer and file previews)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Cross-site scripting (XSS) in log viewer or file preview that exposes session tokens, PII, or internal data, or executes actions on behalf of the user."
+  },
+  {
+    "id": "THR-005",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (DB access)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "SQL injection or other injection vulnerabilities in APIs that handle task parameters, file metadata or search queries allowing data modification or disclosure."
+  },
+  {
+    "id": "THR-006",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services (audit logging)",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Insufficient or tamperable audit logs make it impossible to track who performed build submissions, approvals, or FPGA programming actions."
+  },
+  {
+    "id": "THR-007",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Background Workers & Orchestrator (SLURM jobs)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Attackers manipulate job submission payloads or job scripts (e.g., inject malicious commands or change job resources/priorities) to escalate impact or run unintended workloads on HPC."
+  },
+  {
+    "id": "THR-008",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "HPC & FPGA Hardware Zone (artifacts, bitfiles)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Unauthorized access to bitfiles, build artifacts, or EDA outputs that contain proprietary IP, via insufficient access controls on object storage or stale signed URLs."
+  },
+  {
+    "id": "THR-009",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage & Analytics (backups)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Exposed or unencrypted DB or artifact backups (e.g., stored on shared file systems or cloud buckets) leading to disclosure of source, IP, or credentials."
+  },
+  {
+    "id": "THR-010",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend Layer (forms & state changes)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Cross-Site Request Forgery (CSRF) attacks cause authenticated users to unknowingly create, cancel, or alter build tasks."
+  },
+  {
+    "id": "THR-011",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (RBAC/authorization)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Broken or missing server-side RBAC allows normal users to perform admin actions (e.g., delete artifacts, change RBAC policies, program FPGAs)."
+  },
+  {
+    "id": "THR-012",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "External Integrations (Vault / Secrets Manager)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Compromise or misconfiguration of the secrets manager exposes credentials for HPC, GitHub, EDA licensing, or other systems enabling further compromise."
+  },
+  {
+    "id": "THR-013",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "GitHub Integration (automated builds)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Malicious code in a repository or PR triggers automated builds which execute in the CI environment, potentially exfiltrating data or attacking other systems (supply-chain/code execution)."
+  },
+  {
+    "id": "THR-014",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Notifications (Email)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Inclusion of sensitive build outputs, artifact links or secrets in email notifications leads to information leakage, especially if email recipients include external addresses."
+  },
+  {
+    "id": "THR-015",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Deployment & Ops (Docker/containers)",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Misconfigured container runtime (privileged containers, host mounts) or malicious containers cause container escapes or resource exhaustion leading to DoS of control plane or other services."
+  },
+  {
+    "id": "THR-016",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Edge & Auth (WebSockets / SSE)",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Abuse of real-time channels (WebSockets/SSE) to open many connections or send large messages, exhausting server resources and denying service to legitimate users."
+  },
+  {
+    "id": "THR-017",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Task Management & APIs (bulk operations)",
+    "risk_level": "High",
+    "category": "Denial of Service",
+    "description": "Intentional or accidental bulk task creation/cancellation (e.g., via API abuse) floods the job queue and exhausts HPC or application resources."
+  },
+  {
+    "id": "THR-018",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Data Storage & Analytics (DB integrity)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Unauthorized modification of DB records (task history, audit trails) either via compromised credentials or application bug, undermining forensicability and integrity of results."
+  },
+  {
+    "id": "THR-019",
+    "likelihood": 4,
+    "impact": 3,
+    "component": "Frontend Layer (browser storage & caching)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Sensitive tokens, PII or internal URLs stored in browser localStorage, indexed DB, or caches are recovered from a compromised client or shared device."
+  },
+  {
+    "id": "THR-020",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "HPC & FPGA Hardware Zone (FPGA programming)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Bypassing approval workflow or exploiting API flaws to program FPGA devices with unauthorized bitfiles, potentially damaging hardware or enabling persistent hardware-level backdoors."
+  },
+  {
+    "id": "THR-021",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "External Integrations (GitHub webhooks)",
+    "risk_level": "Medium",
+    "category": "Spoofing",
+    "description": "Replay of webhook events or forging webhook payloads to trigger builds or inject falsified commit/PR metadata."
+  },
+  {
+    "id": "THR-022",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services & Object Store (logs/artifacts)",
+    "risk_level": "High",
+    "category": "Information Disclosure",
+    "description": "Storage of logs and artifacts with public or overly permissive ACLs or long-lived pre-signed URLs leads to unintended public access of sensitive outputs."
+  },
+  {
+    "id": "THR-023",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "File Management (uploads)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Malicious or malformed file uploads (including bitfiles) that contain malware or specially crafted data causing downstream EDA tools or workers to behave unexpectedly or execute arbitrary code."
+  },
+  {
+    "id": "THR-024",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Data Storage & Analytics (object store capacity)",
+    "risk_level": "Medium",
+    "category": "Denial of Service",
+    "description": "Exhaustion of storage capacity by deliberate or accidental upload of very large artifacts, causing new builds to fail or system to degrade."
+  },
+  {
+    "id": "THR-025",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Deployment & Ops (Ansible / images)",
+    "risk_level": "High",
+    "category": "Tampering",
+    "description": "Compromise of Ansible playbooks, container images, or CI artifacts leads to deployment of backdoored containers or malicious configuration changes across environment."
+  },
+  {
+    "id": "THR-026",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Notifications (SMTP)",
+    "risk_level": "Medium",
+    "category": "Information Disclosure",
+    "description": "Emails sent without enforced TLS or to external recipients might be intercepted, exposing commit details, logs, or artifact links."
+  },
+  {
+    "id": "THR-027",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Application Services (webhooks & triggers)",
+    "risk_level": "Medium",
+    "category": "Repudiation",
+    "description": "Insufficient logging of webhook events and build triggers makes it difficult to prove who triggered a build or when an automated action occurred."
+  },
+  {
+    "id": "THR-028",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Background Workers & Orchestrator (service identity)",
+    "risk_level": "High",
+    "category": "Spoofing",
+    "description": "A compromised worker node impersonates the orchestrator or other services to SLURM or storage systems to access or modify jobs/artifacts."
+  },
+  {
+    "id": "THR-029",
+    "likelihood": 3,
+    "impact": 4,
+    "component": "Application Services (API serialization)",
+    "risk_level": "High",
+    "category": "Elevation of Privilege",
+    "description": "Insecure deserialization or unsafe object handling in API endpoints leading to remote code execution or privilege escalation for attackers sending crafted payloads."
+  },
+  {
+    "id": "THR-030",
+    "likelihood": 3,
+    "impact": 3,
+    "component": "Frontend + Log Viewer (client-side rendering)",
+    "risk_level": "Medium",
+    "category": "Tampering",
+    "description": "Improper handling of log content or binary preview causes client-side injection or misuse (reflected/stored XSS) affecting other users viewing logs or dashboards."
+  }
+]
