@@ -52,8 +52,8 @@ Follow these instructions to clone the project and run the analysis on your loca
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/SavvasMohito/msc-thesis-code.git
-   cd msc-thesis-code
+   git clone https://github.com/SavvasMohito/mas-sre.git
+   cd mas-sre
    ```
 
 2. **Set up the Virtual Environment**
